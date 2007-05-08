@@ -1,0 +1,19 @@
+#!/usr/bin/ksh
+Args=""
+
+while [[ $# -gt 0 ]]
+do
+  if [ "$1" = "-FI" ]; then
+    Args="$Args $1$2"
+    shift
+    shift
+  elif [ "$1" = "-Wall" ]; then
+    shift
+  else
+    Args="$Args $1"
+    shift
+  fi
+done
+
+echo "echo cc $Args"
+cc $Args

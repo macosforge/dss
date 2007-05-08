@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta name="generator" content="BBEdit Prerelease">
+	<script src="includes/encode_unicode.js" type="text/javascript" language="Javascript" charset="utf-8"></script>
+	<script type="text/javascript" language="Javascript">
+		
+		function validateFormData() {
+			if ((document.forms[0].elements['assistSSL'].checked) && ('<qtssobject name=SSLAvailable/>' != '1')) {
+				entityAlert("<qtssstring name=GenSetErrorSSLNotAvail/>");
+				return false;
+			}
+			return true;
+		}
+	
+	</script>
+<style type="text/css">
+		td { font-family: Arial, Helvetica, Geneva, Swiss, sans-serif; font-size: 12px }
+		.large { font-weight: bold; font-size: 14px  }
+		.small { font-size: 10px }
+		.white { color: #FFFFFF }
+		.header { font-size: 18px; color:#666699 }
+		input { font-size: 12px }
+	</style> 
+	<title><qtssstring name="SetupAssistTitle"/></title>
+</head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif">
+<qtssobject type=validatedform>
+	<qtssobject type=hidden name="assistMP3Pass"/>
+	<input type=hidden name=filename value="setup_assistant4.html"> <input type=hidden name=action value=""> 
+	<table border=0 cellspacing=0 cellpadding=0 width=620>
+		<tr>
+			<td align=left valign=top width=20><img src="images/spacer.gif" width=20 height=20 align=top alt=""></td>
+			<td valign=top align=center>
+				<br>
+				<br>
+				<br>
+				<br>
+				<br>
+				<table border=0 cellspacing=0 cellpadding=0 width=500>
+					<tr>
+						<td align=left><img src="images/dialog_top.gif" width=500 height=20 align=bottom alt=""></td>
+					</tr>
+					<tr>
+						<td align=left background="images/dialog_middle.gif">
+							<table border=0 cellspacing=0 cellpadding=4 width="98%">
+								<tr>
+									<td valign=top width=110 align=center><img src="images/nav_logo.gif" width="82" height="105" align="bottom" alt=""></td>
+									<td align=left valign=top class=large>
+										<b><qtssstring name="SetupAssistTitle"/></b> 
+										<br><qtssstring name="SetupAssistStep3"/>
+										<br>
+										<br><span class=small><qtssstring name="SetupAssistSSLExp"/></span><br><br>
+										<table border=0 cellspacing=4 cellpadding=0>
+											<tr>
+												<td align=left>
+													<input type=checkbox name="assistSSL" value="1" size=25> <qtssstring name="SetupAssistSSLLabel"/>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+							</table>
+							<table border=0 cellspacing=0 cellpadding=0 width="100%">
+								<tr>
+									<td valign=top align=right>
+										<br>
+										<input type=button name="Prev" value="<qtssstring name=SetupAssistPrevButton/>" onclick="this.form.elements['action'].value='';this.form.elements['filename'].value='setup_assistant2.html';this.form.submit()">
+										<span class=white>....</span>
+										<input type=button name="ChangePass" value="<qtssstring name=SetupAssistSkipButton/>" onclick="this.form.elements['action'].value='';this.form.elements['filename'].value='';this.form.submit()">
+										<span class=white>....</span>
+										<input type=submit name=ok value="<qtssstring name=SetupAssistNextButton/>">
+										<span class=white>........</span> 
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					<tr>
+						<td align=left>
+							<img src="images/dialog_bottom.gif" width=500 height=20 align=bottom alt=""> 
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+</qtssobject>
+</body>
+</html>

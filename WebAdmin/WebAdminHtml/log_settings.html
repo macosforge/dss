@@ -1,0 +1,214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta name="generator" content="BBEdit Prerelease">
+<style type="text/css">
+		td { font-family: Arial, Helvetica, Geneva, Swiss, sans-serif; font-size: 12px }
+		.large { font-weight: bold; font-size: 14px  }
+		.small { font-size: 10px }
+		.white { color: #FFFFFF }
+		.header { font-size: 18px; color:#666699 }
+		input { font-size: 12px }
+	</style> 
+	<script src="includes/standardNav.js" type="text/javascript" language="Javascript"></script>
+	<qtssobject name=scriptTag>
+		//<script language=javascript>
+
+		function showConfirmMessage() {
+			if ('<qtssobject name=confirmMessage/>' != '') {
+				if (parent.frames['top'].showConfirmMessage) {
+					parent.frames['top'].showConfirmMessage('<qtssobject name=confirmMessage/>');
+				}
+				else if (parent.parent.frames[0].showConfirmMessage) {
+					parent.parent.frames[0].showConfirmMessage('<qtssobject name=confirmMessage/>');
+				}
+			}
+		}
+		
+		function validateFormData() {
+			var wasInvalid = false;
+			if (document.forms[0].elements['qtssErrorLogInterval'].value == '') {
+				alert("qtssstring name=LogSetErrorValidationError/>");
+				wasInvalid = true;
+			}
+			if ((document.forms[0].elements['qtssErrorLogInterval'].value.match('[^0-9]') != null) || (document.forms[0].elements['qtssErrorLogInterval'].value < 0)) {
+				alert("qtssstring name=LogSetErrorValidationError/>");
+				wasInvalid = true;
+			}
+			if (wasInvalid) { // set because qtssErrorLogInterval was invalid
+				document.forms[0].elements['qtssErrorLogInterval'].value = document.forms[0].elements['qtssErrorLogInterval_shadow'].value;
+				return false;
+			}
+			if (document.forms[0].elements['qtssErrorLogSize'].value == '') {
+				alert("qtssstring name=LogSetErrorValidationError/>");
+				wasInvalid = true;
+			}
+			if ((document.forms[0].elements['qtssErrorLogSize'].value.match('[^0-9]') != null) || (document.forms[0].elements['qtssErrorLogSize'].value < 0)) {
+				alert("qtssstring name=LogSetErrorValidationError/>");
+				wasInvalid = true;
+			}
+			if (wasInvalid) { // set because qtssErrorLogSize was invalid
+				document.forms[0].elements['qtssErrorLogSize'].value = document.forms[0].elements['qtssErrorLogSize_shadow'].value;
+				return false;
+			}
+			if (document.forms[0].elements['qtssRequestLogInterval'].value == '') {
+				alert("qtssstring name=LogSetErrorValidationError/>");
+				wasInvalid = true;
+			}
+			if ((document.forms[0].elements['qtssRequestLogInterval'].value.match('[^0-9]') != null) || (document.forms[0].elements['qtssRequestLogInterval'].value < 0)) {
+				alert("qtssstring name=LogSetErrorValidationError/>");
+				wasInvalid = true;
+			}
+			if (wasInvalid) { // set because qtssRequestLogInterval was invalid
+				document.forms[0].elements['qtssRequestLogInterval'].value == document.forms[0].elements['qtssRequestLogInterval_shadow'].value;
+				return false;
+			}
+			if (document.forms[0].elements['qtssRequestLogSize'].value == '') {
+				alert("qtssstring name=LogSetErrorValidationError/>");
+				wasInvalid = true;
+			}
+			if ((document.forms[0].elements['qtssRequestLogSize'].value.match('[^0-9]') != null) || (document.forms[0].elements['qtssRequestLogSize'].value < 0)) {
+				alert("qtssstring name=LogSetErrorValidationError/>");
+				wasInvalid = true;
+			}
+			if (wasInvalid) { // set because qtssRequestLogSize was invalid
+				document.forms[0].elements['qtssRequestLogSize'].value == document.forms[0].elements['qtssRequestLogSize_shadow'].value;
+				return false;
+			}
+			return true;
+		}
+		
+	</script>
+</head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif" onload="showConfirmMessage()">
+<qtssobject type=validatedform>
+	<input type=hidden name=filename value="confirm.html"> <input type=hidden name=action value="SaveLogSettings"> 
+	<table border=0 cellspacing=0 cellpadding=0 width=620>
+		<tr>
+			<td align=left valign=top width=20>
+				<img src="images/spacer.gif" width=20 height=20 align=top alt=""> 
+			</td>
+			<td valign=top align=center>
+				<br>
+				<table border=0 cellspacing=0 cellpadding=2 width="100%">
+					<tr>
+						<td align=left nowrap class=header>
+							<qtssstring name="LogSetHeader"/>
+						</td>
+					</tr>
+					<tr>
+						<td align=left>
+							<img src="images/divider.gif" width=600 height=1 align=middle alt=""> 
+						</td>
+					</tr>
+				</table>
+				<br>
+				<br>
+				<table border=0 cellspacing=0 cellpadding=0>
+					<tr>
+						<td align=left valign=top>
+							<b class=large><qtssstring name="LogSetErrorLogHeader"/></b> 
+							<br>&nbsp;<br>
+							<table border=0 cellspacing=4 cellpadding=0>
+								<tr>
+									<td align=left valign=top rowspan=2 nowrap>
+										<b><qtssstring name="LogSetErrorLogging"/></b> 
+									</td>
+									<td align=left nowrap>
+										<qtssobject name="qtssErrorLogging" format=checkbox param=true/><qtssstring name="Enabled"/> 
+									</td>
+								</tr>
+								<tr>
+									<td align=left>
+										<p>
+										</p>
+									</td>
+									<td align=left>
+										<p>
+											<br>
+										</p>
+									</td>
+								</tr>
+								<tr>
+									<td align=left valign=top rowspan=2 nowrap>
+										<b><qtssstring name="LogSetRollErrorLog"/></b> 
+									</td>
+									<td align=left nowrap>
+										<qtssstring name="LogSetEvery"/> <qtssobject name="qtssErrorLogInterval" type=string param=" size=3 maxlength=3 onchange=validateFormData()"/> <qtssstring name="LogSetDays"/>
+									</td>
+								</tr>
+								<tr>
+									<td align=left nowrap>
+										<qtssstring name="LogSetEvery"/> <qtssobject name="qtssErrorLogSize" type=string format=div1024 param=" size=9 maxlength=9 onchange=validateFormData()"/> <qtssstring name="KiloBytesStr"/> 
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td align=left width=30>
+							<img src="images/divider_vert.gif" width=30 height="100%" align=middle alt=""> 
+						</td>
+						<td align=left valign=top nowrap>
+							<b class=large><qtssstring name="LogSetAccessLog"/></b> 
+							<br>&nbsp;<br>
+							<table border=0 cellspacing=4 cellpadding=0>
+								<tr>
+									<td align=left valign=top rowspan=2 nowrap>
+										<b><qtssstring name="LogSetAccessLogging"/></b> 
+									</td>
+									<td align=left nowrap>
+										<qtssobject name="qtssRequestLogging" format=checkbox param=true/><qtssstring name="Enabled"/> 
+									</td>
+								</tr>
+								<tr>
+									<td align=left>
+										<p>
+										</p>
+									</td>
+									<td align=left>
+										<p>
+											<br>
+										</p>
+									</td>
+								</tr>
+								<tr>
+									<td align=left valign=top rowspan=2>
+										<b><qtssstring name="LogSetRollAccessLog"/></b> 
+									</td>
+									<td align=left nowrap>
+										<qtssstring name="LogSetEvery"/> <qtssobject name="qtssRequestLogInterval" type=string param=" size=3 maxlength=3 onchange=validateFormData()"/> <qtssstring name="LogSetDays"/> 
+									</td>
+								</tr>
+								<tr>
+									<td align=left nowrap>
+										<qtssstring name="LogSetEvery"/> <qtssobject name="qtssRequestLogSize" type=string format=div1024 param=" size=9 maxlength=9 onchange=validateFormData()"/> <qtssstring name="KiloBytesStr"/> 
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				</table>
+				<br>
+				<br>
+				<table border=0 cellspacing=0 cellpadding=2 width="100%">
+					<tr>
+						<td align=left valign=top colspan=2>
+							<img src="images/divider.gif" width=600 height=1 align=middle alt=""> 
+						</td>
+					</tr>
+					<tr>
+						<td align=left valign=top>
+							<br>
+							<!--[[a href="#" onclick="showHelp()"]][[img src="images/help.gif" width=20 height=20 border=0]][[/a]]-->
+						</td>
+						<td align=right valign=top>
+							<br>
+							<input type=submit name=Submit value="<qtssstring name=SubmitButtonTitle/>"> 
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+</qtssobject>
+</body>
+</html>

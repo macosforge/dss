@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta name="generator" content="BBEdit Prerelease">
+<style type="text/css">
+		td { font-family: Arial, Helvetica, Geneva, Swiss, sans-serif; font-size: 12px }
+		.large { font-weight: bold; font-size: 14px  }
+		.small { font-size: 10px }
+		.white { color: #FFFFFF }
+		.header { font-size: 18px; color:#666699 }
+		input { font-size: 12px }
+	</style> 
+	<qtssobject name=scriptTag>
+		//<script language=javascript>
+
+		function showConfirmMessage() {
+			if ('<qtssobject name=confirmMessage/>' != '') {
+				if (parent.frames['top'].showConfirmMessage) {
+					parent.frames['top'].showConfirmMessage('<qtssobject name=confirmMessage/>');
+				}
+				else if (parent.parent.frames[0].showConfirmMessage) {
+					parent.parent.frames[0].showConfirmMessage('<qtssobject name=confirmMessage/>');
+				}
+			}
+		}
+		
+		function validateFormData() {
+			if (document.forms[0].elements['qtssIsStreamingOn80'].checked) {
+				return confirm("<qtssstring name=PortChangeRestartServerConfirm>");
+			}
+			else
+				return true;
+		}
+		
+	</script>
+</head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif" onload="showConfirmMessage()">
+<qtssobject type=validatedform param=_self>
+	<input type=hidden name="filename" value=ports.html> <input type=hidden name="action" value="SavePortSettings"> 
+	<table border=0 cellspacing=0 cellpadding=0 width=620>
+		<tr>
+			<td align=left valign=top nowrap width=20>
+				<img src="images/spacer.gif" width=20 height=20 align=top alt=""> 
+			</td>
+			<td valign=top align=center>
+				<br>
+				<table border=0 cellspacing=0 cellpadding=2 width="100%">
+					<tr>
+						<td align=left nowrap class=header>
+							<qtssstring name="PortSetHeader"/> 
+						</td>
+					</tr>
+					<tr>
+						<td align=left nowrap>
+							<img src="images/divider.gif" width=600 height=1 align=middle alt=""> 
+						</td>
+					</tr>
+				</table>
+				<br>
+				<table border=0 cellspacing=4 cellpadding=0 width="90%">
+					<tr>
+						<td valign=top nowrap align=right>
+							<b><qtssstring name="PortSetStreaming80Title"/></b> 
+						</td>
+						<td align=left valign=top nowrap>
+							<qtssobject name="qtssIsStreamingOn80" format=checkbox param=true/> <qtssstring name="Enabled"/>
+						</td>
+						<td align=left>
+							<img src="images/spacer.gif" width=30 height=30 align=middle alt=""> 
+						</td>
+						<td align=left valign=top class=small>
+							<p>
+								<qtssstring name="PortSetDesc1"/>
+							</p>
+							<p>
+								<qtssstring name="PortSetDesc2"/>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<td colspan=3></td>
+						<td><b><qtssobject name="getNotBoundPort80Msg"/></b></td>
+					</tr>
+				</table>
+				<br>
+				<br>
+				<table border=0 cellspacing=0 cellpadding=2 width="100%">
+					<tr>
+						<td align=left valign=top colspan=2>
+							<img src="images/divider.gif" width=600 height=1 align=middle alt=""> 
+						</td>
+					</tr>
+					<tr>
+						<td align=left valign=top>
+							<br>
+							<!--[[a href="#" onclick="showHelp()"]][[img src="images/help.gif" width=20 height=20 border=0]][[/a]]-->
+						</td>
+						<td align=right valign=top>
+							<br>
+							<input type=submit name="Submit" value="<qtssstring name=SubmitButtonTitle/>"> 
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+</qtssobject>
+</body>
+</html>

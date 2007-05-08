@@ -1,0 +1,4 @@
+find $1 \( -name "Release" \) -exec rm -rf {} \;
+find $1 \( -name "Debug" \) -exec rm -rf {} \;
+find $1 \( -name "*.vcproj" \) -exec rm -f {} \;
+find $1 \( -name "*.user" \) -exec rm -f {} \;

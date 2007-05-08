@@ -1,0 +1,241 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+<style type="text/css">
+		td { font-family: Arial, Helvetica, Geneva, Swiss, sans-serif; font-size: 12px }
+		.large { font-weight: bold; font-size: 14px  }
+		.small { font-size: 10px }
+		.white { color: #FFFFFF }
+		.header { font-size: 18px; color:#666699 }
+		input { font-size: 12px }
+	</style> 
+	<script src="includes/encode_unicode.js" type="text/javascript" language="Javascript" charset="utf-8"></script>
+	<qtssobject name=scriptTag>
+		//<script language=javascript>
+	
+		function onLoadScript() {
+			showConfirmMessage();
+			document.forms[0].elements['qtssMovieFolder'].focus();
+		}
+
+		function showConfirmMessage() {
+			if ('<qtssobject name=confirmMessage/>' != '') {
+				if (parent.frames['top'].showConfirmMessage) {
+					parent.frames['top'].showConfirmMessage('<qtssobject name=confirmMessage/>');
+				}
+				else if (parent.parent.frames[0].showConfirmMessage) {
+					parent.parent.frames[0].showConfirmMessage('<qtssobject name=confirmMessage/>');
+				}
+			}
+		}
+		
+		function validateFormData() {
+			var wasInvalid = false;
+			if (document.forms[0].elements['qtssMovieFolder'].value == '') {
+				entityAlert("<qtssstring name=GenSetErrorMediaDirCannotBeBlank/>");
+				document.forms[0].elements['qtssMovieFolder'].value = document.forms[0].elements['qtssMovieFolder_shadow'].value;
+				return false;
+			}
+			if (document.forms[0].elements['qtssMaxConn'].value == '') {
+				entityAlert("<qtssstring name=GenSetErrorMaxConnCannotBeBlank/>");
+				wasInvalid = true; // trigger the form to cancel
+			}
+			if ((document.forms[0].elements['qtssMaxConn'].value.match('[^0-9]') != null) || (document.forms[0].elements['qtssMaxConn'].value < 0)) {
+				entityAlert("<qtssstring name=GenSetErrorMaxConnMustBeNum/>");
+				wasInvalid = true; // trigger the form to cancel
+			}
+			if (wasInvalid) { // set because qtssMaxConn is invalid
+				document.forms[0].elements['qtssMaxConn'].value = document.forms[0].elements['qtssMaxConn_shadow'].value;
+				return false;
+			}
+			if (document.forms[0].elements['bpsinput'].value == '') {
+				entityAlert("<qtssstring name=GenSetErrorMaxThroughCannotBeBlank/>");
+				wasInvalid = true; // trigger the form to cancel
+			}
+			if ((document.forms[0].elements['bpsinput'].value.match('[^0-9]') != null) || (document.forms[0].elements['bpsinput'].value < 0)) {
+				entityAlert("<qtssstring name=GenSetErrorMaxThroughMustBeNum/>");
+				wasInvalid = true; // trigger the form to cancel
+			}
+			if (wasInvalid) { // set because bpsinput was invalid
+				document.forms[0].elements['bpsinput'].value = Math.floor(document.forms[0].elements['bpsinput_shadow'].value);
+				return false;
+			}
+			return true;
+		}
+		
+	</script>
+</head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif" onload="onLoadScript()">
+<qtssobject type=validatedform>
+<input type=hidden name=filename value="general_settings.html">
+<input type=hidden name=action value="SaveGeneralSettings">
+<table border=0 cellspacing=0 cellpadding=0 width=620>
+	<tr>
+		<td align=left valign=top nowrap width=20>
+			<p>
+				<img src="images/spacer.gif" width=20 height=20 align=top alt=""> 
+			</p>
+		</td>
+		<td valign=top align=center>
+			<br>
+			<table border=0 cellspacing=0 cellpadding=2 width="100%">
+				<tr>
+					<td align=left nowrap class=header>
+						<qtssstring name="GenSetHeader"/> 
+					</td>
+				</tr>
+				<tr>
+					<td align=left>
+						<img src="images/divider.gif" width=600 height=1 align=middle alt=""> 
+					</td>
+				</tr>
+			</table>
+			<br>
+			<table border=0 cellspacing=0 cellpadding=0>
+				<tr>
+					<td align=left valign=top>
+						<table border=0 cellspacing=4 cellpadding=0>
+							<tr>
+								<td align=left>
+									<b><qtssstring name="GenSetMediaDir"/></b> 
+								</td>
+							</tr>
+							<tr>
+								<td align=left>
+									<qtssobject name=qtssMovieFolder type=string param=" size=64 onchange=validateFormData()"/>
+								</td>
+							</tr>
+							<tr>
+								<td align=left class=small>
+									<qtssstring name="GenSetMediaDirExp"/>
+											<br>
+								</td>
+							</tr>
+						</table>
+						<br>
+						<table border=0 cellspacing=4 cellpadding=0>
+							<tr>
+								<td align=left>
+									<p>&nbsp;
+									</p>
+								</td>
+								<td align=left>
+									<p></p>
+								</td>
+							</tr>
+							<tr>
+								<td align=left>
+									<b><qtssstring name="GenSetMaxConn"/> </b>
+								</td>
+								<td align=left>
+										<qtssobject name=qtssMaxConn type=string param=" size=6 maxlength=4 onchange=validateFormData()"/> 
+								</td>
+							</tr>
+							<tr>
+								<td align=left>
+									<p>
+									</p>
+								</td>
+								<td align=left>
+									<p>
+									</p>
+								</td>
+							</tr>
+							<tr>
+								<td align=left>
+									<b><qtssstring name="GenSetMaxThroughput"/></b>
+								</td>
+								<td align=left>
+										<qtssobject name=qtssMaxThroughput param=" size=6 maxlength=4 onchange=validateFormData()"/>
+								</td>
+							</tr>
+							<tr>
+								<td align=left>
+									<p>&nbsp;
+									</p>
+								</td>
+								<td align=left>
+									<p></p>
+								</td>
+							</tr>
+							<tr>
+								<td align=left>
+									<b><qtssstring name="GenSetDefaultAuthScheme"/></b>
+								</td>
+								<td align=left>
+									<qtssobject name="qtssAuthScheme" type=select>
+										<qtssobject name="qtssAuthScheme" type=option format=option param=basic>
+											<qtssstring name="GenSetBasicAuth"/>
+										</qtssobject>
+										<qtssobject name="qtssAuthScheme" type=option format=option param=digest>
+											<qtssstring name="GenSetDigestAuth"/>
+										</qtssobject>
+									</qtssobject>
+								</td>
+							</tr>
+							<tr>
+								<td align=left> 
+									<p>&nbsp;
+									</p>
+								</td>
+								<td align=left>
+									<p></p>
+								</td>
+							</tr>
+						</table>
+						<br>
+						<table border=0 cellspacing=0 cellpadding=0 width="100%">
+							<tr>
+								<td align=left valign=top>
+									<table border=0 cellpadding=0 cellspacing=0>
+										<tr>
+											<td><a href="/parse_xml.cgi?action=&filename=change_password.html"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+											<td><a href="/parse_xml.cgi?action=&filename=change_password.html"><qtssstring name=GenSetChangeAdminPass/></a></td>
+										</tr>
+									</table>
+									<br>
+									<table border=0 cellpadding=0 cellspacing=0>
+										<tr>
+											<td><a href="/parse_xml.cgi?action=&filename=change_broadcast_password.html"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+											<td><a href="/parse_xml.cgi?action=&filename=change_broadcast_password.html"><qtssstring name=GenSetChangeBroadcastPass/></a></td>
+										</tr>
+									</table>
+									<br>
+									<table border=0 cellpadding=0 cellspacing=0>
+										<tr>
+											<td><a href="/parse_xml.cgi?action=&filename=change_mp3_password.html"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+											<td><a href="/parse_xml.cgi?action=&filename=change_mp3_password.html"><qtssstring name=GenSetChangeMP3Pass/></a></td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+			<br>
+			<br>
+				<table border=0 cellspacing=0 cellpadding=2 width="100%">
+					<tr>
+						<td align=left valign=top colspan=2>
+							<img src="images/divider.gif" width=600 height=1 align=middle alt=""> 
+						</td>
+					</tr>
+					<tr>
+						<td align=left valign=top>
+							<br>
+							<!--[[a href="#" onclick="showHelp()"]][[img src="images/help.gif" width=20 height=20 border=0]][[/a]]-->
+						</td>
+						<td align=right valign=top>
+							<br>
+							<input type=submit name="Submit" value="<qtssstring name=SubmitButtonTitle/>">
+						</td>
+					</tr>
+				</table>
+		</td>
+	</tr>
+</table>
+
+</qtssobject></body>
+</html>

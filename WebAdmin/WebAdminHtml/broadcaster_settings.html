@@ -1,0 +1,218 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+<style type="text/css">
+		td { font-family: Arial, Helvetica, Geneva, Swiss, sans-serif; font-size: 12px }
+		.large { font-weight: bold; font-size: 14px  }
+		.small { font-size: 10px }
+		.white { color: #FFFFFF }
+		.header { font-size: 18px; color:#666699 }
+		input { font-size: 12px }
+	</style> 
+	<script src="includes/encode_unicode.js" type="text/javascript" language="Javascript" charset="utf-8"></script>
+	<script type="text/javascript" language="Javascript">
+	
+	function showConfirmMessage() {
+		if ("<qtssobject name=confirmMessage/>" == "<qtssstring name=QTBErrBroadcastSettings/>")
+			entityAlert("<qtssobject name=confirmMessage/>");
+		else if ("<qtssobject name=confirmMessage/>" != "") {
+			if (parent.frames['top'].showConfirmMessage) {
+				parent.frames['top'].showConfirmMessage("<qtssobject name=confirmMessage/>");
+			}
+			else if (parent.parent.frames[0].showConfirmMessage) {
+				parent.parent.frames[0].showConfirmMessage("<qtssobject name=confirmMessage/>");
+			}
+		}
+	}
+	
+	function setPopupToStringVal(thePopup, theString) {
+		for (var i = 0; i < thePopup.options.length; i++) {
+			if (thePopup.options[i].value == theString)
+				thePopup.options[i].selected = true;
+		}
+	}
+	
+	function setPresetVals() {
+		setPopupToStringVal(document.forms[0].elements['qtbCurrentAudioPreset'], document.forms[0].elements['qtbCurrentAudioPreset_shadow'].value);
+		setPopupToStringVal(document.forms[0].elements['qtbCurrentVideoPreset'], document.forms[0].elements['qtbCurrentVideoPreset_shadow'].value);
+	}
+	
+	function fixSDPField() {
+		if ((document.forms[0].elements['qtbNetworkPresetSDPFilename'].value.indexOf('.sdp') < 0) && (document.forms[0].elements['qtbNetworkPresetSDPFilename'].value != '')) {
+			document.forms[0].elements['qtbNetworkPresetSDPFilename'].value = document.forms[0].elements['qtbNetworkPresetSDPFilename'].value + '.sdp';
+		}
+	}
+	
+	function fixBufferDelayField() {
+		if (document.forms[0].elements['qtbBufferDelay'].value.match('[^0-9]') != null) {
+			document.forms[0].elements['qtbBufferDelay'].value = document.forms[0].elements['qtbBufferDelay_shadow'].value
+		}
+	}
+		
+	function clickedTestButton() {
+		var sdpFilename = document.forms[0].elements['qtbNetworkPresetSDPFilename'].value;
+		window.open('/parse_xml.cgi?filename=content_ondemand.html&action=TestOnDemandContent&curmoviepath=/' + sdpFilename, 'OnDemandContent', 'width=510,height=390,scrollbars=yes,resizable=yes');
+	}
+	
+	function clickedViewButton() {
+		location.href = '/view_broadcast.mov';
+	}
+	
+	function clickedQuitButton() {
+		document.forms[0].elements['action'].value = 'QuitBroadcaster';
+		document.forms[0].elements['filename'].value = 'welcome.html';
+		document.forms[0].submit();
+	}
+	
+	function clickedStartStopButton() {
+		fixSDPField();
+		document.forms[0].elements['action'].value = 'StartStopBroadcast';
+		document.forms[0].submit();
+	}
+	
+	function validateFormData() {
+		fixSDPField();
+		fixBufferDelayField();
+		var sdpFieldValue = document.forms[0].elements['qtbNetworkPresetSDPFilename'].value
+		if ((sdpFieldValue == '') || (sdpFieldValue == '.sdp')) {
+			entityAlert('<qtssstring name=PLErrMountPointCannotBeBlank>');
+			document.forms[0].elements['qtbNetworkPresetSDPFilename'].focus();
+			document.forms[0].elements['qtbNetworkPresetSDPFilename'].select();
+			return false;
+		}
+		if (document.forms[0].elements['qtbStateID'].value != '0') {
+			return confirm("The broadcast will need to be restarted in order to change settings. Restart the broadcast now?");
+		}
+		return true;
+	}
+		
+	</script>
+</head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif" onload="showConfirmMessage();setPresetVals()">
+<qtssobject type=validatedform>
+<qtssobject name="qtssSvrDefaultDNSName" type=hidden/>
+<qtssobject name="qtbStateID" type=hidden/>
+<qtssobject name="qtbHostname" type=hidden/>
+<input type="hidden" name="action" value="SaveBroadcasterSettings">
+<input type="hidden" name="filename" value="broadcaster_settings.html">
+<table border=0 cellspacing=0 cellpadding=0 width=620>
+	<tr>
+		<td align=left valign=top nowrap width=20>
+			<p>
+				<img src="images/spacer.gif" width=20 height=20 align=top alt=""> 
+			</p>
+		</td>
+		<td valign=top align=center>
+			<br>
+			<table border=0 cellspacing=0 cellpadding=2 width="100%">
+				<tr>
+					<td align=left nowrap class=header>
+						<qtssstring name="QTBTitle"/>
+					</td>
+				</tr>
+				<tr>
+					<td align=left>
+						<img src="images/divider.gif" width=600 height=1 align=middle alt=""> 
+					</td>
+				</tr>
+			</table>
+			<br>
+			<table border=0 cellspacing=0 cellpadding=0>
+				<tr>
+					<td align=left valign=top>
+						<table border=0 cellspacing=4 cellpadding=0>
+							<tr>
+								<td align=right>
+									<b><qtssstring name="QTBCurrentStatus"/>:</b>
+								</td>
+								<td align=left>
+									<qtssobject name="qtbStatus"/><qtssobject name="qtbStatus" type=hidden/>
+								</td>
+							</tr>
+							<tr>
+								<td align=right>
+									<b><qtssstring name="QTBAudioPreset"/>:</b>
+								</td>
+								<td align=left>
+									<qtssobject type="select" name="qtbCurrentAudioPreset"><qtssrepeater name="audiopresets">
+										<option value="<qtssobject name=qtbAudioPresetNames>"><qtssobject name="qtbAudioPresetNames"/></option>
+									</qtssrepeater></qtssobject></select>&nbsp;<qtssobject name="qtbAudioStreamEnabled" format="checkbox" param="1"/><qtssstring name="Enabled"/>
+								</td>
+							</tr>
+							<tr>
+								<td align=right>
+									<b><qtssstring name="QTBVideoPreset"/>:</b>
+								</td>
+								<td align=left>
+									<qtssobject type="select" name="qtbCurrentVideoPreset"><qtssrepeater name="videopresets">
+										<option value="<qtssobject name=qtbVideoPresetNames>"><qtssobject name="qtbVideoPresetNames"/></option>
+									</qtssrepeater></qtssobject></select>&nbsp;<qtssobject name="qtbVideoStreamEnabled" format="checkbox" param="1"/><qtssstring name="Enabled"/>
+								</td>
+							</tr>
+							<tr>
+								<td align=right><b><qtssstring name="MountPoint"/></b></td>
+								<td align=left><qtssobject type="text" name="qtbNetworkPresetSDPFilename" param=" size=30 onchange=fixSDPField()"/></td>
+							</tr>
+							<tr>
+								<td align=right><b><qtssstring name="QTBBufferDelay"/>:</b></td>
+								<td align=left><qtssobject type="text" name="qtbBufferDelay" param=" size=3 onchange=fixBufferDelayField()"/></td>
+							</tr>
+							<tr>
+								<td colspan=2>&nbsp;</td>
+							</tr>
+						</table>
+						<br>
+						<table border=0 cellspacing=0 cellpadding=0 width="100%">
+							<tr>
+								<td align=left valign=top>
+									<table border=0 cellpadding=0 cellspacing=0>
+										<tr>
+											<td><a href="javascript:clickedStartStopButton()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+											<td><a href="javascript:clickedStartStopButton()"><qtssobject name="qtbStartStopButtonText"/></a></td>
+										</tr>
+									</table>
+									<qtssrepeater name="broadcasting"><br>
+									<table border=0 cellpadding=0 cellspacing=0>
+										<tr>
+											<td><a href="javascript:clickedViewButton()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+											<td><a href="javascript:clickedViewButton()"><qtssstring name="QTBViewBroadcast"/></a></td>
+										</tr>
+									</table></qtssrepeater>
+									<br>
+									<table border=0 cellpadding=0 cellspacing=0>
+										<tr>
+											<td><a href="javascript:clickedQuitButton();"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+											<td><a href="javascript:clickedQuitButton();"><qtssstring name="QTBQuitBroadcasterButton"/></a></td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+			<br>
+			<br>
+				<table border=0 cellspacing=0 cellpadding=2 width="100%">
+					<tr>
+						<td align=left valign=top colspan=2>
+							<img src="images/divider.gif" width=600 height=1 align=middle alt=""> 
+						</td>
+					</tr>
+					<tr>
+						<td align=left valign=top>
+							<br>
+						</td>
+						<td align=right valign=top>
+							<br>
+							<input type=submit name="Submit" value="<qtssstring name=SubmitButtonTitle/>">
+						</td>
+					</tr>
+				</table>
+		</td>
+	</tr>
+</table>
+
+</qtssobject></form></body>
+</html>

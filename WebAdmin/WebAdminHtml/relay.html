@@ -1,0 +1,656 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta name="generator" content="BBEdit 6.1.1">
+	<meta http-equiv="imagetoolbar" content="no">
+	<style type="text/css">
+		td		
+		{
+			font-family: Arial, Helvetica, Geneva, Swiss, sans-serif;
+			font-size: 12px;
+		}
+		.normal		
+		{
+			font-family: Arial, Helvetica, Geneva, Swiss, sans-serif;
+			font-size: 12px;
+		}
+		.large		
+		{
+			font-weight: bold;
+			font-size: 14px;
+		}
+		.small { font-size: 10px; }
+		.reallysmall		
+		{
+			font-size: 10px;
+			color: #333;
+		}
+		.header		
+		{
+			font-size: 18px;
+			color: #669;
+		}
+		.white { color: #FFF; }
+		#RelayDefaultRelayHeader
+		{
+			position: absolute;
+			z-index: 1;
+			top: 56px;
+			left: 50px;
+		}
+		#RelayDefaultStatus
+		{
+			position: absolute;
+			z-index: 1;
+			top: 76px;
+			left: 60px;
+		}
+		#editDefaultButton
+		{
+			position: absolute;
+			z-index: 1;
+			top: 66px;
+			left: 320px;
+		}
+		#divider
+		{
+			position: absolute;
+			z-index: 1;
+			top: 107px;
+			left: 50px;
+		}
+		#RelaySources
+		{
+			position: absolute;
+			z-index: 1;
+			top: 126px;
+			left: 50px;
+		}
+		#newButton		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 147px;
+			left: 320px;
+			width: 380px;
+			height: 284px;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			visibility: visible;
+		}
+		#deleteButtonDisabled		
+		{
+			position: absolute;
+			z-index: 4;
+			top: 215px;
+			left: 320px;
+			width: 380px;
+			height: 284px;
+			color: #999;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			visibility: visible;
+		}
+		#deleteButton		
+		{
+			position: absolute;
+			z-index: 4;
+			top: 215px;
+			left: 320px;
+			width: 380px;
+			height: 284px;
+			color: #999;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			visibility: hidden;
+		}
+		#editButtonDisabled		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 181px;
+			left: 320px;
+			width: 380px;
+			height: 284px;
+			color: #999;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			visibility: visible;
+		}
+		#editButton		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 181px;
+			left: 320px;
+			width: 380px;
+			height: 284px;
+			color: #999;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			visibility: hidden;
+		}
+		#libbackground
+		{
+			position: absolute;
+			z-index: 1;
+			top: 147px;
+			left: 49px;
+			visibility: visible;
+		}
+		#libfiles		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 162px;
+			left: 50px;
+			width: 188px;
+			line-height: 18px;
+			<qtssobject name=monospaceIfNotJapanese/>visibility: visible;
+		}
+		#libfilestatuses
+		{
+			position: absolute;
+			z-index: 3;
+			top: 162px;
+			left: 238px;
+			width: 54px;
+			line-height: 18px;
+			<qtssobject name=monospaceIfNotJapanese/>visibility: visible;
+		}
+		#libscrollbar
+		{
+			position: absolute;
+			z-index: 3;
+			top: 161px;
+			left: 294px;
+			width: 16px;
+			visibility: hidden;
+		}
+		#libscrollbardisabled
+		{
+			position: absolute;
+			z-index: 3;
+			top: 161px;
+			left: 294px;
+			width: 16px;
+			visibility: visible;
+		}
+		#libscrollthumb
+		{
+			position: absolute;
+			z-index: 4;
+			top: 176px;
+			left: 294px;
+			width: 16px;
+			height: 16px;
+			visibility: hidden;
+		}
+		#libhighlight
+		{
+			position: absolute;
+			z-index: 2;
+			top: 164px;
+			left: 50px;
+			width: 243px;
+			height: 20px;
+			visibility: hidden;
+		}
+	</style>
+	<script src="includes/standardNav.js" type="text/javascript" language="javascript"></script>
+	<script src="includes/encode_unicode.js" type="text/javascript" language="Javascript" charset="utf-8"></script>
+	<qtssobject name=scriptTag>
+		//<script language=javascript>
+		
+		var gLibBasePosX = 50;
+		var gLibBasePosY = 162;
+		var gLibItemWidth = 244;
+		var gLibItemHeight = 20;
+		var gLibNumItems = 14;
+		var gLibMaxChars = 29;
+		var gDragThreshold = 6;
+		var gNumberOfSteps = 4;
+		var gStepTiming = 35;
+		var gTextSpacerImg = '<img src="images/spacer.gif" width=3 height=20 align=middle>';
+		var gThumbRangeTop = 176;
+		var gThumbRangeBottom = 412;
+		var gThumbHeight = 16;
+		var gScrollArrowWidth = 16;
+		var gScrollArrowHeight = 16;
+		var gDirScrollbarLeft = 294;
+		var gScrollUpArrowTop = 161;
+		var gScrollDownArrowTop = 427;
+		var gScrollBy = 6;
+		var dblClickDelay = 300;
+		
+		
+		var libHighlightStart = (-1);
+		var libHighlightEnd = (-1);
+		var libScrollPos = 0;
+		var dragStatus = 'false';
+		var directoryListing = new Array();
+		var statusArray = new Array();
+		var doContiguousSelection = false;
+		var insertPos = (-1);
+		var removeOldItem = (-1);
+		var showedAlert = false;
+		
+		var isDblClick = false;
+		var dblClickTimer;
+		
+		function BuildLibrary() {
+			var filesLayerText = '<span class=small>';
+			var statusesLayerText = '<span class=small>';
+			for (var i=libScrollPos; i < Math.min((libScrollPos+gLibNumItems), directoryListing.length); i++) {
+				var itemText = directoryListing[i];
+				itemText = itemText.replace('<', '&lt;');
+				itemText = itemText.replace('>', '&gt;');
+				filesLayerText = filesLayerText + '<div style="width:188px; height:20px;">';
+				filesLayerText = filesLayerText + gTextSpacerImg + itemText + '<' + '/div>';
+				statusesLayerText = statusesLayerText + '<div style="width:54px; height:20px;">';
+				statusesLayerText = statusesLayerText + gTextSpacerImg + statusArray[i] + '<' + '/div>';
+			}
+			filesLayerText = filesLayerText;
+			SetStyleText('libfiles', filesLayerText + '<' + '/span>');
+			SetStyleText('libfilestatuses', statusesLayerText + '<' + '/span>');
+			SetLibHighlightBar();
+			if (directoryListing.length > gLibNumItems) {
+				SetStyleVisible('libscrollbardisabled', false);
+				SetStyleVisible('libscrollbar', true);
+				SetStyleVisible('libscrollthumb', true);
+			}
+			else {
+				SetStyleVisible('libscrollbardisabled', true);
+				SetStyleVisible('libscrollbar', false);
+				SetStyleVisible('libscrollthumb', false);
+			}
+		}
+		
+		function clickedEditButton() {
+			document.forms[0].elements['action'].value='getValsForRelay';
+			document.forms[0].elements['currentRelay'].value=directoryListing[libHighlightStart];
+			document.forms[0].submit();
+		}
+
+		function clickedNewButton() {
+			document.forms[0].elements['action'].value='getNewRelay';
+			document.forms[0].elements['currentRelay'].value='';
+			document.forms[0].elements['filename'].value='relay_details.html';
+			document.forms[0].submit();
+		}
+		
+		function clickedDeleteButton() {
+			if (entityConfirm("<qtssstring name=RelayDeleteConfirm>")) {
+				document.forms[0].elements['action'].value='DeleteRelay';
+				document.forms[0].elements['currentRelay'].value=directoryListing[libHighlightStart];
+				document.forms[0].elements['filename'].value='relay.html';
+				document.forms[0].submit();
+			}
+		}
+		
+		function handleLibDblClick() {
+			ClearDblClickTimer();
+			clickedEditButton();
+		}
+		
+		function SetDblClickTimer() {
+			isDblClick = true;
+			currentTooltipTimer = setTimeout("ClearDblClickTimer()", dblClickDelay);
+		}
+		
+		function ClearDblClickTimer() {
+			isDblClick = false;
+			dblClickTimer = null;
+		}
+		
+		function SetButtonsEnabled(isEnabled) {
+			SetStyleVisible('deleteButtonDisabled', !isEnabled);
+			SetStyleVisible('deleteButton', isEnabled);
+			SetStyleVisible('editButtonDisabled', !isEnabled);
+			SetStyleVisible('editButton', isEnabled);
+		}
+
+		function clickedEditDefaultButton() {
+			document.forms[0].elements['action'].value='getValsForRelay';
+			document.forms[0].elements['currentRelay'].value='***qtssDefaultRelay***';
+			document.forms[0].elements['filename'].value = 'relay_details_default.html';
+			document.forms[0].submit();
+		}
+		
+		function libScrollDown() {
+			var dataHeight = directoryListing.length - gLibNumItems;
+			if (libScrollPos < dataHeight) {
+				libScrollPos = Math.min(libScrollPos+gScrollBy, dataHeight);
+				BuildLibrary();
+				libSetThumbPos();
+			}
+		}
+		
+		function libScrollUp() {
+			if (libScrollPos > 0) {
+				libScrollPos = Math.max(libScrollPos-gScrollBy, 0);
+				BuildLibrary();
+				libSetThumbPos();
+			}
+		}
+		
+		function libSetThumbPos() {
+			var scrollbarHeight = gThumbRangeBottom - gThumbRangeTop;
+			var dataHeight = directoryListing.length - gLibNumItems;
+			if (dataHeight > 1) {
+				var scrollRatio = libScrollPos / dataHeight;
+				SetStylePos('libscrollthumb', 1, (gThumbRangeTop + (scrollRatio * scrollbarHeight)));
+			}
+		}
+		
+		function libGetThumbPos() {
+			var scrollbarHeight = gThumbRangeBottom - gThumbRangeTop;
+			var dataHeight = directoryListing.length - gLibNumItems;
+			if (dataHeight > 1) {
+				var scrollRatio = (GetStylePos('libscrollthumb', 1) - gThumbRangeTop) / scrollbarHeight;
+				libScrollPos = Math.round(scrollRatio * (directoryListing.length - gLibNumItems));
+				BuildLibrary();
+				libSetThumbPos();
+			}
+		}
+		
+		function SetLibHighlightBar() {
+			if (libHighlightEnd < libScrollPos) {
+				SetStyleVisible('libhighlight', false);
+			}
+			else {
+				var displayHighlightStart = Math.max(libHighlightStart - libScrollPos, 0);
+				var displayHighlightEnd = Math.min(libHighlightEnd - libScrollPos, libScrollPos + gLibNumItems - 1);
+				var highlightHeight = (displayHighlightEnd - displayHighlightStart + 1) * gLibItemHeight;
+				var startPos = (displayHighlightStart * gLibItemHeight) + gLibBasePosY;
+				SetStyleText('libhighlight', '<img src="images/highlight.gif" width=' + gLibItemWidth + ' height=' + highlightHeight + '>');
+				SetStylePos('libhighlight', 1, startPos);
+				SetStyleVisible('libhighlight', true);
+			}
+		}
+		
+		function handleMouseDown(e) {
+			var continueClick = true;
+			if (IsIE()) var theTarget = window.event.srcElement;    
+			else var theTarget = e.target;
+			if (IsIE()) var theButton = event.button;
+			else var theButton = e.which;
+			if (IsIE()) doContiguousSelection = window.event.shiftKey;
+			else doContiguousSelection = (e.modifiers == 4);
+			if (IsIE()) {
+				oldX = event.clientX + GetIEScrollPos(0);
+				oldY = event.clientY + GetIEScrollPos(1);
+			}
+			else {
+				oldX = e.pageX
+				oldY = e.pageY
+			}
+			
+			removeOldItem = (-1);
+			
+			if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY >= gScrollDownArrowTop) && (oldY <= (gScrollDownArrowTop + gScrollArrowHeight))) { // dir up scroll
+				libScrollDown();
+				continueClick = false;
+			}
+			
+			if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY >= gScrollUpArrowTop) && (oldY <= (gScrollUpArrowTop + gScrollArrowHeight))) { // dir up scroll
+				libScrollUp();
+				continueClick = false;
+			}
+			
+			if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY >= GetStylePos('libscrollthumb', 1)) && (oldY <= (GetStylePos('libscrollthumb', 1) + gThumbHeight))) { // dir scroll thumb
+				layerClicked = 'libscrollthumb';
+				dragStatus = 'scrolling';
+				continueClick = false;
+			}
+			
+			if ((oldX >= gLibBasePosX) && (oldX <= gLibBasePosX+gLibItemWidth) && (oldY >= gLibBasePosY) && (oldY <= gLibBasePosY+(gLibNumItems*gLibItemHeight))) {
+				var itemClicked = (oldY - gLibBasePosY) / gLibItemHeight;
+				itemClicked = Math.floor(itemClicked);
+				itemClicked = itemClicked + libScrollPos;
+				if (itemClicked > (directoryListing.length - 1)) {
+					return false;
+				}
+				offsetX = oldX - gLibBasePosX;
+				offsetY = oldY - (gLibBasePosY + ((itemClicked - libScrollPos) * gLibItemHeight));
+				if ((itemClicked < libHighlightStart) || (itemClicked > libHighlightEnd)) {
+					libHighlightStart = itemClicked;
+					libHighlightEnd = itemClicked;
+					SetLibHighlightBar();
+				}
+				dragStatus = 'click';
+				SetButtonsEnabled(true);
+				continueClick = false;
+				if (isDblClick) { // double-click; handle
+					handleLibDblClick()
+				}
+				else { // first click; set isDblClick to true and set a timer to set it to false after the delay
+					SetDblClickTimer(); 
+				}
+			}
+			
+			if (continueClick) return;
+			else return continueClick;
+		}
+		
+		function handleDrag(e) {
+			if (IsIE()) {
+				currentX = event.clientX + GetIEScrollPos(0);
+				currentY = event.clientY + GetIEScrollPos(1);
+			}
+			else {
+				currentX = e.pageX
+				currentY = e.pageY
+			}
+			if (dragStatus == 'scrolling') {
+				SetStylePos(layerClicked, 1, Math.max(Math.min(currentY, gThumbRangeBottom), gThumbRangeTop));
+			}
+		}
+
+		function handleMouseUp() {
+			var continueClick = true;
+			if (!IsIE()) document.releaseEvents(Event.MOUSEMOVE);
+			if (dragStatus == 'scrolling') {
+				dragStatus = 'false';
+				if (layerClicked == 'libscrollthumb') libGetThumbPos();
+				else PLGetThumbPos();
+				continueClick = false;
+			}
+			dragStatus = 'false';
+			if (continueClick) return;
+			else return continueClick;
+		}
+
+		function showConfirmMessage() {
+			if ('<qtssobject name=confirmMessage/>' != '') {
+				if (parent.frames['top'].showConfirmMessage) {
+					parent.frames['top'].showConfirmMessage('<qtssobject name=confirmMessage/>');
+				}
+				else if (parent.parent.frames[0].showConfirmMessage) {
+					parent.parent.frames[0].showConfirmMessage('<qtssobject name=confirmMessage/>');
+				}
+			}
+		}
+
+		// re-route events to handlers
+		
+		if (!IsIE()) document.captureEvents(Event.MOUSEUP|Event.MOUSEDOWN|Event.MOUSEMOVE);
+		
+		document.onmousedown = handleMouseDown;
+		document.onmouseup = handleMouseUp;
+		document.onmousemove = handleDrag
+		
+		// populate array from QTSS
+		
+		<qtssrepeater name=relaynames>
+			directoryListing[directoryListing.length] = '<qtssobject name=qtssRelayName/>';
+			statusArray[statusArray.length] = '<qtssobject name=qtssRelayStatus/>';
+		</qtssrepeater>
+				
+		
+	</script>
+</head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif" onload="BuildLibrary(); showConfirmMessage()">
+<qtssobject type=getform>
+	<qtssobject type=hidden name="qtssSvrDefaultDNSName"/>
+	<input type=hidden name="filename" value=relay_details.html> <input type=hidden name="action" value=""> <input type=hidden name="currentRelay" value=""> 
+	<table border=0 cellspacing=0 cellpadding=0 width=620>
+		<tr>
+			<td valign=top nowrap width=20>
+				<img src="images/spacer.gif" width=20 height=20 align=top alt=""> 
+			</td>
+			<td valign=top align=center>
+				<br>
+				<table border=0 cellspacing=0 cellpadding=2 width="100%">
+					<tr>
+						<td nowrap class=header>
+							<qtssstring name="NavRelaySettings"/>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<img src="images/divider.gif" width=600 height=1 align=middle alt=""> 
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+	<div id="RelayDefaultRelayHeader" class="normal">
+		<b><qtssstring name="RelayDefaultRelayHeader"/></b>
+	</div>
+	<div id="RelayDefaultStatus" class="normal">
+		<qtssstring name="RelayDetailsStatus"/> <qtssobject name="defaultRelayStatus"/>
+	</div>
+	<div id="editDefaultButton">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td><a href="javascript:clickedEditDefaultButton()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+				<td><a href="javascript:clickedEditDefaultButton()"><qtssstring name="RelayEditDefaultSourceButton" /></a></td>
+			</tr>
+		</table>
+	</div>
+	<div id="divider">
+		<img src="images/divider.gif" width="500" height="1" alt="">
+	</div>
+	<div id="RelaySources" class="normal">
+		<b><qtssstring name="RelaySources"/></b>
+	</div>
+	<div id="libbackground">
+		<table border=0 cellspacing=0 cellpadding=0>
+			<tr>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=188 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=188 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=70 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=70 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+				<td width=188 height=13 nowrap bgcolor="#c6c6d6" class=reallysmall><img src="images/headerpixel.gif" width=2 height=1 alt=""><qtssstring name="RelayNameHeader" /></td>
+				<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+				<td width=70 height=1 nowrap bgcolor="#c6c6d6" class=reallysmall><img src="images/headerpixel.gif" width=2 height=1 alt=""><qtssstring name="RelayStatusHeader" /></td>
+				<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=188 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=188 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=70 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=70 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=280 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=1 height=280 alt=""></td>
+				<td width=188 height=280 bgcolor="#FFFFFF"><img src="images/whitepixel.gif" width=188 height=280 alt=""></td>
+				<td width=1 height=280 bgcolor="#8c93ad"><img src="images/whitepixel.gif" width=1 height=280 alt=""></td>
+				<td width=70 height=280 bgcolor="#FFFFFF"><img src="images/whitepixel.gif" width=70 height=280 alt=""></td>
+				<td width=1 height=280 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=1 height=280 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=188 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=188 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=70 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=70 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			</tr>
+		</table>
+	</div>
+	<div id="libfiles">
+		<!--placeholder ~~ will be populated dynamically-->
+	</div>
+	<div id="libfilestatuses">
+		<!--placeholder ~~ will be populated dynamically-->
+	</div>
+	<div id="libcontrols">
+		<!--placeholder ~~ will be populated dynamically-->
+	</div>
+	<div id="libhighlight">
+		<img src="images/highlight.gif" width=218 height=20>
+	</div>
+	<div id="libscrollbar">
+		<table border=0 cellspacing=0 cellpadding=0>
+			<tr>
+				<td><img src="images/scroll_arrow_up.gif" width=16 height=16></td>
+			</tr>
+			<tr>
+				<td background="images/scroll_bg.gif" height=250><img src="images/scroll_bg.gif" width=16 height=250></td>
+			</tr>
+			<tr>
+				<td><img src="images/scroll_arrow_down.gif" width=16 height=16></td>
+			</tr>
+		</table>
+	</div>
+	<div id="libscrollbardisabled">
+		<table border=0 cellspacing=0 cellpadding=0>
+			<tr>
+				<td background="images/scroll_bg_inactive.gif" width=16 height=1><img src="images/greypixel.gif" width="16" height="1"></td>
+			</tr>
+			<tr>
+				<td background="images/scroll_bg_inactive.gif" height=280><img src="images/scroll_bg_inactive.gif" width="16" height="280"></td>
+			</tr>
+			<tr>
+				<td background="images/scroll_bg_inactive.gif" width=16 height=1><img src="images/greypixel.gif" width="16" height="1"></td>
+			</tr>
+		</table>
+	</div>
+	<div id="libscrollthumb">
+		<img src="images/scroll_thumb.gif" width=16 height=16>
+	</div>
+	<div id="newButton">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td><a href="javascript:clickedNewButton()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+				<td><a href="javascript:clickedNewButton()"><qtssstring name="RelayNewSourceButton" /></a></td>
+			</tr>
+		</table>
+	</div>
+	<div id="deleteButton">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td><a href="javascript:clickedDeleteButton()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+				<td><a href="javascript:clickedDeleteButton()"><qtssstring name="RelayDeleteSourceButton" /></a></td>
+			</tr>
+		</table>
+	</div>
+	<div id="deleteButtonDisabled">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td><img src="images/link_disabled.gif" width=28 height=24></td>
+				<td><qtssstring name="RelayDeleteSourceButton" /></td>
+			</tr>
+		</table>
+	</div>
+	<div id="editButton">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td><a href="javascript:clickedEditButton()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+				<td><a href="javascript:clickedEditButton()"><qtssstring name="RelayEditSourceButton" /></a></td>
+			</tr>
+		</table>
+	</div>
+	<div id="editButtonDisabled">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td><img src="images/link_disabled.gif" width=28 height=24></td>
+				<td><qtssstring name="RelayEditSourceButton" /></td>
+			</tr>
+		</table>
+	</div>
+</qtssobject>
+</body>
+</html>

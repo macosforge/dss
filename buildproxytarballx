@@ -1,0 +1,42 @@
+#!/bin/sh
+
+#Darwin BuildTarball script
+if [ "$1" = "" ] ; then
+    echo "buildproxytarballx [ version ]"
+    echo "example: buildproxytarballx 1.0.1"
+    exit 1
+fi
+
+
+PLAT=`uname`
+
+echo removing StreamingProxy-$1-MacOSX.tar.gz
+if rm -f StreamingProxy-$1-MacOSX.tar.gz; 
+then :
+fi
+
+echo removing StreamingProxy-$1-MacOSX
+if rm -rf StreamingProxy-$1-MacOSX; 
+then :
+fi
+
+#cvs -q up
+./Buildit $2
+
+BUILDDIR="build/Development/StreamingProxy"
+
+if [ -e build/Default/StreamingProxy ] ; then
+   BUILDDIR="build/Default/StreamingProxy"
+fi
+
+if [ -e build/Deployment/StreamingProxy ] ; then
+   BUILDDIR="build/Deployment/StreamingProxy"
+fi
+
+cp $BUILDDIR StreamingProxy.tproj/
+
+./DSS_MakeProxyRoot StreamingProxy-$1-MacOSX
+tar cvf StreamingProxy-$1-MacOSX.tar StreamingProxy-$1-MacOSX
+gzip StreamingProxy-$1-MacOSX.tar
+
+echo Done!

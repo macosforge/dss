@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<style type="text/css">
+		td		
+		{
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			font-size: 12px;
+			font-weight: bold;
+		}
+		.large		
+		{
+			font-weight: bold;
+			font-size: 14px;
+		}
+		.white { color: #FFF; }
+		.grey		
+		{
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			color: #CCC;
+			font-size: 12px;
+			font-weight: bold;
+		}
+		.small		
+		{
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			font-size: 10px;
+			color: #FFF;
+		}
+		input		
+		{
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			font-size: 10px;
+		}
+		#confirm
+		{
+			position: absolute;
+			z-index: 5;
+			top: 12px;
+			left: 162px;
+			width: 280px;
+			height: 15px;
+			color:#CCCCCC;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			font-size: 12px;
+			font-weight: bold;
+			visibility: visible;
+		}
+	</style>
+	<script src="includes/standardNav.js" type="text/javascript" language="Javascript"></script>
+	<qtssobject name=scriptTag>
+	// <script language=javascript>
+		
+		function showDefaultMessage() {
+			SetStyleText('confirm', "<span class=grey><qtssstring name=ServerServerIs/> <qtssobject name=qtssSvrState format=serverstatus/><" + '/span>');
+			SetStyleVisible('confirm', true);
+		}
+	
+		function ridConfirmMessage() {
+			SetStyleVisible('confirm', false);
+			var currentTimer = setTimeout("showDefaultMessage()", 240);
+		}
+		
+		function blinkConfirmMessage2() {
+			SetStyleVisible('confirm', true);
+			var currentTimer = setTimeout('ridConfirmMessage()', 3000);
+		}
+		
+		function blinkConfirmMessage1() {
+			SetStyleVisible('confirm', false);
+			var currentTimer = setTimeout("blinkConfirmMessage2()", 100);
+		}
+		
+		function showConfirmMessageAction(theMessage) {
+			SetStyleText('confirm', '<span class=small>'+theMessage+'</'+'span>');
+			SetStyleVisible('confirm', true);
+			var currentTimer = setTimeout("blinkConfirmMessage1()", 100);
+		}
+		
+		function showConfirmMessage(theMessage) {
+			SetStyleVisible('confirm', false);
+			var currentTimer = setTimeout('showConfirmMessageAction("'+theMessage+'")', 240);
+		}
+		
+	</script>
+</head>
+<body bgcolor="#000000"><qtssobject type=form>
+<input type=hidden name=action value="StartStopServer">
+<input type=hidden name=filename value="top.html">
+<table border=0 cellspacing=0 cellpadding=0 width="100%" height="100%">
+   <tr>
+      <td nowrap align=left>
+         <p><table border=0 cellspacing=0 cellpadding=0>
+            <tr>
+               <td nowrap width=150 align=center>
+                  <input type=submit name="StopServer" value="<qtssobject name=qtssSvrState format=startstopbutton/>">
+               </td>
+               <td align=left>
+                  <p class=grey>&nbsp;&nbsp;&nbsp;</p>
+               </td>
+            </tr>
+         </table>
+      </td>
+      <td nowrap align=right class=large>
+         <p class=white><qtssobject name=qtssSvrDefaultDNSName/></font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </td>
+   </tr>
+</table>
+
+<div id=confirm>
+	<qtssstring name="ServerServerIs"/> <qtssobject name="qtssSvrState" format=serverstatus/>
+</div>
+
+</qtssobject></body>
+</html>

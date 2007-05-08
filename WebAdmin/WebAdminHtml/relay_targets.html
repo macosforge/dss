@@ -1,0 +1,277 @@
+<html>
+<head>
+	<title>QuickTime Streaming Server</title> <style type="text/css">
+		td { font-family: Arial, Helvetica, Geneva, Swiss, sans-serif; font-size: 12px }
+		div { font-family: Arial, Helvetica, Geneva, Swiss, sans-serif; font-size: 12px }
+		.large { font-weight: bold; font-size: 14px  }
+		.small { font-size: 10px }
+		.header { font-size: 18px; color:#666699 }
+		.white { color: #FFFFFF }
+		input { font-size: 12px }
+	</style> 
+<script type="text/javascript" language="javascript">
+
+   function prepareFields() {
+		<qtssobject name=jsstr/>
+   }
+   
+   function SubmitButtonClicked() {
+   		document.forms[0].elements['savechanges'].value = 'true'
+   }
+   
+</script></head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif" onload="prepareFields()">
+<qtssobject type="form">
+	<input type=hidden name="relaydata" value="">
+	<input type=hidden name="action" value="SetRelayDestData">
+	<qtssobject name="nextFilename"/>
+	<qtssobject name="currentDest" type=hidden/>
+	<input type=hidden name="savechanges" value="">
+	<qtssobject type=hidden name="currentRelay"/>
+	<qtssobject type=hidden name="relayType"/>
+	<qtssobject type=hidden name="relayEnabled"/>
+	<qtssobject type=hidden name="relayReceiveSource"/>
+	<qtssobject type=hidden name="relayHasReceivePath"/>
+	<qtssobject type=hidden name="relayReceivePath"/>
+	<qtssobject type=hidden name="relayAcquireSource"/>
+	<qtssobject type=hidden name="relayAcquirePath"/>
+	<qtssobject type=hidden name="relayAcquireUsername"/>
+	<qtssobject type=hidden name="relayAcquirePassword"/>
+	<p>
+	<table border="0" cellspacing="0" cellpadding="0" width="620">
+		<tr>
+			<td align=left valign="top" nowrap width="20">
+				<p>
+					<img src="images/spacer.gif" width="20" height="20" align="top"> 
+			</td>
+			<td align=left valign="top">
+				<center>
+					<br>
+					<table border="0" cellspacing="0" cellpadding="2" width="100%">
+						<tr>
+							<td align=left nowrap>
+								<p>
+									<font size="+2" face="Arial" color="#666699">Relay Settings: Destination Details</font> 
+							</td>
+						</tr>
+						<tr>
+							<td align=left nowrap>
+								<p>
+									<img src="images/divider.gif" width="600" height="1" align="middle"> 
+							</td>
+						</tr>
+					</table>
+					<br>
+					<table border="0" cellspacing="0" cellpadding="0" width="90%">
+						<tr>
+							<td align=left>
+								<center>
+									<table border="0" cellspacing="4" cellpadding="0">
+										<tr>
+											<td align=left>
+												<p>
+													<font face="Arial"><b>Relay To:</b></font> 
+											</td>
+											<td align=left>
+												<p>
+													<img src="images/spacer.gif" width="10" height="10" align="bottom"> 
+											</td>
+											<td align=left>
+												<p align="right">
+													<font face="Arial"><qtssobject name="qtssDestType" format=radio param="announced_destination"/></font> 
+											</td>
+											<td align=left colspan="2" nowrap>
+												<p>
+													<font face="Arial"><b>Announced IP Address:</b></font> 
+											</td>
+											<td align=left>
+												<p>
+													<qtssobject type=string name="qtssAnnouncedIP" param=" size=18"/>
+											</td>
+										</tr>
+										<tr>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left nowrap colspan="2">
+												<p>
+													<font face="Arial"><b>Port:</b></font> 
+											</td>
+											<td align=left>
+												<p>
+													<qtssobject name="qtssAnnouncedPorts" type=string param=" size=32"/> 
+											</td>
+										</tr>
+										<tr>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p align="right">
+											</td>
+											<td align=left nowrap colspan="2">
+												<p>
+													<font face="Arial"><b>Username:</b></font> 
+											</td>
+											<td align=left>
+												<p>
+													<qtssobject type=string name="qtssAnnouncedName" param=" size=32"> 
+											</td>
+										</tr>
+										<tr>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p align="right">
+											</td>
+											<td align=left nowrap colspan="2">
+												<p>
+													<font face="Arial"><b>Password:</b></font> 
+											</td>
+											<td align=left>
+												<p>
+													<qtssobject type=string name="qtssAnnouncedPassword" param=" size=32"/> 
+											</td>
+										</tr>
+										<tr>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p align="right">
+											</td>
+											<td align=left>
+												<p align="right">
+													<qtssobject name="qtssAnnouncedIsPath" format=checkbox param=true/> 
+											</td>
+											<td align=left nowrap>
+												<p>
+													<font face="Arial"><b>Name (path):</b></font> 
+											</td>
+											<td align=left>
+												<p>
+													<qtssobject name="qtssAnnouncedPath" type=string param=" size=32"/>
+											</td>
+										</tr>
+										<tr>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p align="right">
+											</td>
+											<td align=left colspan="2">
+												<p>
+													<br>
+											</td>
+											<td align=left>
+												<p>
+											</td>
+										</tr>
+										<tr>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p align="right">
+													<font face="Arial"><qtssobject name="qtssDestType" format=radio param="udp_destination"/></font> 
+											</td>
+											<td align=left colspan="2" nowrap>
+												<p>
+													<font face="Arial"><b>UDP IP Address:</b></font> 
+											</td>
+											<td align=left>
+												<p>
+													<qtssobject type=string name="qtssUDPIP" param=" size=18"/>
+											</td>
+										</tr>
+										<tr>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p align="right">
+											</td>
+											<td align=left valign="top" colspan="2" nowrap>
+												<p>
+													<font face="Arial"><b>Ports:</b></font> 
+											</td>
+											<td align=left>
+												<p>
+													<textarea name="qtssUDPPorts" rows=4 cols=8></textarea>
+											</td>
+										</tr>
+										<tr>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p>
+											</td>
+											<td align=left>
+												<p align="right">
+											</td>
+											<td align=left colspan="2" nowrap>
+												<p>
+													<font face="Arial"><b><qtssobject name="qtssUDPIsTTL" format=checkbox param=true/>Time to Live:</b></font> 
+											</td>
+											<td align=left>
+												<p>
+													<qtssobject name="qtssUDPTTL" type=string param=" size=2 maxlength=2"> 
+											</td>
+										</tr>
+									</table>
+								</center>
+							</td>
+						</tr>
+					</table>
+					<br>
+					<br>
+					<table border="0" cellspacing="0" cellpadding="2" width="100%">
+						<tr>
+							<td align=left valign="top" nowrap>
+								<p>
+									<img src="images/divider.gif" width="600" height="1" align="middle"> 
+							</td>
+						</tr>
+						<tr>
+							<td align=left>
+								<p align="right">
+									<font size="-2">
+										<br>
+										<input type=submit name="ChangePass" value="<qtssstring name=CancelButtonTitle/>" onclick="this.form.elements['savechanges'].value = 'false'"><span class=white>....</span><input type="submit" name="Submit" value="<qtssstring name=SubmitButtonTitle/>" onclick="SubmitButtonClicked()"></font> 
+							</td>
+						</tr>
+					</table>
+				</center>
+			</td>
+		</tr>
+	</table>
+</qtssobject>
+</body>
+</html>

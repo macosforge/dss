@@ -1,0 +1,11 @@
+Package: streamingserver
+Maintainer: Darwin Developers <darwin-development@public.lists.apple.com>
+Build-Depends: build-base
+Description: Darwin Streaming Server
+ Darwin Streaming Server lets you stream digital video on the Internet
+ using industry-standard Internet protocols RTP and RTSP. Using Darwin
+ Streaming Server you can serve stored files (video on demand) or
+ reflect live broadcasts to thousands of QuickTime 4 or later users. With its
+ combination of industry-standard streaming protocols and cutting-edge
+ compression technologies, QuickTime delivers perfectly synchronized
+ audio and video streams ideal for Internet video and live events.

@@ -1,0 +1,257 @@
+Index: WebAdmin/src/streamingadminserver.pl
+===================================================================
+RCS file: /cvs/Darwin/Services/StreamingServer/WebAdmin/src/streamingadminserver.pl,v
+retrieving revision 1.47
+diff -u -d -b -w -r1.47 streamingadminserver.pl
+--- streamingadminserver.pl	2001/10/22 18:23:32	1.47
++++ streamingadminserver.pl	2001/11/19 13:05:19
+@@ -58,14 +58,48 @@
+ @streamingadminserver_argv = @ARGV;
+ 
+ if($^O eq "MSWin32") {
+-	$defaultConfigPath = "C:/Program Files/Darwin Streaming Server/streamingadminserver.conf";
++	my( $install_prefix )  = "C:/Program Files/Darwin Streaming Server";
++
++	$DEFAULTPATHS_ETC_DIR  = $install_prefix;
++	$DEFAULTPATHS_VAR_DIR  = $install_prefix;
++	$DEFAULTPATHS_LOG_DIR  = $install_prefix . "/Logs";
++	$DEFAULTPATHS_BIN_DIR  = $install_prefix;
++	$DEFAULTPATHS_SBIN_DIR = $install_prefix;
++        $DEFAULTPATHS_EXE_EXT  = ".exe";
+ }
+ elsif($^O eq "darwin") {
+-        $defaultConfigPath = "/Library/QuickTimeStreaming/Config/streamingadminserver.conf";
++	$DEFAULTPATHS_ETC_DIR  = "/Library/QuickTimeStreaming/Config";
++	$DEFAULTPATHS_VAR_DIR  = "/Library/QuickTimeStreaming";
++	$DEFAULTPATHS_LOG_DIR  = "/Library/QuickTimeStreaming/Logs";
++	$DEFAULTPATHS_BIN_DIR  = "/usr/bin";
++	$DEFAULTPATHS_SBIN_DIR = "/usr/sbin";
++        $DEFAULTPATHS_EXE_EXT  = "";
+ }
+ else {
+-	$defaultConfigPath = "/etc/streaming/streamingadminserver.conf";
++
++	my( $install_prefix )  = undef ; # Example : "/pkgs/StreamingServer-cvs-20011119";
++
++        if ( defined( $install_prefix ) && $install_prefix )
++        {
++          $DEFAULTPATHS_ETC_DIR  = "$install_prefix/etc";
++          $DEFAULTPATHS_VAR_DIR  = "$install_prefix/var";
++          $DEFAULTPATHS_LOG_DIR  = "$install_prefix/var/logs";
++          $DEFAULTPATHS_BIN_DIR  = "$install_prefix/bin";
++          $DEFAULTPATHS_SBIN_DIR = "$install_prefix/sbin";
+ }
++        else
++        {
++          $DEFAULTPATHS_ETC_DIR  = "/etc/streaming";
++          $DEFAULTPATHS_VAR_DIR  = "/var/streaming";
++          $DEFAULTPATHS_LOG_DIR  = "/var/streaming/logs";
++          $DEFAULTPATHS_BIN_DIR  = "/usr/local/bin";
++          $DEFAULTPATHS_SBIN_DIR = "/usr/local/sbin";
++        }
++
++        $DEFAULTPATHS_EXE_EXT  = "";
++}
++
++$defaultConfigPath = "${DEFAULTPATHS_ETC_DIR}/streamingadminserver.conf";
+ 
+ $debug = 0;
+ # Find and read config file
+@@ -128,119 +162,55 @@
+ }
+ 
+ # Check vital config options
+-if($^O eq "darwin") {
+-	%vital = ("port", 1220,
+-	  "sslport", 1240,
+-	  "root", "/Library/QuickTimeStreaming/AdminHtml",
+-      "plroot", "/Library/QuickTimeStreaming/Playlists/",
+-	  "server", "QTSS 3.0 Admin Server/1.0",
+-	  "index_docs", "index.html parse_xml.cgi index.htm index.cgi",
+-	  "addtype_html", "text/html",
+-	  "addtype_htm", "text/html",
+-	  "addtype_txt", "text/plain",
+-	  "addtype_gif", "image/gif",
+-	  "addtype_jpg", "image/jpeg",
+-	  "addtype_jpeg", "image/jpeg",
+-	  "addtype_cgi", "internal/cgi",
+-	  "realm", "QTSS Admin Server",
+-	  "qtssIPAddress", "localhost",
+-	  "qtssPort", "554",
+-	  "qtssName", "/usr/sbin/QuickTimeStreamingServer",
+-	  "qtssAutoStart", "1",
+-	  "logfile", "/Library/QuickTimeStreaming/Logs/streamingadminserver.log",
+-	  "log", "1",
+-	  "logclear", "0",
+-	  "logtime", "168",
+-	  "messagesfile", "messages",
+-	  "gbrowse", "0",
+-	  "ssl", "0",
+-	  "crtfile", "/Library/QuickTimeStreaming/Config/streamingadminserver.pem",
+-	  "keyfile", "/Library/QuickTimeStreaming/Config/streamingadminserver.pem",
+-	  #"keypasswordfile", "",
+-	  "qtssQTPasswd", "/usr/bin/qtpasswd",
+-	  "qtssPlaylistBroadcaster", "/usr/bin/PlaylistBroadcaster",
+-	  "qtssMP3Broadcaster", "/usr/bin/MP3Broadcaster",
+-	  "helpurl", "http://helpqt.apple.com/qtssWebAdminHelpR2/qtssWebAdmin.help/English.lproj/index.html",
+-	  "qtssAdmin", "streamingadmin", 
+-	  "cacheMessageFiles", "0",
+-	  #"pidfile", "/Library/QuickTimeStreaming/Config/streamingadminserver.pid"
+-	  );
+-}
+-elsif($^O eq "MSWin32") {
+-	%vital = ("port", 1220,
+-	  "sslport", 1240,
+-	  "root", "C:/Program Files/Darwin Streaming Server/AdminHtml",
+-	  "plroot", "C:/Program Files/Darwin Streaming Server/Playlists/",
+-	  "server", "QTSS 3.0 Admin Server/1.0",
+-	  "index_docs", "index.html parse_xml.cgi index.htm index.cgi",
+-	  "addtype_html", "text/html",
+-      "addtype_htm", "text/html",
+-	  "addtype_txt", "text/plain",
+-	  "addtype_gif", "image/gif",
+-	  "addtype_jpg", "image/jpeg",
+-	  "addtype_jpeg", "image/jpeg",
+-	  "addtype_cgi", "internal/cgi",
+-	  "realm", "QTSS Admin Server",
+-	  "qtssIPAddress", "localhost",
+-	  "qtssPort", "554",
+-	  "qtssName", "C:/Program Files/Darwin Streaming Server/DarwinStreamingServer.exe",
+-	  "qtssAutoStart", "1",
+-      "logfile", "C:/Program Files/Darwin Streaming Server/Logs/streamingadminserver.log",
+-	  "log", "1",
+-	  "logclear", "0",
+-	  "logtime", "168",
+-	  "messagesfile", "messages",
+-	  "gbrowse", "0",
+-	  "ssl", "0",
+-	  "crtfile", "C:/Program Files/Darwin Streaming Server/streamingadminserver.pem",
+-	  "keyfile", "C:/Program Files/Darwin Streaming Server/streamingadminserver.pem",
+-	  #"keypasswordfile", "",
+-	  "qtssQTPasswd", "C:/Program Files/Darwin Streaming Server/qtpasswd.exe",
+-	  "qtssPlaylistBroadcaster", "c:\\Program Files\\Darwin Streaming Server\\PlaylistBroadcaster.exe",
+-	  "qtssMP3Broadcaster", "c:\\Program Files\\Darwin Streaming Server\\MP3Broadcaster.exe",
+-	  "helpurl", "http://helpqt.apple.com/dssWebAdminHelpR2/dssWebAdmin.help/index.html",
+-	  "qtssAdmin", "streamingadmin",
+-  	  "cacheMessageFiles", "0",
+-	  #"pidfile", "C:/Program Files/Darwin Streaming Server/streamingadminserver.pid"
+-	  );
+-}
+-else {
+-	%vital = ("port", 1220,
+-	  "sslport", 1240,
+-	  "root", "/var/streaming/AdminHtml",
+-      "plroot", "/var/streaming/playlists/",
+-	  "server", "DSS 3.0 Admin Server/1.0",
+-	  "index_docs", "index.html parse_xml.cgi index.htm index.cgi",
+-	  "addtype_html", "text/html",
+-      "addtype_htm", "text/html",
+-	  "addtype_txt", "text/plain",
+-	  "addtype_gif", "image/gif",
+-	  "addtype_jpg", "image/jpeg",
+-	  "addtype_jpeg", "image/jpeg",
+-	  "addtype_cgi", "internal/cgi",
+-	  "realm", "DSS Admin Server",
+-	  "qtssIPAddress", "localhost",
+-	  "qtssPort", "554",
+-	  "qtssName", "/usr/local/sbin/DarwinStreamingServer",
+-      "qtssAutoStart", "1",
+-	  "logfile", "/var/streaming/logs/streamingadminserver.log",
+-	  "log", "1",
+-	  "logclear", "0",
+-	  "logtime", "168",
+-	  "messagesfile", "messages",
+-	  "gbrowse", "0",
+-	  "ssl", "0",
+-	  "crtfile", "/etc/streaming/streamingadminserver.pem",
+-	  "keyfile", "/etc/streaming/streamingadminserver.pem",
+-	  #"keypasswordfile", "",
+-	  "qtssQTPasswd", "/usr/local/bin/qtpasswd",
+-	  "qtssPlaylistBroadcaster", "/usr/local/bin/PlaylistBroadcaster",
+-	  "qtssMP3Broadcaster", "/usr/local/bin/MP3Broadcaster",
+-	  "helpurl", "http://helpqt.apple.com/dssWebAdminHelpR2/dssWebAdmin.help/index.html",
+-	  "qtssAdmin", "streamingadmin",
+-	  "cacheMessageFiles", "0",
+-	  #"pidfile", "/var/streaming/streamingadminserver.pid"
++
++%vital = (
++          "port"		=> 1220,
++          "sslport"		=> 1240,
++	  "realm"		=> "QTSS Admin Server",
++	  "qtssIPAddress"	=> "localhost",
++	  "qtssPort"		=> "554",
++	  "qtssAutoStart"	=> "1",
++	  "server"		=> "QTSS 3.0 Admin Server/1.0",
++	  "index_docs"		=> "index.html parse_xml.cgi index.htm index.cgi",
++	  "addtype_html"	=> "text/html",
++	  "addtype_htm"		=> "text/html",
++	  "addtype_txt"		=> "text/plain",
++	  "addtype_gif"		=> "image/gif",
++	  "addtype_jpg"		=> "image/jpeg",
++	  "addtype_jpeg"	=> "image/jpeg",
++	  "addtype_cgi"		=> "internal/cgi",
++	  "log"			=> "1",
++	  "logclear"		=> "0",
++	  "logtime"		=> "168",
++	  "messagesfile"	=> "messages",
++	  "gbrowse"		=> "0",
++	  "ssl"			=> "0",
++	  "qtssAdmin"		=> "streamingadmin",
++  	  "cacheMessageFiles"	=> "0",
++          "helpurl"		=> "http://helpqt.apple.com/dssWebAdminHelpR2/dssWebAdmin.help/index.html",
++
++          "root"			=> "$DEFAULTPATHS_VAR_DIR/AdminHtml",
++          "plroot"			=> "$DEFAULTPATHS_VAR_DIR/Playlists/",
++          #"pidfile"			=> "$DEFAULTPATHS_VAR_DIR/streamingadminserver.pid"
++          "logfile"			=> "$DEFAULTPATHS_LOG_DIR/streamingadminserver.log",
++          "crtfile"			=> "$DEFAULTPATHS_ETC_DIR/streamingadminserver.pem",
++          "keyfile"			=> "$DEFAULTPATHS_ETC_DIR/streamingadminserver.pem",
++          #"keypasswordfile"		=> "",
++          "qtssName"			=> "$DEFAULTPATHS_SBIN_DIR/DarwinStreamingServer$DEFAULTPATHS_EXE_EXT",
++          "qtssQTPasswd"		=> "$DEFAULTPATHS_BIN_DIR/qtpasswd$DEFAULTPATHS_EXE_EXT",
++          "qtssPlaylistBroadcaster"	=> "$DEFAULTPATHS_BIN_DIR/PlaylistBroadcaster$DEFAULTPATHS_EXE_EXT",
++          "qtssMP3Broadcaster"		=> "$DEFAULTPATHS_BIN_DIR/MP3Broadcaster$DEFAULTPATHS_EXE_EXT",
+ 	  );
++
++#
++# Now for the platform Specific Overrides
++#
++if ( $^O eq "darwin" ) {
++  $vital{"qtssName"}	= "$DEFAULTPATHS_SBIN_DIR/QuickTimeStreamingServer";
++} elsif ( $^O eq "MSWin32" ) {
++  # Nothing for Windows
++} else {
++  # Nothing for the UNIX Crowd
+ }
+ 
+ foreach $v (keys %vital) {
+@@ -469,7 +439,7 @@
+ 		($myport, $myaddr) = unpack_sockaddr_in(getsockname(SOCK));
+ 		if($myport == $config{'sslport'})
+ 		{ 
+-			$sslrequest == 1;
++			$sslrequest = 1;
+ 		}
+ 		else
+ 		{	
+@@ -852,7 +822,8 @@
+ 	my $configfilename = $_[0];
+ 	my $sslValue = $_[1];
+ 	my $available = $_[2];
+-	my $name, $val;
++	my $name;
++        my $val;
+ 	
+ 	# if openssl isn't available on os, check_sslconfig
+ 	# always returns 0
+@@ -1238,8 +1209,10 @@
+ 		$envtz = $ENV{"TZ"};
+ 		$envuser = $ENV{"USER"};
+ 		$envpath = $ENV{"PATH"};
++		$envldpath = $ENV{"LD_LIBRARY_PATH"};
+ 		foreach (keys %ENV) { delete($ENV{$_}); }
+ 		$ENV{'PATH'} = $envpath if ($envpath);
++		$ENV{'LD_LIBRARY_PATH'} = $envldpath if ($envldpath);
+ 		$ENV{"TZ"} = $envtz if ($envtz);
+ 		$ENV{"USER"} = $envuser if ($envuser);
+ 		$ENV{"HOME"} = $user_homedir;

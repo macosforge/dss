@@ -1,0 +1,873 @@
+// !$*UTF8*$!
+{
+	000DA9E40135948600DD2B4F = {
+		activeExec = 0;
+	};
+	004E288A025B787100DD2B50 = {
+		activeExec = 0;
+	};
+	008788DE026B412B00DD2B4C = {
+		activeExec = 0;
+	};
+	00A90E1B029EBB6300DD2B4C = {
+		activeExec = 0;
+	};
+	00A90E28029EC2E700DD2B4C = {
+		activeExec = 0;
+	};
+	00E5906700F4DD0500DD2B4C = {
+		activeExec = 0;
+		executables = (
+			FB1903A4083C08E30023CF0F,
+		);
+	};
+	482C16F104CF5700003E91E5 = {
+		activeExec = 0;
+	};
+	484082A403D78E0900DD2838 = {
+		activeExec = 0;
+		executables = (
+			FB1903B0083C08E30023CF0F,
+		);
+	};
+	52E30B0F041DD13500FFB433 = {
+		activeExec = 0;
+	};
+	68C3920500C567B67F000001 = {
+		activeBuildStyle = 0138E52800C5C0DD7F000001;
+		activeExecutable = FB19039E083C08E30023CF0F;
+		activeTarget = 68C396B800C567B77F000001;
+		codeSenseManager = FB1903CF083C09060023CF0F;
+		executables = (
+			FB19039E083C08E30023CF0F,
+			FB19039F083C08E30023CF0F,
+			FB1903A0083C08E30023CF0F,
+			FB1903A1083C08E30023CF0F,
+			FB1903A2083C08E30023CF0F,
+			FB1903A3083C08E30023CF0F,
+			FB1903A4083C08E30023CF0F,
+			FB1903A5083C08E30023CF0F,
+			FB1903A6083C08E30023CF0F,
+			FB1903A7083C08E30023CF0F,
+			FB1903A8083C08E30023CF0F,
+			FB1903A9083C08E30023CF0F,
+			FB1903AA083C08E30023CF0F,
+			FB1903AB083C08E30023CF0F,
+			FB1903AC083C08E30023CF0F,
+			FB1903AD083C08E30023CF0F,
+			FB1903AE083C08E30023CF0F,
+			FB1903AF083C08E30023CF0F,
+			FB1903B0083C08E30023CF0F,
+		);
+		perUserDictionary = {
+			PBXConfiguration.PBXFileTableDataSource3.PBXFileTableDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					243,
+					20,
+					48,
+					43,
+					43,
+					20,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+					PBXFileDataSource_Target_ColumnID,
+				);
+			};
+			PBXConfiguration.PBXTargetDataSource.PBXTargetDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					200,
+					10,
+					20,
+					48,
+					43,
+					43,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXTargetDataSource_PrimaryAttribute,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+				);
+			};
+			PBXPerProjectTemplateStateSaveDate = 138328286;
+			PBXWorkspaceStateSaveDate = 138328286;
+		};
+		sourceControlManager = FB1903CE083C09060023CF0F;
+		userBuildSettings = {
+		};
+	};
+	68C396B800C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C396BA00C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C396BC00C567B77F000001 = {
+		activeExec = 0;
+		executables = (
+			FB1903AA083C08E30023CF0F,
+		);
+	};
+	68C396C600C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C396D100C567B77F000001 = {
+		activeExec = 0;
+		executables = (
+			FB1903A8083C08E30023CF0F,
+		);
+	};
+	68C396DB00C567B77F000001 = {
+		activeExec = 0;
+		executables = (
+			FB1903A9083C08E30023CF0F,
+		);
+	};
+	68C396E500C567B77F000001 = {
+		activeExec = 0;
+		executables = (
+			FB1903AB083C08E30023CF0F,
+		);
+	};
+	68C396EF00C567B77F000001 = {
+		activeExec = 0;
+		executables = (
+			FB1903AC083C08E30023CF0F,
+		);
+	};
+	68C396F900C567B77F000001 = {
+		activeExec = 0;
+		executables = (
+			FB1903A6083C08E30023CF0F,
+		);
+	};
+	68C3970300C567B77F000001 = {
+		activeExec = 0;
+		executables = (
+			FB1903A7083C08E30023CF0F,
+		);
+	};
+	68C3970D00C567B77F000001 = {
+		activeExec = 0;
+		executables = (
+			FB1903AD083C08E30023CF0F,
+		);
+	};
+	68C3971700C567B77F000001 = {
+		activeExec = 0;
+		executables = (
+			FB1903AE083C08E30023CF0F,
+		);
+	};
+	68C3972C00C567B77F000001 = {
+		activeExec = 0;
+		executables = (
+			FB19039E083C08E30023CF0F,
+		);
+	};
+	68C3978800C567B77F000001 = {
+		activeExec = 0;
+		executables = (
+			FB1903A2083C08E30023CF0F,
+		);
+	};
+	68C397B700C567B77F000001 = {
+		activeExec = 0;
+		executables = (
+			FB1903A3083C08E30023CF0F,
+		);
+	};
+	68C397C000C567B77F000001 = {
+		activeExec = 0;
+		executables = (
+			FB1903A5083C08E30023CF0F,
+		);
+	};
+	68C3987300C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C3987F00C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C398DE00C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C398E000C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C398E800C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C398F100C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C398FA00C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C3991900C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C3992200C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C3993400C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C3994300C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C3995200C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C3996200C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C3997200C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C3997B00C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C3998A00C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C399AF00C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C399C100C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C399C900C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C399D800C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C399EA00C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C399F500C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C39A0000C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C39A0900C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C39A3600C567B77F000001 = {
+		activeExec = 0;
+	};
+	68C39A4700C567B77F000001 = {
+		activeExec = 0;
+	};
+	B62C45C6012B21880BDD2A6C = {
+		activeExec = 0;
+	};
+	B6494F960279F7500BDD2A6C = {
+		activeExec = 0;
+	};
+	B649D5CB02B97F170BDD2A6C = {
+		activeExec = 0;
+		executables = (
+			FB1903A0083C08E30023CF0F,
+		);
+	};
+	B6DC97FB02FB2EAB0BDD2A6C = {
+		activeExec = 0;
+	};
+	E98FD95B02F5BC3309DD2838 = {
+		activeExec = 0;
+		executables = (
+			FB1903AF083C08E30023CF0F,
+		);
+	};
+	F51C62E30279D3BC01DD2AFC = {
+		activeExec = 0;
+	};
+	F533DA97011744B701DD292F = {
+		activeExec = 0;
+		executables = (
+			FB1903A1083C08E30023CF0F,
+		);
+	};
+	F56B5A610278ADD701DD2AFC = {
+		activeExec = 0;
+		executables = (
+			FB19039F083C08E30023CF0F,
+		);
+	};
+	F57EED24027E9E1201FF7AB9 = {
+		activeExec = 0;
+	};
+	F57EED29027E9E1201FF7AB9 = {
+		activeExec = 0;
+	};
+	F5E91D0E027758E801DD2AFC = {
+		activeExec = 0;
+	};
+	F5E91D2002775B5E01DD2AFC = {
+		activeExec = 0;
+	};
+	F5E91D3102775C5601DD2AFC = {
+		activeExec = 0;
+	};
+	F5E91D4002775C5601DD2AFC = {
+		activeExec = 0;
+	};
+	F5E91D6902775D2501DD2AFC = {
+		activeExec = 0;
+	};
+	F5E91D7802775D2501DD2AFC = {
+		activeExec = 0;
+	};
+	F5E91D8702775D2501DD2AFC = {
+		activeExec = 0;
+	};
+	F5E91D9E02775EEC01DD2AFC = {
+		activeExec = 0;
+	};
+	F5E91DB90277603301DD2AFC = {
+		activeExec = 0;
+	};
+	F5E91DCD0277603301DD2AFC = {
+		activeExec = 0;
+	};
+	F5E91DDD0277603301DD2AFC = {
+		activeExec = 0;
+	};
+	F5E91E2302786F1501DD2AFC = {
+		activeExec = 0;
+	};
+	F6A48AF002390D0401000103 = {
+		activeExec = 0;
+	};
+	FB19039E083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = Server;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB19039F083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = Server_No_Modules;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903A0083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = StreamingProxyServer;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903A1083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = MP3Broadcaster;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903A2083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = PlaylistBroadcaster;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903A3083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = qtpasswd;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903A4083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = StreamingLoadTool;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903A5083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = StreamingProxy;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903A6083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = QTFileInfo;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903A7083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = QTFileTest;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903A8083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = QTRTPGen;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903A9083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = QTRTPFileTest;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903AA083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = QTSDPGen;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903AB083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = QTSampleLister;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903AC083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = QTTrackInfo;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903AD083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = QTBroadcaster;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903AE083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = RTPFileGen;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903AF083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = QTSSLinkApp;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903B0083C08E30023CF0F = {
+		activeArgIndex = 2147483647;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		configStateDict = {
+		};
+		cppStopOnCatchEnabled = 0;
+		cppStopOnThrowEnabled = 0;
+		customDataFormattersEnabled = 1;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		isa = PBXExecutable;
+		libgmallocEnabled = 0;
+		name = broadcasterctl;
+		shlibInfoDictList_v2 = (
+		);
+		sourceDirectories = (
+		);
+	};
+	FB1903CE083C09060023CF0F = {
+		fallbackIsa = XCSourceControlManager;
+		isSCMEnabled = 0;
+		isa = PBXSourceControlManager;
+		scmConfiguration = {
+		};
+		scmType = "";
+	};
+	FB1903CF083C09060023CF0F = {
+		indexTemplatePath = "";
+		isa = PBXCodeSenseManager;
+	};
+	FBCB7F580507F2D100A273B4 = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {614, 2492}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRect = "{{0, 0}, {290, 319}}";
+		};
+	};
+}

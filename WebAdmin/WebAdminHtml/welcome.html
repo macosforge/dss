@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<style type="text/css">
+	td { font-family: Arial, Helvetica, Geneva, Swiss, sans-serif; font-size: 12px }
+	.large { font-weight: bold; font-size: 14px  }
+	.small { font-size: 10px }
+	.white { color: #FFFFFF }
+</style> 
+<script src="includes/encode_unicode.js" type="text/javascript" language="Javascript" charset="utf-8"></script>
+<script type="text/javascript" language="Javascript">
+
+	function showConfirmMessage() {
+		if ("<qtssobject name=confirmMessage/>" == "<qtssstring name=QTBErrNotInstalledText/>")
+			alert("<qtssobject name=confirmMessage/>");
+		else if ("<qtssobject name=confirmMessage/>" != "") {
+			if (parent.frames['top'].showConfirmMessage) {
+				parent.frames['top'].showConfirmMessage("<qtssobject name=confirmMessage/>");
+			}
+			else if (parent.parent.frames[0].showConfirmMessage) {
+				parent.parent.frames[0].showConfirmMessage("<qtssobject name=confirmMessage/>");
+			}
+		}
+	}
+
+</script>
+</head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif" onload="showConfirmMessage()">
+<p></p>
+<table border=0 cellspacing=0 cellpadding=0 width=600>
+	<tr>
+		<td align=left valign=top nowrap width=20>
+				<img src="images/spacer.gif" width=20 height=20 align=top alt=""> 
+		</td>
+		<td valign=top align=center>
+				<br>
+				<br>
+				<table border=0 cellspacing=0 cellpadding=0 width="50%">
+					<tr>
+						<td align=left valign=top width="50%">
+							<p></p>
+							<table border=0 bgcolor="#8C94AD" cellspacing=1 cellpadding=4 width="100%" height="100%">
+								<tr>
+									<td align=left valign=top nowrap width="98%" height=14 bgcolor="#8C94AD" class=large>
+										<span class=white><qtssstring name="SnapshotHeader"/></span>
+									</td>
+								</tr>
+								<tr>
+									<td align=left valign=top width="98%" bgcolor="#F2F2F2">
+										<p></p>
+										<table border=0 cellspacing=1 cellpadding=4>
+											<tr>
+												<td nowrap align=right>
+														<b><qtssstring name="SnapshotServer"/></b>
+												</td>
+												<td align=left nowrap>
+														<qtssobject name=qtssSvrDefaultDNSName/>
+												</td>
+											</tr>
+											<tr>
+												<td align=left>
+													<p></p>
+												</td>
+												<td align=left>
+													<p></p>
+												</td>
+											</tr>
+											<tr>
+												<td align=right>
+														<b><qtssstring name="SnapshotStatus"/></b> 
+												</td>
+												<td align=left nowrap>
+														<qtssstring name="SnapshotStarted"/> <qtssobject name=qtssSvrStartupTime/>
+												</td>
+											</tr>
+											<tr>
+												<td nowrap align=right>
+														<b><qtssstring name="SnapshotCurrentTimeOnServer"/></b> 
+												</td>
+												<td align=left nowrap>
+														<qtssobject name=qtssSvrCurrentTimeMilliseconds/> 
+												</td>
+											</tr>
+											<tr>
+												<td nowrap align=right>
+														<b><qtssstring name="SnapshotUptime"/></b> 
+												</td>
+												<td align=left nowrap>
+														<qtssobject name=qtssElapsedTime/> 
+												</td>
+											</tr>
+											<tr>
+												<td nowrap align=right>
+														<b><qtssstring name="SnapshotDNSName"/></b> 
+												</td>
+												<td align=left nowrap>
+														<qtssobject name=qtssSvrDefaultDNSName/> 
+												</td>
+											</tr>
+											<tr>
+												<td align=left nowrap>
+													<p></p>
+												</td>
+												<td align=left nowrap>
+													<p></p>
+												</td>
+											</tr>
+											<tr>
+												<td nowrap align=right>
+														<b><qtssstring name="SnapshotServerVersion"/></b> 
+												</td>
+												<td align=left nowrap>
+														<qtssobject name=qtssRTSPSvrServerVersion/> 
+												</td>
+											</tr>
+											<tr>
+												<td nowrap align=right>
+														<b><qtssstring name="SnapshotServerAPIVersion"/></b> 
+												</td>
+												<td align=left nowrap>
+														<qtssobject name=qtssServerAPIVersion/>
+												</td>
+											</tr>
+											<tr>
+												<td align=left nowrap>
+													<p></p>
+												</td>
+												<td align=left nowrap>
+													<p></p>
+												</td>
+											</tr>
+											<tr>
+												<td nowrap align=right>
+														<b><qtssstring name="SnapshotCPULoad"/></b> 
+												</td>
+												<td align=left nowrap>
+														<qtssobject name=qtssSvrCPULoadPercent/>% 
+												</td>
+											</tr>
+											<tr>
+												<td nowrap align=right>
+														<b><qtssstring name="SnapshotCurrentConnectionCount"/></b> 
+												</td>
+												<td align=left nowrap>
+														<qtssobject name=svrCurConn/>
+												</td>
+											</tr>
+											<tr>
+												<td nowrap align=right>
+														<b><qtssstring name="SnapshotCurrentThroughput"/></b> 
+												</td>
+												<td align=left nowrap>
+														<qtssobject name=svrCurBandwidth format=bps/>
+												</td>
+											</tr>
+											<tr>
+												<td nowrap align=right>
+														<b><qtssstring name="SnapshotTotalBytesServed"/></b> 
+												</td>
+												<td align=left nowrap>
+														<qtssobject name=svrTotalBytes format=bytes/>
+												</td>
+											</tr>
+											<tr>
+												<td nowrap align=right>
+														<b><qtssstring name="SnapshotTotalConnectionsServed"/></b> 
+												</td>
+												<td align=left nowrap>
+														<qtssobject name=svrTotalConn/>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+							</table>
+							<br>
+							<br>
+						</td>
+					</tr>
+				</table>
+		</td>
+	</tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,60 @@
+#!/bin/sh
+
+. /etc/rc.common
+
+PID_DIR="/private/var/run/"
+QTSS_PID=$PID_DIR/QuickTimeStreamingServer.pid
+WEBADMIN_PID=$PID_DIR/streamingadminserver.pid
+
+StartService ()
+{
+
+    /bin/rm -f /Library/QuickTimeStreaming/Playlists/*/*.pid
+    /bin/rm -f /Library/QuickTimeStreaming/Playlists/*/*.current
+    /bin/rm -f /Library/QuickTimeStreaming/Playlists/*/*.upcoming
+    
+    if [ "${QTSSRUNSERVER:=-NO-}" = "-YES-" ]; then
+        ConsoleMessage "Starting QuickTime Streaming Services"
+        
+        /usr/sbin/QuickTimeStreamingServer
+    fi
+    
+    if [ "${QTSSWEBADMIN:=-NO-}" = "-YES-" ]; then
+        ConsoleMessage "Starting QuickTime Streaming Web Admin"
+    
+        /usr/sbin/streamingadminserver.pl
+    fi
+    
+    return 0
+
+}
+
+StopService ()
+{
+
+
+    if [ -e $QTSS_PID ] ; then
+        ConsoleMessage "Stopping QuickTime Streaming services"
+        kill `cat $QTSS_PID` > /dev/null 2>&1
+        /bin/rm -f $QTSS_PID 
+    fi
+        
+    if [ -e $WEBADMIN_PID ] ; then
+        ConsoleMessage "Stopping QuickTime Streaming Web Admin"
+        kill `cat $WEBADMIN_PID` > /dev/null 2>&1
+        /bin/rm -f $WEBADMIN_PID         
+    fi
+        
+        
+    return 0
+}
+
+RestartService ()
+{
+        StopService
+        StartService
+        return 0
+
+}
+
+RunService "$1"

@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<style type="text/css">
+		td { font-family: Arial, Helvetica, Geneva, Swiss, sans-serif; font-size: 12px }
+		.large { font-weight: bold; font-size: 14px  }
+	</style> 
+</head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif">
+<qtssobject type="form"><qtssobject name="nextFilename"/>
+<qtssrepeater name=queryparams>
+	<qtssobject name=passthrough/>
+</qtssrepeater>
+	<table border="0" cellspacing="0" cellpadding="0" width="620">
+		<tr>
+			<td align=left valign="top" nowrap width="20">
+				<img src="images/spacer.gif" width="20" height="20" align="top" alt=""> 
+			</td>
+			<td valign="top" align="center">
+				<br>
+				<br>
+				<br>
+				<br>
+				<br>
+				<table border="0" cellspacing="0" cellpadding="0" width="400">
+					<tr>
+						<td align=left>
+							<img src="images/dialog_top_sm.gif" width="400" height="20" align="bottom" alt=""> 
+						</td>
+					</tr>
+					<tr>
+						<td align=left background="images/dialog_middle_sm.gif">
+							<table border="0" cellspacing="0" cellpadding="0">
+								<tr>
+									<td align=left width="20">
+										<img src="images/spacer.gif" width="20" height="20" align="bottom" alt=""> 
+									</td>
+									<td valign="top" width="64" align="center">
+										<img src="images/dialog_alert.gif" width=90 height=60 align=bottom alt=""> 
+									</td>
+									<td align=left width="20">
+										<img src="images/spacer.gif" width="20" height="20" align="bottom" alt=""> 
+									</td>
+									<td align=left>
+										<span class="large"><b><qtssobject name=dialogHeader/></b> </span>
+											<br>
+											<br>
+											<qtssobject name=dialogText/>
+											<br>
+											<br>
+											<br>
+										<table border="0" cellspacing="0" cellpadding="0" width="100%">
+											<tr>
+												<td valign="top" align="right">
+													<input type="submit" value="&nbsp;&nbsp;<qtssstring name=OKButtonTitle/>&nbsp;&nbsp;"> 
+												</td>
+											</tr>
+										</table>
+								</td>
+								<td align=left width="20">
+									<img src="images/spacer.gif" width="20" height="20" align="bottom" alt=""> 
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td align=left>
+						<img src="images/dialog_bottom_sm.gif" width="400" height="20" align="bottom" alt=""> 
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+</qtssobject>
+</body>
+</html>

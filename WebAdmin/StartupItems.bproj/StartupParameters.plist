@@ -1,0 +1,11 @@
+{
+  Description     = "QuickTime Streaming Services";
+  Provides        = ("QuickTime Streaming Services");
+  Requires        = ("Resolver");
+  OrderPreference = "None";
+  Messages =
+  {
+    start = "Starting QuickTime Streaming Services";
+    stop  = "Stopping QuickTime Streaming Services";
+  };
+}

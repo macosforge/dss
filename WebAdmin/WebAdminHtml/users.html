@@ -1,0 +1,731 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<meta name="generator" content="BBEdit 6.5.2">
+<meta http-equiv="imagetoolbar" content="no">
+<style type="text/css">
+	td		
+	{
+		font-family: Arial, Helvetica, Geneva, Swiss, sans-serif;
+		font-size: 12px;
+	}
+	div		
+	{
+		font-family: Arial, Helvetica, Geneva, Swiss, sans-serif;
+		font-size: 12px;
+	}
+	.large		
+	{
+		font-weight: bold;
+		font-size: 14px;
+	}
+	.small { font-size: 10px }
+	.reallysmall		
+	{
+		font-size: 10px;
+		color: #333;
+	}
+	.header		
+	{
+		font-size: 18px;
+		color: #669;
+	}
+	.white { color: #FFFFFF }
+	#availcontentlabel		
+	{
+		position: absolute;
+		z-index: 1;
+		top: 66px;
+		left: 78px;
+		height: 19px;
+		visibility: visible;
+	}
+	#libbackground		
+	{
+		position: absolute;
+		z-index: 1;
+		top: 93px;
+		left: 78px;
+		width: 324px;
+		height: 284px;
+		visibility: visible;
+	}
+	#libscrollbar		
+	{
+		position: absolute;
+		z-index: 3;
+		top: 107px;
+		left: 404px;
+		width: 16px;
+		visibility: hidden;
+	}
+	#libscrollbardisabled		
+	{
+		position: absolute;
+		z-index: 3;
+		top: 107px;
+		left: 404px;
+		width: 16px;
+		visibility: visible;
+	}
+	#libscrollthumb		
+	{
+		position: absolute;
+		z-index: 4;
+		top: 122px;
+		left: 404px;
+		width: 14px;
+		height: 16px;
+		visibility: hidden;
+	}
+	#libusers
+	{
+		position: absolute;
+		z-index: 3;
+		top: 108px;
+		left: 80px;
+		width: 218px;
+		line-height: 18px;
+		<qtssobject name=monospaceIfNotJapanese/>
+		visibility: visible;
+	}
+	#libusertypes
+	{
+		position: absolute;
+		z-index: 3;
+		top: 108px;
+		left: 351px;
+		width: 218px;
+		line-height: 20px;
+		<qtssobject name=monospaceIfNotJapanese/>
+		visibility: visible;
+	}
+	#libhighlight		
+	{
+		position: absolute;
+		z-index: 2;
+		top: 168px;
+		left: 79px;
+		width: 322px;
+		height: 20px;
+		visibility: hidden;
+	}
+	#newUserButton
+	{
+		position: absolute;
+		z-index: 3;
+		top: 93px;
+		left: 430px;
+		font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+		visibility: visible;
+	}
+	#newGroupButton
+	{
+		position: absolute;
+		z-index: 3;
+		top: 124px;
+		left: 430px;
+		font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+		visibility: visible;
+	}
+	#editButtonDisabled
+	{
+		position: absolute;
+		z-index: 3;
+		top: 167px;
+		left: 430px;
+		font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+		visibility: visible;
+	}
+	#editUserButton
+	{
+		position: absolute;
+		z-index: 3;
+		top: 167px;
+		left: 430px;
+		font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+		visibility: hidden;
+	}
+	#editGroupButton
+	{
+		position: absolute;
+		z-index: 3;
+		top: 167px;
+		left: 430px;
+		font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+		visibility: hidden;
+	}
+	#deleteButtonDisabled
+	{
+		position: absolute;
+		z-index: 3;
+		top: 210px;
+		left: 430px;
+		font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+		visibility: visible;
+	}
+	#deleteUserButton
+	{
+		position: absolute;
+		z-index: 3;
+		top: 210px;
+		left: 430px;
+		font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+		visibility: hidden;
+	}
+	#deleteGroupButton
+	{
+		position: absolute;
+		z-index: 3;
+		top: 210px;
+		left: 430px;
+		font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+		visibility: hidden;
+	}
+</style>
+<script src="includes/encode_unicode.js" type="text/javascript" language="Javascript" charset="utf-8"></script>
+<script src="includes/standardNav.js" type="text/javascript" language="javascript"></script>
+<qtssobject name=scriptTag>
+	//<script language=javascript>
+
+	var gLibBasePosX = 79;
+	var gLibBasePosY = 108;
+	var gLibItemWidth = 325;
+	var gLibClickWidth = 266;
+	var gLibItemHeight = 20;
+	var gLibNumItems = 14;
+	var gLibMaxChars = 43;
+	var gDefaultImage = 'images/icon_user.gif';
+	var gDragThreshold = 6;
+	var gNumberOfSteps = 4;
+	var gStepTiming = 35;
+	var gTextSpacerImg = '<img src="images/spacer.gif" width=3 height=20 align=middle>';
+	var gThumbRangeTop = 122;
+	var gThumbRangeBottom = 360;
+	var gThumbHeight = 16;
+	var gScrollArrowWidth = 16;
+	var gScrollArrowHeight = 16;
+	var gDirScrollbarLeft = 404;
+	var gScrollUpArrowTop = 107;
+	var gScrollDownArrowTop = 375;
+	var gScrollBy = 6;
+	var dblClickDelay = 300;
+	var gScrollDelay = 200;
+	
+	var libHighlightStart = (-1);
+	var libHighlightEnd = (-1);
+	var libScrollPos = 0;
+	var dragStatus = 'false';
+	var userListing = new Array();
+	var userListingDisplay = new Array();
+	var iconImages = new Array();
+	var userTypes = new Array();
+	var doContiguousSelection = false;
+	var insertPos = (-1);
+	var removeOldItem = (-1);
+	var showedAlert = false;
+	
+	var isDblClick = false;
+	var dblClickTimer;
+	
+	var scrollTimer;
+	var scrollBy = 1; // -1=scroll up, 1=scroll down
+	var scrollWhich = 0;
+
+	function DoScroll() {
+		if (dragStatus == 'timedscroll') {
+			if (scrollWhich == 0) {
+				var dataHeight = userListing.length - gLibNumItems;
+				libScrollPos = Math.max(Math.min(libScrollPos+scrollBy, dataHeight), 0);
+				BuildLibrary();
+				libSetThumbPos();
+			}
+			else {
+				var dataHeight = playlistFiles.length - gPLNumItems;
+				plScrollPos = Math.max(Math.min(plScrollPos+scrollBy, dataHeight), 0);
+				BuildPlaylist();
+				PLSetThumbPos();
+			}
+			SetScrollTimer();
+		}
+		else {
+			clearInterval(scrollTimer);
+			scrollTimer = null;
+		}
+	}
+	
+	function SetScrollTimer() {
+		if (scrollTimer == null) {
+			scrollTimer = setInterval("DoScroll()", gScrollDelay)
+		}
+	}
+	
+	function BuildLibrary() {
+		var usersLayerText = '<span class=small>';
+		var userTypesLayerText = '<span class=small>';
+		for (var i=libScrollPos; i < Math.min((libScrollPos+gLibNumItems), userListing.length); i++) {
+			var itemText = userListingDisplay[i];
+			if (itemText.length > gLibMaxChars) {
+				itemText = itemText.substr(0, gLibMaxChars) + "&#8230;";
+			}
+			itemText = itemText.replace('<', '&lt;');
+			itemText = itemText.replace('>', '&gt;');
+			usersLayerText = usersLayerText + '<img src="images/' + iconImages[i] + '" width=20 height=20 align=middle vspace=0>';
+			usersLayerText = usersLayerText + gTextSpacerImg + itemText + '<br>';
+			userTypesLayerText = userTypesLayerText + userTypes[i] + '<br>';
+		}
+		usersLayerText = usersLayerText + '<' + '/span>';
+		userTypesLayerText = userTypesLayerText + '<' + '/span>';
+		SetStyleText('libusers', usersLayerText);
+		SetStyleText('libusertypes', userTypesLayerText);
+		SetLibHighlightBar();
+		if (userListing.length > gLibNumItems) {
+			SetStyleVisible('libscrollbardisabled', false);
+			SetStyleVisible('libscrollbar', true);
+			SetStyleVisible('libscrollthumb', true);
+		}
+		else {
+			SetStyleVisible('libscrollbardisabled', true);
+			SetStyleVisible('libscrollbar', false);
+			SetStyleVisible('libscrollthumb', false);
+		}
+	}
+	
+	function clickedNewUserButton() {
+		alert('This feature is not finished in this build.');
+	}
+	
+	function clickedNewGroupButton() {
+		alert('This feature is not finished in this build.');
+	}
+	
+	function clickedEditButton() {
+		alert('This feature is not finished in this build.');
+	}
+	
+	function clickedDeleteButton() {
+		alert('This feature is not finished in this build.');
+	}
+
+	function handleLibDblClick() {
+		ClearDblClickTimer();
+		clickedEditButton();
+	}
+	
+	function SetDblClickTimer() {
+		isDblClick = true;
+		currentTooltipTimer = setTimeout("ClearDblClickTimer()", dblClickDelay);
+	}
+	
+	function ClearDblClickTimer() {
+		isDblClick = false;
+		dblClickTimer = null;
+	}
+	
+	function libScrollDown() {
+		var dataHeight = userListing.length - gLibNumItems;
+		if (libScrollPos < dataHeight) {
+			libScrollPos = Math.min(libScrollPos+gScrollBy, dataHeight);
+			BuildLibrary();
+			libSetThumbPos();
+		}
+	}
+	
+	function libScrollUp() {
+		if (libScrollPos > 0) {
+			libScrollPos = Math.max(libScrollPos-gScrollBy, 0);
+			BuildLibrary();
+			libSetThumbPos();
+		}
+	}
+	
+	function libSetThumbPos() {
+		var scrollbarHeight = gThumbRangeBottom - gThumbRangeTop;
+		var dataHeight = userListing.length - gLibNumItems;
+		if (dataHeight > 1) {
+			var scrollRatio = libScrollPos / dataHeight;
+			SetStylePos('libscrollthumb', 1, (gThumbRangeTop + (scrollRatio * scrollbarHeight)));
+		}
+	}
+	
+	function libGetThumbPos() {
+		var scrollbarHeight = gThumbRangeBottom - gThumbRangeTop;
+		var dataHeight = userListing.length - gLibNumItems;
+		if (dataHeight > 1) {
+			var scrollRatio = (GetStylePos('libscrollthumb', 1) - gThumbRangeTop) / scrollbarHeight;
+			libScrollPos = Math.round(scrollRatio * (userListing.length - gLibNumItems));
+			BuildLibrary();
+			libSetThumbPos();
+		}
+	}
+	
+	function SetLibHighlightBar() {
+		if (libHighlightEnd < libScrollPos) {
+			SetStyleVisible('libhighlight', false);
+		}
+		else {
+			var displayHighlightStart = Math.max(libHighlightStart - libScrollPos, 0);
+			var displayHighlightEnd = Math.min(libHighlightEnd - libScrollPos, libScrollPos + gLibNumItems - 1);
+			var highlightHeight = (displayHighlightEnd - displayHighlightStart + 1) * gLibItemHeight;
+			var startPos = (displayHighlightStart * gLibItemHeight) + gLibBasePosY;
+			SetStyleText('libhighlight', '<img src="images/highlight.gif" width=' + gLibItemWidth + ' height=' + highlightHeight + '>');
+			SetStylePos('libhighlight', 1, startPos);
+			SetStyleVisible('libhighlight', true);
+		}
+	}
+
+	function SetButtonsEnabled() {
+		var selectedItem = libHighlightStart;
+		if (libHighlightStart >= 0) {
+			if (iconImages[libHighlightStart] == 'icon_user.gif') {
+				SetStyleVisible('editUserButton', true);
+				SetStyleVisible('editGroupButton', false);
+				SetStyleVisible('editButtonDisabled', false);
+				SetStyleVisible('deleteUserButton', true);
+				SetStyleVisible('deleteGroupButton', false);
+				SetStyleVisible('deleteButtonDisabled', false);
+			}
+			else {
+				SetStyleVisible('editUserButton', false);
+				SetStyleVisible('editGroupButton', true);
+				SetStyleVisible('editButtonDisabled', false);
+				SetStyleVisible('deleteUserButton', false);
+				SetStyleVisible('deleteGroupButton', true);
+				SetStyleVisible('deleteButtonDisabled', false);
+			}
+		}
+		else {
+			SetStyleVisible('editUserButton', false);
+			SetStyleVisible('editGroupButton', false);
+			SetStyleVisible('editButtonDisabled', true);
+			SetStyleVisible('deleteUserButton', false);
+			SetStyleVisible('deleteGroupButton', false);
+			SetStyleVisible('deleteButtonDisabled', true);
+		}
+	}
+	
+	function handleMouseDown(e) {
+		var continueClick = true;
+		if (IsIE()) var theTarget = window.event.srcElement;    
+		else var theTarget = e.target;
+		if (IsIE()) var theButton = event.button;
+		else var theButton = e.which;
+		if (IsIE()) doContiguousSelection = window.event.shiftKey;
+		else doContiguousSelection = (e.modifiers == 4);
+		if (IsIE()) {
+			oldX = event.clientX + GetIEScrollPos(0);
+			oldY = event.clientY + GetIEScrollPos(1);
+		}
+		else {
+			oldX = e.pageX
+			oldY = e.pageY
+		}
+		
+		removeOldItem = (-1);
+		
+		if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY >= gScrollUpArrowTop) && (oldY <= (gScrollUpArrowTop + gScrollArrowHeight))) { // dir up scroll
+			dragStatus = 'timedscroll';
+			scrollWhich = 0;
+			scrollBy = (-1);
+			DoScroll();
+			continueClick = false;
+		}
+		
+		if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY > (gScrollUpArrowTop + gScrollArrowHeight)) && (oldY < GetStylePos('libscrollthumb', 1))) { // jump up
+			dragStatus = 'timedscroll';
+			scrollWhich = 0;
+			scrollBy = ((-1) * (gLibNumItems - 1));
+			DoScroll();
+			continueClick = false;
+		}
+		
+		if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY >= GetStylePos('libscrollthumb', 1)) && (oldY <= (GetStylePos('libscrollthumb', 1) + gThumbHeight))) { // dir scroll thumb
+			layerClicked = 'libscrollthumb';
+			dragStatus = 'scrolling';
+			continueClick = false;
+		}
+		
+		if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY > (GetStylePos('libscrollthumb', 1) + gThumbHeight)) && (oldY < gScrollDownArrowTop)) { // jump down
+			dragStatus = 'timedscroll';
+			scrollWhich = 0;
+			scrollBy = gLibNumItems - 1;
+			DoScroll();
+			continueClick = false;
+		}
+		
+		if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY >= gScrollDownArrowTop) && (oldY <= (gScrollDownArrowTop + gScrollArrowHeight))) { // dir up scroll
+			dragStatus = 'timedscroll';
+			scrollWhich = 0;
+			scrollBy = 1;
+			DoScroll();
+			continueClick = false;
+		}
+		
+		if ((oldX >= gLibBasePosX) && (oldX <= gLibBasePosX+gLibClickWidth) && (oldY >= gLibBasePosY) && (oldY <= gLibBasePosY+(gLibNumItems*gLibItemHeight))) {
+			var itemClicked = (oldY - gLibBasePosY) / gLibItemHeight;
+			itemClicked = Math.floor(itemClicked);
+			itemClicked = itemClicked + libScrollPos;
+			if (itemClicked > (userListing.length - 1)) {
+				return false;
+			}
+			offsetX = oldX - gLibBasePosX;
+			offsetY = oldY - (gLibBasePosY + ((itemClicked - libScrollPos) * gLibItemHeight));
+			if ((itemClicked < libHighlightStart) || (itemClicked > libHighlightEnd)) {
+				libHighlightStart = itemClicked;
+				libHighlightEnd = itemClicked;
+				SetLibHighlightBar();
+			}
+			dragStatus = 'click';
+			SetButtonsEnabled();
+			continueClick = false;
+			if (isDblClick) { // double-click; handle
+				handleLibDblClick()
+			}
+			else { // first click; set isDblClick to true and set a timer to set it to false after the delay
+				SetDblClickTimer(); 
+			}
+		}
+		
+		if (continueClick) return;
+		else return continueClick;
+	}
+
+	function handleDrag(e) {
+		status = '';
+		if (IsIE()) {
+			currentX = event.clientX + GetIEScrollPos(0);
+			currentY = event.clientY + GetIEScrollPos(1);
+		}
+		else {
+			currentX = e.pageX
+			currentY = e.pageY
+		}
+		if (dragStatus == 'scrolling') {
+			SetStylePos(layerClicked, 1, Math.max(Math.min(currentY, gThumbRangeBottom), gThumbRangeTop));
+		}
+	}
+
+	function handleMouseUp() {
+		var continueClick = true;
+		if (!IsIE()) document.releaseEvents(Event.MOUSEMOVE);
+		if (dragStatus == 'scrolling') {
+			dragStatus = 'false';
+			if (layerClicked == 'libscrollthumb') libGetThumbPos();
+			else PLGetThumbPos();
+			continueClick = false;
+		}
+		dragStatus = 'false';
+		if (continueClick) return;
+		else return continueClick;
+	}
+
+	// re-route events to handlers
+	
+	if (!IsIE()) document.captureEvents(Event.MOUSEUP|Event.MOUSEDOWN|Event.MOUSEMOVE);
+	
+	document.onmousedown = handleMouseDown;
+	document.onmouseup = handleMouseUp;
+	document.onmousemove = handleDrag
+	
+	// populate array from QTSS
+	
+	<qtssrepeater name=usergrouplist>
+		userListing[userListing.length] = '<qtssobject name=qtssUsernames format=urlencode/>';
+		userListingDisplay[userListingDisplay.length] = '<qtssobject name=qtssUsernames format=unicode-convert/>';
+		iconImages[iconImages.length] = '<qtssobject name=qtssUserImages/>';
+		userTypes[userTypes.length] = '<qtssobject name=qtssUserTypes/>';
+	</qtssrepeater>
+
+</script></qtssobject>
+</head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif" onload="BuildLibrary()"><qtssobject type=form>
+<input type="hidden" name="filename" value="">
+<input type="hidden" name="action" value="">
+<input type="hidden" name="submitcurrentdir">
+<qtssobject type="hidden" name="currentdir"/>
+<qtssobject name="qtssSvrDefaultDNSName" type=hidden/>
+<table border=0 cellspacing=0 cellpadding=0 width=620>
+	<tr>
+		<td align=left valign=top nowrap width=20>
+			<img src="images/spacer.gif" width=20 height=20 align=top alt=""> 
+		</td>
+		<td valign=top align=center>
+			<br>
+			<table border=0 cellspacing=0 cellpadding=2 width="100%">
+				<tr>
+					<td align=left nowrap class=header>
+						<qtssstring name="UsersHeader"/>
+					</td>
+				</tr>
+				<tr>
+					<td align=left>
+						<img src="images/divider.gif" width=600 height=1 align=middle alt=""> 
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+
+<div id="availcontentlabel" class=large>
+	<qtssstring name="UsersHeader"/>:
+</div>
+
+<div id="libbackground">
+	<table border=0 cellspacing=0 cellpadding=0>
+		<tr>
+			<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			<td width=268 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=268 height=1 alt=""></td>
+			<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			<td width=71 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=71 height=1 alt=""></td>
+			<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+		</tr>
+		<tr>
+			<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+			<td width=268 height=13 nowrap bgcolor="#c6c6d6" class=reallysmall><img src="images/headerpixel.gif" width=2 height=1 alt="">User/Group Name</td>
+			<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+			<td width=71 height=1 nowrap bgcolor="#c6c6d6" class=reallysmall><img src="images/headerpixel.gif" width=2 height=1 alt="">Type</td>
+			<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+		</tr>
+		<tr>
+			<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			<td width=268 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=268 height=1 alt=""></td>
+			<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			<td width=71 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=71 height=1 alt=""></td>
+			<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+		</tr>
+		<tr>
+			<td width=1 height=282 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=1 height=282 alt=""></td>
+			<td width=268 height=282 bgcolor="#FFFFFF"><img src="images/whitepixel.gif" width=268 height=282 alt=""></td>
+			<td width=1 height=282 bgcolor="#8c93ad"><img src="images/whitepixel.gif" width=1 height=282 alt=""></td>
+			<td width=71 height=282 bgcolor="#FFFFFF"><img src="images/whitepixel.gif" width=71 height=282 alt=""></td>
+			<td width=1 height=282 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=1 height=282 alt=""></td>
+		</tr>
+		<tr>
+			<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			<td width=268 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=268 height=1 alt=""></td>
+			<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			<td width=71 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=71 height=1 alt=""></td>
+			<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+		</tr>
+	</table>
+</div>
+
+<div id="libscrollbar">
+	<table border=0 cellspacing=0 cellpadding=0>
+		<tr>
+			<td><img src="images/scroll_arrow_up.gif" width=16 height=16></td>
+		</tr>
+		<tr>
+			<td background="images/scroll_bg.gif" height=252><img src="images/scroll_bg.gif" width=16 height=252></td>
+		</tr>
+		<tr>
+			<td><img src="images/scroll_arrow_down.gif" width=16 height=16></td>
+		</tr>
+	</table>
+</div>
+
+<div id="libscrollbardisabled">
+	<table border=0 cellspacing=0 cellpadding=0>
+		<tr>
+			<td background="images/scroll_bg_inactive.gif" width=16 height=1><img src="images/greypixel.gif" width="16" height="1"></td>
+		</tr>
+		<tr>
+			<td background="images/scroll_bg_inactive.gif" height=282><img src="images/scroll_bg_inactive.gif" width="16" height="282"></td>
+		</tr>
+		<tr>
+			<td background="images/scroll_bg_inactive.gif" width=16 height=1><img src="images/greypixel.gif" width="16" height="1"></td>
+		</tr>
+	</table>
+</div>
+
+<div id="libscrollthumb">
+	<img src="images/scroll_thumb.gif" width=16 height=16>
+</div>
+
+<div id="libusers">
+	<!-- placeholder -->
+</div>
+
+<div id="libusertypes">
+	<!-- placeholder -->
+</div>
+
+<div id="libhighlight">
+	<img src="images/highlight.gif" width=325 height=20>
+</div>
+
+<div id="newUserButton">
+	<table border=0 cellpadding=0 cellspacing=0>
+		<tr>
+			<td align=left><a href="javascript:clickedNewUserButton()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+			<td align=left nowrap><a href="javascript:clickedNewUserButton()"><qtssstring name="UsersNewUser"/></a></td>
+		</tr>
+	</table>
+</div>
+
+<div id="newGroupButton">
+	<table border=0 cellpadding=0 cellspacing=0>
+		<tr>
+			<td align=left><a href="javascript:clickedNewGroupButton()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+			<td align=left nowrap><a href="javascript:clickedNewGroupButton()"><qtssstring name="UsersNewGroup"/></a></td>
+		</tr>
+	</table>
+</div>
+
+<div id="editButtonDisabled">
+	<table border=0 cellpadding=0 cellspacing=0>
+		<tr>
+			<td align=left><img src="images/link.gif" width=28 height=24 border=0></td>
+			<td align=left nowrap><qtssstring name="UsersEditDisabled"/></td>
+		</tr>
+	</table>
+</div>
+
+<div id="editUserButton">
+	<table border=0 cellpadding=0 cellspacing=0>
+		<tr>
+			<td align=left><a href="javascript:clickedEditButton()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+			<td align=left nowrap><a href="javascript:clickedEditButton()"><qtssstring name="UsersEditUser"/></a></td>
+		</tr>
+	</table>
+</div>
+
+<div id="editGroupButton">
+	<table border=0 cellpadding=0 cellspacing=0>
+		<tr>
+			<td align=left><a href="javascript:clickedEditButton()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+			<td align=left nowrap><a href="javascript:clickedEditButton()"><qtssstring name="UsersEditGroup"/></a></td>
+		</tr>
+	</table>
+</div>
+
+<div id="deleteButtonDisabled">
+	<table border=0 cellpadding=0 cellspacing=0>
+		<tr>
+			<td align=left><img src="images/link.gif" width=28 height=24 border=0></td>
+			<td align=left nowrap><qtssstring name="UsersDeleteDisabled"/></td>
+		</tr>
+	</table>
+</div>
+
+<div id="deleteUserButton">
+	<table border=0 cellpadding=0 cellspacing=0>
+		<tr>
+			<td align=left><a href="javascript:clickedDeleteButton()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+			<td align=left nowrap><a href="javascript:clickedDeleteButton()"><qtssstring name="UsersDeleteUser"/></a></td>
+		</tr>
+	</table>
+</div>
+
+<div id="deleteGroupButton">
+	<table border=0 cellpadding=0 cellspacing=0>
+		<tr>
+			<td align=left><a href="javascript:clickedDeleteButton()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+			<td align=left nowrap><a href="javascript:clickedDeleteButton()"><qtssstring name="UsersDeleteGroup"/></a></td>
+		</tr>
+	</table>
+</div>
+
+</qtssobject></body>
+</html>

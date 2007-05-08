@@ -1,0 +1,41 @@
+# dsqtaccess
+# A sample access file for Open Directory authentication for QTSS
+# ----------------------------------
+# Note: 
+# For each keyword, the first sentence in the comment 
+# explains the keyword, and the usage: line explains
+# how to use it. Anything not in angle brackets is a keyword
+# and keywords are case-sensitive.
+# The comment is followed by an example usage
+
+# AuthName: The authentication realm that will be
+# presented to the client (for Basic Authentication only)
+# usage: AuthName <realm>
+# where realm can be a single word or a quoted multi-word string
+AuthName "Test"
+
+# require user: The names next to this specify which user 
+# is allowed to access the media in this folder.
+#
+# NOTE: The Seach node in OD is used for looking up users, the module will
+#		query for users following the search path setup in Directory Access. 
+#		The username should be the user's shortname (RecordName).
+#		Example: jdoe, johndoe
+#
+# below are two special cases:
+# require any-user         =>      implies any user is allowed without
+#                                  requiring authentication
+# require valid-user       =>      implies any user that is
+#                                  authenticated is allowed access
+# usage: require user <username1> <username2> ...
+#require user johndoe
+#require valid-user
+
+# require group: The names of the groups that are allowed
+# access to the media in this folder
+#
+# NOTE: The search node in OD is used for looking up groups, the module will
+#		follow the search path defined in Directory Access. It should also
+#		be noted that groups should have unique names across directories.
+# usage: require group <groupname1> <groupname2> ...
+#require group qtsstest wireless

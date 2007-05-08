@@ -1,0 +1,807 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<meta name="generator" content="BBEdit 6.1.1">
+<meta http-equiv="imagetoolbar" content="no">
+<style type="text/css">
+		td		
+		{
+			font-family: Arial, Helvetica, Geneva, Swiss, sans-serif;
+			font-size: 12px;
+		}
+		.normal		
+		{
+			font-family: Arial, Helvetica, Geneva, Swiss, sans-serif;
+			font-size: 12px;
+		}
+		.large		
+		{
+			font-weight: bold;
+			font-size: 14px;
+		}
+		.small { font-size: 10px }
+		.reallysmall		
+		{
+			font-size: 10px;
+			color: #333;
+		}
+		.header		
+		{
+			font-size: 18px;
+			color: #669;
+		}
+		.white { color: #FFFFFF }
+		#availpllabel		
+		{
+			position: absolute;
+			z-index: 1;
+			top: 71px;
+			left: 78px;
+			height: 19px;
+			visibility: visible;
+		}
+		#newMP3Button		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 93px;
+			left: 430px;
+			width: 120px;
+			height: 284px;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			visibility: visible;
+		}
+		#newMovieButton		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 124px;
+			left: 430px;
+			width: 120px;
+			height: 284px;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			visibility: visible;
+		}
+		#editButton		
+		{
+			position: absolute;
+			z-index: 5;
+			top: 167px;
+			left: 430px;
+			width: 120px;
+			height: 284px;
+			color: #999999;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			visibility: hidden;
+		}
+		#editButtonDisabled		
+		{
+			position: absolute;
+			z-index: 5;
+			top: 167px;
+			left: 430px;
+			width: 120px;
+			height: 284px;
+			color: #999999;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			visibility: visible;
+		}
+		#deleteButton		
+		{
+			position: absolute;
+			z-index: 7;
+			top: 210px;
+			left: 430px;
+			width: 120px;
+			height: 284px;
+			color: #999999;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			visibility: hidden;
+		}
+		#deleteButtonDisabled		
+		{
+			position: absolute;
+			z-index: 7;
+			top: 210px;
+			left: 430px;
+			width: 120px;
+			height: 284px;
+			color: #999999;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			visibility: visible;
+		}
+		#libbackground		
+		{
+			position: absolute;
+			z-index: 1;
+			top: 93px;
+			left: 78px;
+			width: 324px;
+			height: 284px;
+			visibility: visible;
+		}
+		#libfiles		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 108px;
+			left: 80px;
+			width: 216px;
+			line-height: 18px;
+			<qtssobject name=monospaceIfNotJapanese/>visibility: visible;
+		}
+		#libstatus		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 108px;
+			left: 302px;
+			width: 84px;
+			line-height: 18px;
+			<qtssobject name=monospaceIfNotJapanese/>visibility: visible;
+		}
+		#libcontrols		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 108px;
+			left: 383px;
+			width: 56px;
+			line-height: 18px;
+			visibility: visible;
+		}
+		#libscrollbar		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 107px;
+			left: 404px;
+			width: 16px;
+			visibility: hidden;
+		}
+		#libscrollbardisabled		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 107px;
+			left: 404px;
+			width: 16px;
+			visibility: visible;
+		}
+		#libscrollthumb		
+		{
+			position: absolute;
+			z-index: 4;
+			top: 122px;
+			left: 404px;
+			width: 14px;
+			height: 16px;
+			visibility: hidden;
+		}
+		#libhighlight		
+		{
+			position: absolute;
+			z-index: 2;
+			top: 94px;
+			left: 79px;
+			width: 322px;
+			height: 20px;
+			visibility: hidden;
+		}
+	</style>
+	<script src="includes/encode_unicode.js" type="text/javascript" language="Javascript" charset="utf-8"></script>
+	<script src="includes/standardNav.js" type="text/javascript" language="javascript"></script>
+	<qtssobject name=scriptTag>
+		//<script language=javascript>
+			
+		var gLibBasePosX = 79;
+		var gLibBasePosY = 108;
+		var gLibItemWidth = 325;
+		var gLibClickWidth = 266;
+		var gLibItemHeight = 20;
+		var gLibNumItems = 14;
+		var gLibMaxChars = 29;
+		var gDefaultImage = 'images/mp3_file.gif';
+		var gDragThreshold = 6;
+		var gNumberOfSteps = 4;
+		var gStepTiming = 35;
+		var gTextSpacerImg = '<img src="images/spacer.gif" width=3 height=20 align=middle>';
+		var gThumbRangeTop = 122;
+		var gThumbRangeBottom = 360;
+		var gThumbHeight = 16;
+		var gScrollArrowWidth = 16;
+		var gScrollArrowHeight = 16;
+		var gDirScrollbarLeft = 404;
+		var gScrollUpArrowTop = 107;
+		var gScrollDownArrowTop = 375;
+		var gScrollBy = 6;
+		var dblClickDelay = 300;
+		var gScrollDelay = 200;
+		
+		
+		var libHighlightStart = (-1);
+		var libHighlightEnd = (-1);
+		var libScrollPos = 0;
+		var dragStatus = 'false';
+		var directoryListing = new Array();
+		var playlists = new Array();
+		var playlistPaths = new Array();
+		var startArray = new Array();
+		var iconImages = new Array();
+		var doContiguousSelection = false;
+		var insertPos = (-1);
+		var removeOldItem = (-1);
+		var showedAlert = false;
+		
+		var isDblClick = false;
+		var dblClickTimer;
+		
+		var scrollTimer;
+		var scrollBy = 1; // -1=scroll up, 1=scroll down
+		var scrollWhich = 0; // 0=library, 1=playlist contents
+		
+		var broadcastPasswordIsSet = <qtssobject name=plbroadcastpasswordisset/>;
+		
+		function DoScroll() {
+			if (dragStatus == 'timedscroll') {
+				if (scrollWhich == 0) {
+					var dataHeight = directoryListing.length - gLibNumItems;
+					libScrollPos = Math.max(Math.min(libScrollPos+scrollBy, dataHeight), 0);
+					BuildLibrary();
+					libSetThumbPos();
+				}
+				else {
+					var dataHeight = playlistFiles.length - gPLNumItems;
+					plScrollPos = Math.max(Math.min(plScrollPos+scrollBy, dataHeight), 0);
+					BuildPlaylist();
+					PLSetThumbPos();
+				}
+				SetScrollTimer();
+			}
+			else {
+				clearInterval(scrollTimer);
+				scrollTimer = null;
+			}
+		}
+		
+		function SetScrollTimer() {
+			if (scrollTimer == null) {
+				scrollTimer = setInterval("DoScroll()", gScrollDelay)
+			}
+		}
+		
+		function BuildLibrary() {
+			var filesLayerText = '<span class=small>';
+			var statusLayerText = '<span class=small>';
+			var controlsLayerText = '<span class=small>';
+			for (var i=libScrollPos; i < Math.min((libScrollPos+gLibNumItems), directoryListing.length); i++) {
+				var itemText = directoryListing[i];
+				var itemName = playlists[i];
+				var isMP3 = (iconImages[i] == 'images/mp3_file.gif') ? 'true' : 'false';
+				if (itemText.length > gLibMaxChars) {
+					itemText = itemText.substr(0, gLibMaxChars) + "&#8230;";
+				}
+				itemText = itemText.replace('<', '&lt;');
+				itemText = itemText.replace('>', '&gt;');
+				filesLayerText = filesLayerText + '<div style="width:216px; height:20px;">';
+				filesLayerText = filesLayerText + '<img src="' + iconImages[i] + '" width=16 height=16 align=middle vspace=2>';
+				filesLayerText = filesLayerText + gTextSpacerImg + itemText + '<' + '/div>';
+				statusLayerText = statusLayerText + '<div style="width:84px; height:20px;">';
+				if ((startArray[i] == 2) || (startArray[i] == 3)) { // error
+					statusLayerText = statusLayerText + '<a href="javascript:ViewErrors(\'' + itemName + '\')">';
+					if (startArray[i] == 2) {
+						statusLayerText = statusLayerText + '<img src="images/icon_error.gif" width=16 height=16 hspace=1 vspace=2 border=0 align=middle><' + '/a>';
+					}
+					else {
+						statusLayerText = statusLayerText + '<img src="images/icon_alert.gif" width=16 height=16 hspace=1 vspace=2 border=0 align=middle><' + '/a>';
+					}
+				}
+				else {
+					statusLayerText = statusLayerText + '<img src="images/spacer.gif" width=16 height=16 hspace=1 vspace=2 border=0 align=middle>';
+				}
+				controlsLayerText = controlsLayerText + '<div style="width:56px; height:20px;">';
+				if ((startArray[i] == 0) || (startArray[i] == 2)) { // stopped
+					statusLayerText = statusLayerText + '<qtssstring name=PLStopped>';
+					controlsLayerText = controlsLayerText + '<a href="javascript:StartPlaylist(\'' + itemName + '\', ' + isMP3 + ')">';
+					controlsLayerText = controlsLayerText + '<img src="images/icon_start_playlist.gif" width=16 height=16 hspace=1 vspace=2 border=0><' + '/a>';
+				}
+				else { // started
+					statusLayerText = statusLayerText + '<qtssstring name=PLStarted>';
+					controlsLayerText = controlsLayerText + '<a href="javascript:StopPlaylist(\'' + itemName + '\', ' + isMP3 + ')">';
+					controlsLayerText = controlsLayerText + '<img src="images/icon_stop_playlist.gif" width=16 height=16 hspace=1 vspace=2 border=0><' + '/a>';
+				}
+				statusLayerText = statusLayerText + '<' + '/div>';
+				controlsLayerText = controlsLayerText + '<' + '/div>';
+			}
+			filesLayerText = filesLayerText;
+			SetStyleText('libfiles', filesLayerText + '<' + '/span>');
+			SetStyleText('libstatus', statusLayerText + '<' + '/span>');
+			SetStyleText('libcontrols', controlsLayerText + '<' + '/span>');
+			SetLibHighlightBar();
+			if (directoryListing.length > gLibNumItems) {
+				SetStyleVisible('libscrollbardisabled', false);
+				SetStyleVisible('libscrollbar', true);
+				SetStyleVisible('libscrollthumb', true);
+			}
+			else {
+				SetStyleVisible('libscrollbardisabled', true);
+				SetStyleVisible('libscrollbar', false);
+				SetStyleVisible('libscrollthumb', false);
+			}
+		}
+		
+		function clickedEditButton() {
+			document.forms[0].elements['action'].value='GetPlaylist';
+			document.forms[0].elements['curplaylist'].value=playlists[libHighlightStart];
+			document.forms[0].elements['filename'].value='playlist_detail.html';
+			document.forms[0].submit();
+		}
+		
+		function clickedDeleteButton() {
+			if (entityConfirm("<qtssstring name=PLDeleteConfirm>")) {
+				document.forms[0].elements['action'].value='DeletePlaylist';
+				document.forms[0].elements['filename'].value='playlists.html';
+				document.forms[0].elements['curplaylist'].value=playlists[libHighlightStart];
+				document.forms[0].submit();
+			}
+		}
+		
+		function clickedNewMP3Button() {
+			document.forms[0].elements['action'].value='NewMP3Playlist';
+			document.forms[0].elements['filename'].value='playlist_detail.html';
+			document.forms[0].submit();
+		}
+		
+		function clickedNewMovieButton() {
+			document.forms[0].elements['action'].value='NewMoviePlaylist';
+			document.forms[0].elements['filename'].value='playlist_detail.html';
+			document.forms[0].submit();
+		}
+		
+		function handleLibDblClick() {
+			ClearDblClickTimer();
+			clickedEditButton();
+		}
+		
+		function SetDblClickTimer() {
+			isDblClick = true;
+			currentTooltipTimer = setTimeout("ClearDblClickTimer()", dblClickDelay);
+		}
+		
+		function ClearDblClickTimer() {
+			isDblClick = false;
+			dblClickTimer = null;
+		}
+		
+		function StartPlaylist(plname, isMP3) {
+			if ((!isMP3) || (broadcastPasswordIsSet == 1)) {
+				document.forms[0].elements['action'].value='StartPlaylist';
+				document.forms[0].elements['curplaylist'].value=plname;
+				document.forms[0].elements['filename'].value='playlists.html';
+				document.forms[0].submit();
+			}
+			else {
+				if (confirm('<qtssstring name=PLSetBroadcastPasswordConfirm>')) {
+					document.forms[0].elements['action'].value = '';
+					document.forms[0].elements['filename'].value = 'change_mp3_password.html';
+					document.forms[0].submit();
+				}
+			}
+		}
+
+		function StopPlaylist(plname) {
+			document.forms[0].elements['action'].value='StopPlaylist';
+			document.forms[0].elements['curplaylist'].value=plname;
+			document.forms[0].elements['filename'].value='playlists.html';
+			document.forms[0].submit();
+		}
+
+		function ViewErrors(plname) {
+			document.forms[0].elements['action'].value='ShowPlaylistLog';
+			document.forms[0].elements['curplaylist'].value=plname;
+			document.forms[0].elements['filename'].value='playlist_error_log.html';
+			document.forms[0].submit();
+		}
+
+		function libScrollDown() {
+			var dataHeight = directoryListing.length - gLibNumItems;
+			if (libScrollPos < dataHeight) {
+				libScrollPos = Math.min(libScrollPos+gScrollBy, dataHeight);
+				BuildLibrary();
+				libSetThumbPos();
+			}
+		}
+		
+		function libScrollUp() {
+			if (libScrollPos > 0) {
+				libScrollPos = Math.max(libScrollPos-gScrollBy, 0);
+				BuildLibrary();
+				libSetThumbPos();
+			}
+		}
+		
+		function libSetThumbPos() {
+			var scrollbarHeight = gThumbRangeBottom - gThumbRangeTop;
+			var dataHeight = directoryListing.length - gLibNumItems;
+			if (dataHeight > 1) {
+				var scrollRatio = libScrollPos / dataHeight;
+				SetStylePos('libscrollthumb', 1, (gThumbRangeTop + (scrollRatio * scrollbarHeight)));
+			}
+		}
+		
+		function libGetThumbPos() {
+			var scrollbarHeight = gThumbRangeBottom - gThumbRangeTop;
+			var dataHeight = directoryListing.length - gLibNumItems;
+			if (dataHeight > 1) {
+				var scrollRatio = (GetStylePos('libscrollthumb', 1) - gThumbRangeTop) / scrollbarHeight;
+				libScrollPos = Math.round(scrollRatio * (directoryListing.length - gLibNumItems));
+				BuildLibrary();
+				libSetThumbPos();
+			}
+		}
+		
+		function SetLibHighlightBar() {
+			if (libHighlightEnd < libScrollPos) {
+				SetStyleVisible('libhighlight', false);
+			}
+			else {
+				var displayHighlightStart = Math.max(libHighlightStart - libScrollPos, 0);
+				var displayHighlightEnd = Math.min(libHighlightEnd - libScrollPos, libScrollPos + gLibNumItems - 1);
+				var highlightHeight = (displayHighlightEnd - displayHighlightStart + 1) * gLibItemHeight;
+				var startPos = (displayHighlightStart * gLibItemHeight) + gLibBasePosY;
+				SetStyleText('libhighlight', '<img src="images/highlight.gif" width=' + gLibItemWidth + ' height=' + highlightHeight + '>');
+				SetStylePos('libhighlight', 1, startPos);
+				SetStyleVisible('libhighlight', true);
+			}
+		}
+		
+		function SetButtonsEnabled(isEnabled) {
+			SetStyleVisible('deleteButtonDisabled', !isEnabled);
+			SetStyleVisible('deleteButton', isEnabled);
+			SetStyleVisible('editButtonDisabled', !isEnabled);
+			SetStyleVisible('editButton', isEnabled);
+		}
+		
+		function handleMouseDown(e) {
+			var continueClick = true;
+			if (IsIE()) var theTarget = window.event.srcElement;    
+			else var theTarget = e.target;
+			if (IsIE()) var theButton = event.button;
+			else var theButton = e.which;
+			if (IsIE()) doContiguousSelection = window.event.shiftKey;
+			else doContiguousSelection = (e.modifiers == 4);
+			if (IsIE()) {
+				oldX = event.clientX + GetIEScrollPos(0);
+				oldY = event.clientY + GetIEScrollPos(1);
+			}
+			else {
+				oldX = e.pageX
+				oldY = e.pageY
+			}
+			
+			removeOldItem = (-1);
+			
+			if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY >= gScrollUpArrowTop) && (oldY <= (gScrollUpArrowTop + gScrollArrowHeight))) { // dir up scroll
+				dragStatus = 'timedscroll';
+				scrollWhich = 0;
+				scrollBy = (-1);
+				DoScroll();
+				continueClick = false;
+			}
+			
+			if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY > (gScrollUpArrowTop + gScrollArrowHeight)) && (oldY < GetStylePos('libscrollthumb', 1))) { // jump up
+				dragStatus = 'timedscroll';
+				scrollWhich = 0;
+				scrollBy = ((-1) * (gLibNumItems - 1));
+				DoScroll();
+				continueClick = false;
+			}
+			
+			if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY >= GetStylePos('libscrollthumb', 1)) && (oldY <= (GetStylePos('libscrollthumb', 1) + gThumbHeight))) { // dir scroll thumb
+				layerClicked = 'libscrollthumb';
+				dragStatus = 'scrolling';
+				continueClick = false;
+			}
+			
+			if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY > (GetStylePos('libscrollthumb', 1) + gThumbHeight)) && (oldY < gScrollDownArrowTop)) { // jump down
+				dragStatus = 'timedscroll';
+				scrollWhich = 0;
+				scrollBy = gLibNumItems - 1;
+				DoScroll();
+				continueClick = false;
+			}
+			
+			if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY >= gScrollDownArrowTop) && (oldY <= (gScrollDownArrowTop + gScrollArrowHeight))) { // dir up scroll
+				dragStatus = 'timedscroll';
+				scrollWhich = 0;
+				scrollBy = 1;
+				DoScroll();
+				continueClick = false;
+			}
+			
+			if ((oldX >= gLibBasePosX) && (oldX <= gLibBasePosX+gLibClickWidth) && (oldY >= gLibBasePosY) && (oldY <= gLibBasePosY+(gLibNumItems*gLibItemHeight))) {
+				var itemClicked = (oldY - gLibBasePosY) / gLibItemHeight;
+				itemClicked = Math.floor(itemClicked);
+				itemClicked = itemClicked + libScrollPos;
+				if (itemClicked > (directoryListing.length - 1)) {
+					return false;
+				}
+				offsetX = oldX - gLibBasePosX;
+				offsetY = oldY - (gLibBasePosY + ((itemClicked - libScrollPos) * gLibItemHeight));
+				if ((itemClicked < libHighlightStart) || (itemClicked > libHighlightEnd)) {
+					libHighlightStart = itemClicked;
+					libHighlightEnd = itemClicked;
+					SetLibHighlightBar();
+				}
+				dragStatus = 'click';
+				SetButtonsEnabled(true);
+				continueClick = false;
+				if (isDblClick) { // double-click; handle
+					handleLibDblClick()
+				}
+				else { // first click; set isDblClick to true and set a timer to set it to false after the delay
+					SetDblClickTimer(); 
+				}
+			}
+			
+			if (continueClick) return;
+			else return continueClick;
+		}
+		
+		function handleDrag(e) {
+			status = '';
+			if (IsIE()) {
+				currentX = event.clientX + GetIEScrollPos(0);
+				currentY = event.clientY + GetIEScrollPos(1);
+			}
+			else {
+				currentX = e.pageX
+				currentY = e.pageY
+			}
+			if (dragStatus == 'scrolling') {
+				SetStylePos(layerClicked, 1, Math.max(Math.min(currentY, gThumbRangeBottom), gThumbRangeTop));
+			}
+			var maxPos = directoryListing.length;
+			if ((currentX >= gLibBasePosX) && (currentX <= gLibBasePosX+gLibItemWidth) && (currentY >= gLibBasePosY) && (currentY <= gLibBasePosY+(gLibNumItems*gLibItemHeight))) {
+				// check to see if we've switched positions
+				tooltipPosY = Math.min(Math.floor((currentY - gLibBasePosY) / gLibItemHeight), maxPos);
+				if (tooltipPosY < directoryListing.length) {
+					if (status != playlistPaths[tooltipPosY]) {
+						status = playlistPaths[tooltipPosY];
+					}
+				}
+			}
+		}
+
+		function handleMouseUp() {
+			var continueClick = true;
+			if (!IsIE()) document.releaseEvents(Event.MOUSEMOVE);
+			if (dragStatus == 'scrolling') {
+				dragStatus = 'false';
+				if (layerClicked == 'libscrollthumb') libGetThumbPos();
+				else PLGetThumbPos();
+				continueClick = false;
+			}
+			dragStatus = 'false';
+			if (continueClick) return;
+			else return continueClick;
+		}
+
+		function UpdateHiddenFields() {
+			var myString = '';
+			var myString2 = '';
+			for (var i = 0; i < directoryListing.length; i++) {
+				myString = myString + directoryListing[i];
+				myString2 = myString2 + startArray[i];
+				if (i < (startArray.length - 1)) {
+					myString = myString + "\t";
+					myString2 = myString2 + "\t";
+				}
+			}
+			document.forms[0].submitplaylistnames.value = myString;
+			document.forms[0].submitstartstop.value = myString2;
+		}
+
+		function showConfirmMessage() {
+			if ('<qtssobject name=confirmMessage/>' != '') {
+				if (parent.frames['top'].showConfirmMessage) {
+					parent.frames['top'].showConfirmMessage('<qtssobject name=confirmMessage/>');
+				}
+				else if (parent.parent.frames[0].showConfirmMessage) {
+					parent.parent.frames[0].showConfirmMessage('<qtssobject name=confirmMessage/>');
+				}
+			}
+		}
+		
+		// re-route events to handlers
+		
+		if (!IsIE()) document.captureEvents(Event.MOUSEUP|Event.MOUSEDOWN|Event.MOUSEMOVE);
+		
+		document.onmousedown = handleMouseDown;
+		document.onmouseup = handleMouseUp;
+		document.onmousemove = handleDrag
+		
+		// populate array from QTSS
+		
+		<qtssrepeater name=playlists>
+			directoryListing[directoryListing.length] = '<qtssobject name=qtssPlaylistTitles format=nosinglequotes/>';
+			playlists[playlists.length] = '<qtssobject name=qtssPlaylistNames format=nosinglequotes/>';
+			playlistPaths[playlistPaths.length] = '<qtssobject name=qtssPlaylistPaths format=nosinglequotes/>';
+			startArray[startArray.length] = '<qtssobject name=qtssPlaylistStatuses format=nosinglequotes/>';
+			iconImages[iconImages.length] = 'images/<qtssobject name=qtssPlaylistImages format=nosinglequotes/>';
+		</qtssrepeater>
+				
+	</script>
+</head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif" onload="showConfirmMessage();BuildLibrary()">
+<qtssobject type=getform>
+<input type=hidden name=filename value="confirm.html"><input type="hidden" name="submitplaylistnames" value=""><input type="hidden" name="submitstartstop" value="">
+<input type=hidden name=action value="">
+<input type="hidden" name="curplaylist" value="">
+<qtssobject name="qtssSvrDefaultDNSName" type=hidden/>
+	<table border=0 cellspacing=0 cellpadding=0 width=620>
+		<tr>
+			<td align=left valign=top nowrap width=20>
+				<img src="images/spacer.gif" width=20 height=20 align=top alt=""> 
+			</td>
+			<td valign=top align=center>
+				<br>
+				<table border=0 cellspacing=0 cellpadding=2 width="100%">
+					<tr>
+						<td align=left nowrap class=header>
+							<qtssstring name="PLHeader"/> 
+						</td>
+					</tr>
+					<tr>
+						<td align=left>
+							<img src="images/divider.gif" width=600 height=1 align=middle alt=""> 
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+	<div id="availpllabel" class=large>
+		<qtssstring name="PLAvailablePlaylists"/>
+	</div>
+	<div id="libbackground">
+		<table border=0 cellspacing=0 cellpadding=0>
+			<tr>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=238 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=238 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=62 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=62 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=38 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=38 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+				<td width=238 height=13 nowrap bgcolor="#c6c6d6" class=reallysmall><img src="images/headerpixel.gif" width=2 height=1 alt=""><qtssstring name="RelayNameHeader" /></td>
+				<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+				<td width=62 height=1 nowrap bgcolor="#c6c6d6" class=reallysmall><img src="images/headerpixel.gif" width=2 height=1 alt=""><qtssstring name="RelayStatusHeader" /></td>
+				<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+				<td width=38 height=1 nowrap bgcolor="#c6c6d6" class=reallysmall><img src="images/headerpixel.gif" width=2 height=1 alt="">&nbsp;</td>
+				<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=238 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=238 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=62 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=62 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=38 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=38 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=282 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=1 height=282 alt=""></td>
+				<td width=238 height=282 bgcolor="#FFFFFF"><img src="images/whitepixel.gif" width=238 height=282 alt=""></td>
+				<td width=1 height=282 bgcolor="#8c93ad"><img src="images/whitepixel.gif" width=1 height=282 alt=""></td>
+				<td width=62 height=282 bgcolor="#FFFFFF"><img src="images/whitepixel.gif" width=62 height=282 alt=""></td>
+				<td width=1 height=282 bgcolor="#8c93ad"><img src="images/whitepixel.gif" width=1 height=282 alt=""></td>
+				<td width=38 height=282 bgcolor="#FFFFFF"><img src="images/whitepixel.gif" width=38 height=282 alt=""></td>
+				<td width=1 height=282 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=1 height=282 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=238 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=238 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=62 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=62 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=38 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=38 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			</tr>
+		</table>
+	</div>
+	<div id="libfiles">
+		<!--placeholder ~~ will be populated dynamically-->
+	</div>
+	<div id="libstatus">
+		<!--placeholder ~~ will be populated dynamically-->
+	</div>
+	<div id="libcontrols">
+		<!--placeholder ~~ will be populated dynamically-->
+	</div>
+	<div id="libhighlight">
+		<!--placeholder ~~ will be populated dynamically-->
+	</div>
+	<div id="libscrollbar">
+		<table border=0 cellspacing=0 cellpadding=0>
+			<tr>
+				<td><img src="images/scroll_arrow_up.gif" width=16 height=16></td>
+			</tr>
+			<tr>
+				<td background="images/scroll_bg.gif" height=252><img src="images/scroll_bg.gif" width=16 height=252></td>
+			</tr>
+			<tr>
+				<td><img src="images/scroll_arrow_down.gif" width=16 height=16></td>
+			</tr>
+		</table>
+	</div>
+	<div id="libscrollbardisabled">
+		<table border=0 cellspacing=0 cellpadding=0>
+			<tr>
+				<td background="images/scroll_bg_inactive.gif" width=16 height=1><img src="images/greypixel.gif" width="16" height="1"></td>
+			</tr>
+			<tr>
+				<td background="images/scroll_bg_inactive.gif" height=282><img src="images/scroll_bg_inactive.gif" width="16" height="282"></td>
+			</tr>
+			<tr>
+				<td background="images/scroll_bg_inactive.gif" width=16 height=1><img src="images/greypixel.gif" width="16" height="1"></td>
+			</tr>
+		</table>
+	</div>
+	<div id="libscrollthumb">
+		<img src="images/scroll_thumb.gif" width=16 height=16>
+	</div>
+	<div id="newMP3Button">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td align=left><a href="javascript:clickedNewMP3Button()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+				<td align=left nowrap><a href="javascript:clickedNewMP3Button()"><qtssstring name="PLNewMP3" /></a></td>
+			</tr>
+		</table>
+	</div>
+	<div id="newMovieButton">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td align=left><a href="javascript:clickedNewMovieButton()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+				<td align=left nowrap><a href="javascript:clickedNewMovieButton()"><qtssstring name="PLNewMovie" /></a></td>
+			</tr>
+		</table>
+	</div>
+	<div id="deleteButton">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td align=left><a href="javascript:clickedDeleteButton()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+				<td align=left nowrap><a href="javascript:clickedDeleteButton()"><qtssstring name="PLDeleteButton" /></a></td>
+			</tr>
+		</table>
+	</div>
+	<div id="deleteButtonDisabled">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td align=left><img src="images/link_disabled.gif" width=28 height=24></td>
+				<td align=left nowrap><qtssstring name="PLDeleteButton" /></td>
+			</tr>
+		</table>
+	</div>
+	<div id="editButton">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td align=left><a href="javascript:clickedEditButton()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+				<td align=left nowrap><a href="javascript:clickedEditButton()"><qtssstring name="PLEditButton" /></a></td>
+			</tr>
+		</table>
+	</div>
+	<div id="editButtonDisabled">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td align=left><img src="images/link_disabled.gif" width=28 height=24></td>
+				<td align=left nowrap><qtssstring name="PLEditButton" /></td>
+			</tr>
+		</table>
+	</div>
+</qtssobject>
+</body>
+</html>

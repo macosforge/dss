@@ -1,0 +1,24 @@
+#!/usr/bin/ksh
+Args=""
+FIList=""
+
+while [[ $# -gt 1 ]]
+do
+  if [ \( "$1" = "-include" \) -o \( "$1" = "-FI" \) ]; then
+    FIList="${FIList}#include \"$2\"\n"
+    shift
+    shift
+  else
+    Args="$Args $1"
+    shift
+  fi
+done
+# echo "Args are $Args"
+# echo "include list is $FIList"
+
+SourceFile=$1
+
+TempSourceFile=${SourceFile%\.*}.x.cpp
+
+echo "(echo "$FIList"; cat $SourceFile) | egrep -v '#pragma mark|#pragma options' > $TempSourceFile ; cxx $Args $TempSourceFile"
+(echo "$FIList"; cat $SourceFile) | egrep -v '#pragma mark|#pragma options' > $TempSourceFile ; cxx $Args $TempSourceFile

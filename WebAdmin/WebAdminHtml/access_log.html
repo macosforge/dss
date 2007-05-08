@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<style type="text/css">
+		td { font-family: Arial, Helvetica, Geneva, Swiss, sans-serif; font-size: 12px }
+		.large { font-weight: bold; font-size: 14px  }
+		.small { font-size: 10px }
+		.white { color: #FFFFFF }
+		.header { font-size: 18px; color:#666699 }
+		input { font-size: 12px }
+	</style> 
+</head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif">
+<qtssobject type=form param="_self">
+<input type=hidden name=filename value="general_settings.html">
+<input type=hidden name=action value="SaveGeneralSettings">
+
+<table border=0 cellspacing=0 cellpadding=0 width=620>
+	<tr>
+		<td align=left valign=top width=20>
+				<img src="images/spacer.gif" width=20 height=20 align=top alt=""> 
+		</td>
+		<td valign=top align=center>
+			<br>
+			<table border=0 cellspacing=0 cellpadding=2 width="100%">
+				<tr>
+					<td align=left nowrap class=header>
+							<qtssstring name="AccessHistHeader"/>
+					</td>
+				</tr>
+				<tr>
+					<td align=left>
+							<img src="images/divider.gif" width="100%" height=1 align=middle alt=""> 
+					</td>
+				</tr>
+			</table>
+			<br>
+			<br>
+			<table border=0 cellspacing=0 cellpadding=0 width=380>
+				<tr>
+					<td align=left valign=top width="100%">
+						<table border=0 cellspacing=0 cellpadding=4 width="100%" height=14>
+							<tr>
+								<td align=left nowrap bgcolor="#8C94AD" class=white>
+									<b><qtssstring name="AccessHistFilesReqHeader"/></b>
+								</td>
+							</tr>
+						</table>
+						<table border=0 bgcolor="#FFFFFF" cellspacing=1 cellpadding=4 width="100%">
+							<tr>
+								<td align=left nowrap bgcolor="#C6C6D6" class=small>
+										<b class=grey><qtssstring name="AccessHistFileReq"/></b> 
+								</td>
+								<td nowrap width="47%" bgcolor="#C6C6D6" align=right class=small>
+									<b class=grey><qtssstring name="AccessHistReqCount"/></b>
+								</td>
+							</tr>
+							<qtssrepeater name=accesslog/><tr>
+								<td align=left nowrap bgcolor="#EFEFF7" class=small>
+									<qtssobject name="qtssAccessURI"/>
+								</td>
+								<td nowrap width="47%" bgcolor="#EFEFF7" class=small align=right>
+									<qtssobject name="qtssAccessCount"/>
+								</td>
+							</tr></qtssrepeater>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+
+
+</qtssobject></body>
+</html>

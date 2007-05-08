@@ -1,0 +1,291 @@
+<html>
+<head>
+<style type="text/css">
+		td { font-family: Arial, Helvetica, Geneva, Swiss, sans-serif; font-size: 12px }
+		div { font-family: Arial, Helvetica, Geneva, Swiss, sans-serif; font-size: 12px }
+		.large { font-weight: bold; font-size: 14px  }
+		.small { font-size: 10px }
+		.header { font-size: 18px; color:#666699 }
+		.white { color: #FFFFFF }
+		input { font-size: 12px }
+	</style> 
+	<qtssobject name=scriptTag>
+		//<script language=javascript>
+		
+		function clickedDeleteRelayDest(relayToDelete) {
+			document.forms[0].elements['action'].value = 'DeleteRelayDest';
+			document.forms[0].elements['currentDest'].value = relayToDelete;
+			document.forms[0].elements['filename'].value = 'relay_details_default.html';
+			document.forms[0].submit();
+		}
+
+		function clickedSaveButton() {
+			document.forms[0].elements['action'].value = 'SaveRelay';
+			document.forms[0].elements['filename'].value = 'relay.html';
+		}
+		
+		function clickedAddDestButton() {
+			document.forms[0].elements['action'].value = 'AddRelayDestination';
+			document.forms[0].elements['filename'].value = 'relay_details_default.html';
+			document.forms[0].submit();
+		}
+		
+		function validateFormData() {
+			for (var i = 0; i < document.forms[0].elements['relayDestCount'].value; i++) {
+				var fieldValue = document.forms[0].elements['relayDestTTL'+i].value;
+				if ((fieldValue != '') && ((fieldValue < 1) || (fieldValue > 255) || (fieldValue.match('[^0-9]') != null))) {
+					entityAlert("<qtssstring name=RelayErrMulticastTTLIncorrect/>");
+					document.forms[0].elements['relayDestTTL'+i].value = document.forms[0].elements['relayDestTTL'+i+'_shadow'].value
+					return false;
+				}
+			}
+			return true;
+		}
+		
+	</script>
+</head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif">
+<qtssobject type="validatedform">
+	<qtssobject type=hidden name="relayDestCount"/>
+	<qtssobject type=hidden name="qtssSvrDefaultDNSName"/>
+	<input type=hidden name=action value="">
+	<input type=hidden name=filename value="relay.html">
+	<input type=hidden name="currentDest" value="">
+	<input type=hidden name="relayType" value="announced_source">
+	<table border=0 cellspacing=0 cellpadding=0 width=620>
+		<tr>
+			<td align=left valign=top nowrap width=20>
+				<img src="images/spacer.gif" width=20 height=20 align=top> 
+			</td>
+			<td valign=top align=center>
+				<br>
+				<table border=0 cellspacing=0 cellpadding=2 width="100%">
+					<tr>
+						<td align=left nowrap class=header>
+							<qtssstring name="RelayDetailsHeader"/>
+						</td>
+					</tr>
+					<tr>
+						<td align=left>
+							<img src="images/divider.gif" width=600 height=1 align=middle> 
+						</td>
+					</tr>
+				</table>
+				<br>
+				<table border=0 cellspacing=0 cellpadding=0 width="90%">
+					<tr>
+						<td valign=top nowrap align=center>
+								<table border=0 cellspacing=4 cellpadding=0>
+									<tr>
+										<td align=right>
+											<b><qtssstring name="RelayDetailsRelayName"/></b> 
+										</td>
+										<td align=left>
+											<qtssobject name="currentRelay" type="hidden">
+											<qtssstring name="RelayDefaultRelayName"/>
+										</td>
+									</tr>
+									<tr>
+										<td align=left>
+											<p>
+											</p>
+										</td>
+										<td align=left>
+											<p>
+											</p>
+										</td>
+									</tr>
+									<tr>
+										<td align=right>
+											<b><qtssstring name="RelayDetailsStatus"/></b>
+										</td>
+										<td align=left>
+											<qtssobject name="relayEnabled" format=checkbox param="1"> <qtssstring name="Enabled"/>
+										</td>
+									</tr>
+								</table>
+								<br>
+						</td>
+					</tr>
+					<qtssrepeater name="relaydests">
+						<tr>
+							<td align=left>
+								<p class=large>
+									<img src="images/divider.gif" width="100%" height=1 align=middle> 
+									<br>
+									<b><qtssstring name="RelayDetailsDestinationHeader"/> (<qtssobject name=iteration/> <qtssstring name="of"/> <qtssobject name="relayDestCount"/>)</b>
+									<br>
+								</p>
+									<table border=0 cellspacing=4 cellpadding=0 align=center>
+										<tr>
+											<td colspan=2 align=right>
+												<b><qtssstring name="RelayDetailsDestHostname"/></b>
+											</td>
+											<td align=left>
+												<qtssobject name="relayDestHostname" type=text param=" size=32"/>
+											</td>
+										</tr>
+										<tr>
+											<td align=left>
+												<p>
+												</p>
+											</td>
+											<td align=left>
+												<p>
+													<br>
+												</p>
+											</td>
+											<td align=left>
+												<p>
+												</p>
+											</td>
+										</tr>
+										<tr>
+											<td align=right>
+												<qtssobject name="relayDestType" format=radio param="announced_destination"/>
+											</td>
+											<td align=left colspan=2>
+												<b><qtssstring name="RelayDetailsDestAnnounced"/></b>
+											</td>
+										</tr>
+										<tr>
+											<td align=left>
+												<p>
+												</p>
+											</td>
+											<td align=right>
+												<b><qtssstring name="Username"/></b>
+											</td>
+											<td align=left>
+												<qtssobject name="relayDestUsername" type=text param=" size=32"/>
+											</td>
+										</tr>
+										<tr>
+											<td align=left>
+												<p>
+												</p>
+											</td>
+											<td align=right>
+												<b><qtssstring name="Password"/></b>
+											</td>
+											<td align=left>
+												<qtssobject name="relayDestPassword" type=password param=" size=32"/>
+											</td>
+										</tr>
+										<tr>
+											<td align=left>
+												<p>
+												</p>
+											</td>
+											<td align=left>
+												<p>
+													<br>
+												</p>
+											</td>
+											<td align=left>
+												<p>
+												</p>
+											</td>
+										</tr>
+										<tr>
+											<td align=right>
+												<qtssobject name="relayDestType" format=radio param="udp_destination"/>
+											</td>
+											<td align=left colspan=2>
+												<b><qtssstring name="RelayDetailsDestUDP"/></b>
+											</td>
+										</tr>
+										<tr>
+											<td align=left>
+												<p>
+												</p>
+											</td>
+											<td align=right>
+												<b><qtssstring name="RelayDetailsDestBasePort"/></b>
+											</td>
+											<td align=left>
+												<qtssobject name="relayDestPort" type=text param=" size=6"/>
+											</td>
+										</tr>
+										<tr>
+											<td align=left>
+												<p>
+												</p>
+											</td>
+											<td align=right>
+												<b><qtssstring name="RelayDetailsDestMulticastTTL"/></b>
+											</td>
+											<td align=left>
+												<qtssobject name="relayDestTTL" type=text param=" size=4"/>
+											</td>
+										</tr>
+									</table>
+								<p>
+									<table border=0 cellpadding=0 cellspacing=0>
+										<tr>
+											<td align=left>
+												<a href="#" onclick="clickedDeleteRelayDest(<qtssobject name=iteration/>)">
+													<img src="images/link.gif" width=28 height=24 border=0>
+												</a>
+											</td>
+											<td align=left>
+												<a href="#" onclick="clickedDeleteRelayDest(<qtssobject name=iteration/>)">
+													<qtssstring name="RelayDetailsDeleteDestination" />
+												</a>
+											</td>
+										</tr>
+									</table>
+								<br>
+								</p>
+							</td>
+						</tr>
+					</qtssrepeater>
+					<tr>
+						<td align=left>
+							<p>
+								<img src="images/divider.gif" width="100%" height=1 align=middle> 
+								<br>
+								<br>
+								<table border=0 cellpadding=0 cellspacing=0>
+									<tr>
+										<td align=left>
+											<a href="#" onclick="clickedAddDestButton()">
+												<img src="images/link.gif" width=28 height=24 border=0>
+											</a>
+										</td>
+										<td align=left>
+											<a href="#" onclick="clickedAddDestButton()">
+												<qtssstring name="RelayDetailsAddDestination" />
+											</a>
+										</td>
+									</tr>
+								</table>
+							</p>
+						</td>
+					</tr>
+				</table>
+				<br>
+				<br>
+				<table border=0 cellspacing=0 cellpadding=2 width="100%">
+					<tr>
+						<td align=left valign=top colspan=2>
+							<img src="images/divider.gif" width=600 height=1 align=middle alt=""> 
+						</td>
+					</tr>
+					<tr>
+						<td align=left valign=top>
+							<br>
+							<!--[[a href="#" onclick="showHelp()"]][[img src="images/help.gif" width=20 height=20 border=0]][[/a]]-->
+						</td>
+						<td align=right valign=top>
+							<br>
+							<input type=submit name=Submit value="<qtssstring name=SubmitButtonTitle/>" onclick="clickedSaveButton()">
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+</qtssobject>
+</body>
+</html>

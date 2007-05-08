@@ -1,0 +1,1571 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<meta name="generator" content="BBEdit 6.1.1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta http-equiv="imagetoolbar" content="no">
+	<style type="text/css">
+		td		
+		{
+			font-family: Arial, Helvetica, Geneva, Swiss, sans-serif;
+			font-size: 12px;
+			line-height: 12px;
+		}
+		.large		
+		{
+			font-weight: bold;
+			font-size: 14px;
+			line-height: 12px;
+		}
+		.small { font-size: 10px; }
+		.reallysmall		
+		{
+			font-size: 10px;
+			color: #333;
+		}
+		.tooltiptext		
+		{
+			font-family: Arial, Helvetica, Geneva, Swiss, sans-serif;
+			font-size: 9px;
+			background: #FFFFCC;
+		}
+		.header		
+		{
+			font-size: 18px;
+			color: #669;
+			line-height: 18px;
+		}
+		.white { color: #FFFFFF }
+		.listing		
+		{
+			font-family: Monaco, monospace;
+			font-size: 10px;
+		}
+		#libbackground		
+		{
+			position: absolute;
+			z-index: 1;
+			top: 222px;
+			left: 35px;
+			visibility: visible;
+		}
+		#libfiles		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 237px;
+			left: 37px;
+			width: 218px;
+			line-height: 18px;
+			<qtssobject name=monospaceIfNotJapanese/>visibility: visible;
+		}
+		#libscrollbardisabled		
+		{
+			position: absolute;
+			z-index: 1;
+			top: 236px;
+			left: 254px;
+			width: 16px;
+			visibility: visible;
+		}
+		#libscrollbar		
+		{
+			position: absolute;
+			z-index: 1;
+			top: 236px;
+			left: 254px;
+			width: 16px;
+			visibility: hidden;
+		}
+		#libscrollthumb		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 251px;
+			left: 254px;
+			width: 16px;
+			height: 16px;
+			visibility: hidden;
+		}
+		#plfileorders		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 237px;
+			left: 284px;
+			width: 39px;
+			line-height: 18px;
+			<qtssobject name=monospaceIfNotJapanese/>visibility: visible;
+		}
+		#plfiles		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 237px;
+			left: 323px;
+			width: 210px;
+			line-height: 18px;
+			<qtssobject name=monospaceIfNotJapanese/>visibility: visible;
+		}
+		#plfileweights		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 237px;
+			left: 547px;
+			width: 15px;
+			<qtssobject name=monospaceIfNotJapanese/>visibility: visible;
+		}
+		#plfileweightadjs		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 237px;
+			left: 565px;
+			width: 7px;
+			line-height: 20px;
+			<qtssobject name=monospaceIfNotJapanese/>
+			visibility: visible;
+		}
+		#libhighlight		
+		{
+			position: absolute;
+			z-index: 2;
+			top: 223px;
+			left: 36px;
+			width: 218px;
+			height: 20px;
+			visibility: hidden;
+		}
+		#libsinglehighlight		
+		{
+			position: absolute;
+			z-index: 2;
+			top: 223px;
+			left: 36px;
+			width: 218px;
+			height: 20px;
+			visibility: hidden;
+		}
+		#plbackground		
+		{
+			position: absolute;
+			z-index: 1;
+			top: 222px;
+			left: 283px;
+			visibility: visible;
+		}
+		#plscrollbardisabled		
+		{
+			position: absolute;
+			z-index: 1;
+			top: 236px;
+			left: 589px;
+			width: 16px;
+			visibility: visible;
+		}
+		#plscrollbar		
+		{
+			position: absolute;
+			z-index: 1;
+			top: 236px;
+			left: 589px;
+			width: 16px;
+			visibility: hidden;
+		}
+		#plscrollthumb		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 251px;
+			left: 589px;
+			width: 16px;
+			height: 16px;
+			visibility: hidden;
+		}
+		#draglayer		
+		{
+			position: absolute;
+			z-index: 4;
+			top: 10px;
+			left: 10px;
+			width: 240px;
+			height: 20px;
+			line-height: 20px;
+			<qtssobject name=monospaceIfNotJapanese/>
+			visibility: hidden;
+		}
+		#inserthere		
+		{
+			position: absolute;
+			z-index: 2;
+			top: 20px;
+			left: 240px;
+			width: 170px;
+			height: 20px;
+			visibility: hidden;
+		}
+		#plhighlight		
+		{
+			position: absolute;
+			z-index: 2;
+			top: 20px;
+			left: 240px;
+			width: 170px;
+			height: 20px;
+			visibility: hidden;
+		}
+		#plsinglehighlight		
+		{
+			position: absolute;
+			z-index: 2;
+			top: 20px;
+			left: 240px;
+			width: 170px;
+			height: 20px;
+			visibility: hidden;
+		}
+		#openFolderButton		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 566px;
+			left: 35px;
+			width: 380px;
+			height: 40px;
+			color: #999999;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			visibility: hidden;
+		}
+		#openFolderButtonDisabled		
+		{
+			position: absolute;
+			z-index: 3;
+			top: 566px;
+			left: 35px;
+			width: 380px;
+			height: 40px;
+			color: #999999;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			visibility: visible;
+		}
+		#removeItemButton		
+		{
+			position: absolute;
+			z-index: 5;
+			top: 566px;
+			left: 283px;
+			width: 380px;
+			height: 40px;
+			color: #999999;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			visibility: hidden;
+		}
+		#removeItemButtonDisabled		
+		{
+			position: absolute;
+			z-index: 5;
+			top: 566px;
+			left: 283px;
+			width: 380px;
+			height: 40px;
+			color: #999999;
+			font-family: Lucida Grande, Arial, Helvetica, Geneva, Swiss, sans-serif;
+			visibility: visible;
+		}
+		#tooltip		
+		{
+			position: absolute;
+			z-index: 10;
+			top: 30px;
+			left: 323px;
+			visibility: hidden;
+		}
+	</style>
+	<script src="includes/encode_unicode.js" type="text/javascript" language="Javascript" charset="utf-8"></script>
+	<script src="includes/standardNav.js" type="text/javascript" language="javascript"></script>
+	<qtssobject name=scriptTag>
+		//<script language=javascript>
+		
+		var gLibBasePosX = 36; // left of library listbox content
+		var gLibBasePosY = 237; // top of library listbox content
+		var gLibItemWidth = 218; // width of library listbox content
+		var gLibItemHeight = 20; // height of each library listbox item
+		var gLibNumItems = 16; // number of library items to display
+		var gLibMaxChars = 29; // trim each text item to this many chars
+		var gPLBasePosX = 284; // these are same as above only for playlist listbox this time:
+		var gPLBasePosY = 237;
+		var gPLItemWidth = 305;
+		var gPLItemClickWidth = 260;
+		var gPLItemHeight = 20;
+		var gPLNumItems = 16;
+		var gPLMaxChars = 33;
+		var gDefaultImage = 'images/spacer.gif'; // image for drag of multiple items
+		var gDragThreshold = 6; // number of pixels the user must move mouse with button down to initiate drag
+		var gNumberOfSteps = 4; // for "rubberband" animation if user drags to invalid place on screen ... number of steps
+		var gStepTiming = 35; // milliseconds between each step
+		var gTextSpacerImg = '<img src="images/spacer.gif" width=3 height=20 align=middle>'; // tag for spacer image before each column's contents
+		var gThumbRangeTop = 251; // top of scroll thumg ranges
+		var gThumbRangeBottom = 527; // bottom of scroll thumb ranges
+		var gThumbHeight = 16; // height of thumb itself
+		var gScrollArrowWidth = 16; // width of scroll arrows
+		var gScrollArrowHeight = 16; // height of scroll arrows
+		var gDirScrollbarLeft = 254; // left pos of dirlisting scrollbar
+		var gPLScrollbarLeft = 589; // left pos of playlist scrollbar
+		var gScrollUpArrowTop = 236; // 
+		var gScrollDownArrowTop = 542;
+		var gWindowsOffsetAmt = 35;
+		var gNSWinOffsetAmt = 70;
+		var gNSMacOffsetAmt = 35;
+		var dblClickDelay = 300;
+		var gScrollDelay = 200;
+		
+		
+		var libHighlightStart = (-1);
+		var libHighlightEnd = (-1);
+		var libScrollPos = 0;
+		var plScrollPos = 0;
+		var dragStatus = 'false';
+		var draggedItems = new Array();
+		var draggedItemsDisplay = new Array();
+		var draggedItemWeights = new Array();
+		var directoryListing = new Array();
+		var directoryListingDisplay = new Array();
+		var iconImages = new Array();
+		var playlistFiles = new Array();
+		var playlistFilesDisplay = new Array();
+		var playlistWeights = new Array();
+		var allPlaylists = new Array();
+		var doContiguousSelection = false;
+		var insertPos = (-1);
+		var removeOldItem = (-1);
+		var showedAlert = false;
+		
+		var isDblClick = false;
+		var dblClickTimer;
+		
+		var scrollTimer;
+		var scrollBy = 1; // -1=scroll up, 1=scroll down
+		var scrollWhich = 0; // 0=library, 1=playlist contents
+		
+		var currentTooltipTimer;
+		
+		var hasRun = false;
+		
+		function DoScroll() {
+			if (dragStatus == 'timedscroll') {
+				if (scrollWhich == 0) {
+					var dataHeight = directoryListing.length - gLibNumItems;
+					libScrollPos = Math.max(Math.min(libScrollPos+scrollBy, dataHeight), 0);
+					BuildLibrary();
+					libSetThumbPos();
+				}
+				else {
+					var dataHeight = playlistFiles.length - gPLNumItems;
+					plScrollPos = Math.max(Math.min(plScrollPos+scrollBy, dataHeight), 0);
+					BuildPlaylist();
+					PLSetThumbPos();
+				}
+				SetScrollTimer();
+			}
+			else {
+				clearInterval(scrollTimer);
+				scrollTimer = null;
+			}
+		}
+		
+		function SetScrollTimer() {
+			if (scrollTimer == null) {
+				scrollTimer = setInterval("DoScroll()", gScrollDelay)
+			}
+		}
+		
+		function OffsetLayer(s, d, p) {
+			SetStylePos(s, d, GetStylePos(s, d) + p);
+		}
+
+		function handleBrowserOffsets() {
+			var offsetAmount = 0;
+			if (IsWin32()) {
+				if (IsIE()) offsetAmount = gWindowsOffsetAmt;
+				else offsetAmount = gNSWinOffsetAmt;
+			}
+			else if (!IsIE() && !IsNS6()) offsetAmount = gNSMacOffsetAmt;
+			
+			if (offsetAmount != 0) {
+				offsetAmount = gNSMacOffsetAmt;
+				gLibBasePosY = gLibBasePosY + offsetAmount;
+				gPLBasePosY = gPLBasePosY + offsetAmount;
+				gThumbRangeTop = gThumbRangeTop + offsetAmount;
+				gThumbRangeBottom = gThumbRangeBottom + offsetAmount;
+				gScrollUpArrowTop = gScrollUpArrowTop + offsetAmount;
+				gScrollDownArrowTop = gScrollDownArrowTop + offsetAmount;
+				SetStylePos('libbackground', 1, gLibBasePosY - 15);
+				SetStylePos('libfiles', 1, gLibBasePosY);
+				SetStylePos('libscrollbardisabled', 1, gScrollUpArrowTop);
+				SetStylePos('libscrollbar', 1, gScrollUpArrowTop);
+				SetStylePos('libscrollthumb', 1, gThumbRangeTop);
+				SetStylePos('plfileorders', 1, gPLBasePosY);
+				SetStylePos('plfiles', 1, gPLBasePosY);
+				SetStylePos('plfileweights', 1, gPLBasePosY);
+				SetStylePos('plfileweightadjs', 1, gPLBasePosY);
+				SetStylePos('plbackground', 1, gLibBasePosY - 15);
+				SetStylePos('plscrollbardisabled', 1, gScrollUpArrowTop);
+				SetStylePos('plscrollbar', 1, gScrollUpArrowTop);
+				SetStylePos('plscrollthumb', 1, gThumbRangeTop);
+				SetStylePos('openFolderButton', 1, gLibBasePosY + 330);
+				SetStylePos('openFolderButtonDisabled', 1, gLibBasePosY + 330);
+				SetStylePos('removeItemButton', 1, gLibBasePosY + 330);
+				SetStylePos('removeItemButtonDisabled', 1, gLibBasePosY + 330);
+			}
+		}
+		
+		function BuildLibrary() {
+			var layerText = '<span class=small>';
+			for (var i=libScrollPos; i < Math.min((libScrollPos+gLibNumItems), directoryListing.length); i++) {
+				var itemText = directoryListingDisplay[i];
+				itemTextArray = itemText.split('<qtssobject name=chdelim/>');
+				itemText = itemTextArray[itemTextArray.length-1];
+				if (itemText.length > gLibMaxChars) {
+					itemText = itemText.substr(0, gLibMaxChars) + "&#8230;";
+				}
+				itemText = itemText.replace('<', '&lt;');
+				itemText = itemText.replace('>', '&gt;');
+				layerText = layerText + '<div style="width:327px; height:20px;">';
+				layerText = layerText + '<img src="' + iconImages[i] + '" width=16 height=16 align=middle vspace=2>';
+				layerText = layerText + gTextSpacerImg + itemText + '<' + '/div>';
+			}
+			layerText = layerText + '<' + '/span>';
+			SetStyleText('libfiles', layerText);
+			SetLibHighlightBar();
+			if (directoryListing.length > gLibNumItems) {
+				SetStyleVisible('libscrollbardisabled', false);
+				SetStyleVisible('libscrollbar', true);
+				SetStyleVisible('libscrollthumb', true);
+			}
+			else {
+				SetStyleVisible('libscrollbardisabled', true);
+				SetStyleVisible('libscrollbar', false);
+				SetStyleVisible('libscrollthumb', false);
+			}
+		}
+		
+		function BuildPlaylist() {
+			var orderLayerText = '<span class=small>';
+			var nameLayerText = '<span class=small>';
+			var weightLayerText = '<span class=small>';
+			var weightAdjLayerText = '';
+			for (var i=plScrollPos; i < Math.min((plScrollPos+gPLNumItems), playlistFiles.length); i++) {
+				var itemText = playlistFilesDisplay[i];
+				itemTextArray = itemText.split('<qtssobject name=chdelim/>');
+				itemText = itemTextArray[itemTextArray.length-1];
+				if (itemText.length > gPLMaxChars) {
+					itemText = itemText.substr(0, gPLMaxChars) + "&#8230;";
+				}
+				itemText = itemText.replace('<', '&lt;');
+				itemText = itemText.replace('>', '&gt;');
+				orderLayerText = orderLayerText + '<div style="width:39px; height:20px;">';
+				orderLayerText = orderLayerText + gTextSpacerImg + (i+1) + '<' + '/div>';
+				nameLayerText = nameLayerText + '<div style="width:210px; height:20px;">';
+				nameLayerText = nameLayerText + gTextSpacerImg + itemText + '<' + '/div>';
+				weightLayerText = weightLayerText + gTextSpacerImg + playlistWeights[i] + '<br>';
+				if (dragStatus != 'timedscroll') { // if we're scrolling, don't draw weight adjusting images
+					if (IsIE() || IsNS6()) weightAdjLayerText = weightAdjLayerText + '<img src="images/spacer.gif" width=7 height=4>';
+					weightAdjLayerText = weightAdjLayerText + '<a href="javascript:increaseWeight(' + i + ')">';
+					weightAdjLayerText = weightAdjLayerText + '<img src="images/weight_up_arrow.gif" width=7 height=4 vspace=1 border=0><' + '/a><br>';
+					weightAdjLayerText = weightAdjLayerText + '<a href="javascript:decreaseWeight(' + i + ')">';
+					weightAdjLayerText = weightAdjLayerText + '<img src="images/wieght_down_arrow.gif" width=7 height=4 vspace=1 border=0><' + '/a><br>';
+					weightAdjLayerText = weightAdjLayerText + '<img src="images/spacer.gif" width=7 height=4><br>';
+					if (!IsIE() && !IsNS6()) weightAdjLayerText = weightAdjLayerText + '<img src="images/spacer.gif" width=7 height=4><br>';
+				}
+			}
+			orderLayerText = orderLayerText + '<' + '/span>';
+			nameLayerText = nameLayerText + '<' + '/span>';
+			SetStyleText('plfileorders', orderLayerText);
+			SetStyleText('plfiles', nameLayerText);
+			SetStyleText('plfileweights', weightLayerText);
+			if (dragStatus == 'timedscroll') SetStyleText('plfileweightadjs', '');
+			else SetStyleText('plfileweightadjs', weightAdjLayerText);
+			UpdateHiddenFields();
+			if (playlistFiles.length > gPLNumItems) {
+				SetStyleVisible('plscrollbardisabled', false);
+				SetStyleVisible('plscrollbar', true);
+				SetStyleVisible('plscrollthumb', true);
+			}
+			else {
+				SetStyleVisible('plscrollbardisabled', true);
+				SetStyleVisible('plscrollbar', false);
+				SetStyleVisible('plscrollthumb', false);
+			}
+		}
+		
+		function BuildDragLayer() {
+			var layerText = '<span class=small>';
+			if (libHighlightEnd > libHighlightStart) {
+				layerText = layerText + '<img src="' + gDefaultImage + '" width=16 height=16>';
+				layerText = layerText + '&nbsp;<i>Multiple Items Selected<' + '/i>';
+			}
+			else {
+				var itemText = directoryListingDisplay[libHighlightStart];
+				itemText = itemText.replace('<', '&lt;');
+				itemText = itemText.replace('>', '&gt;');
+				itemTextArray = itemText.split('<qtssobject name=chdelim/>');
+				itemText = itemTextArray[itemTextArray.length-1];
+				if (itemText.length > gLibMaxChars) {
+					itemText = itemText.substr(0, gLibMaxChars) + "&#8230;";
+				}
+				itemText = itemText.replace('<', '&lt;');
+				itemText = itemText.replace('>', '&gt;');
+				layerText = layerText + '<img src="' + iconImages[libHighlightStart] + '" width=16 height=16 align=middle>';
+				layerText = layerText + '&nbsp;' + itemText;
+			}
+			layerText = layerText + '<' + '/span>';
+			SetStyleText('draglayer', layerText);
+			SetStyleVisible('draglayer', true);
+		}
+		
+		function handleLibDblClick() {
+			ClearDblClickTimer();
+			if ((libHighlightStart >= 0) && (libHighlightStart == libHighlightEnd) && (iconImages[libHighlightStart].indexOf('folder') >= 0)) {
+				// open folder
+				openFolder();
+			}
+			else {
+				// copy item(s)
+				draggedItems.length = 0;
+				draggedItemsDisplay.length = 0;
+				for (var i=libHighlightStart; i<=libHighlightEnd; i++) {
+					draggedItems[draggedItems.length] = directoryListing[i];
+					draggedItemsDisplay[draggedItemsDisplay.length] = directoryListingDisplay[i];
+					draggedItemWeights[draggedItemWeights.length] = 5;
+				}
+				insertPos = playlistFiles.length;
+				insertItems();
+			}
+			dragStatus = 'false';
+		}
+		
+		function handlePLDblClick() {
+			ClearDblClickTimer();
+			removeFromPlaylist();
+			status = '';
+			dragStatus = 'false';
+		}
+		
+		function SetDblClickTimer() {
+			isDblClick = true;
+			currentTooltipTimer = setTimeout("ClearDblClickTimer()", dblClickDelay);
+		}
+		
+		function ClearDblClickTimer() {
+			isDblClick = false;
+			dblClickTimer = null;
+		}
+		
+		function increaseWeight(whichOne) {
+			if (playlistWeights[whichOne] < 10) {
+				playlistWeights[whichOne]++;
+			}
+			BuildPlaylist();
+		}
+	
+		function decreaseWeight(whichOne) {
+			if (playlistWeights[whichOne] > 1) {
+				playlistWeights[whichOne]--;
+			}
+			BuildPlaylist();
+		}
+	
+		function libScrollDown() {
+			var dataHeight = directoryListing.length - gLibNumItems;
+			if (libScrollPos < dataHeight) {
+				libScrollPos = Math.min(libScrollPos+gScrollBy, dataHeight);
+				BuildLibrary();
+				libSetThumbPos();
+			}
+		}
+		
+		function libScrollUp() {
+			if (libScrollPos > 0) {
+				libScrollPos = Math.max(libScrollPos-gScrollBy, 0);
+				BuildLibrary();
+				libSetThumbPos();
+			}
+		}
+		
+		function libSetThumbPos() {
+			var scrollbarHeight = gThumbRangeBottom - gThumbRangeTop;
+			var dataHeight = directoryListing.length - gLibNumItems;
+			if (dataHeight > 1) {
+				var scrollRatio = libScrollPos / dataHeight;
+				SetStylePos('libscrollthumb', 1, (gThumbRangeTop + (scrollRatio * scrollbarHeight)));
+			}
+		}
+		
+		function libGetThumbPos() {
+			var scrollbarHeight = gThumbRangeBottom - gThumbRangeTop;
+			var dataHeight = directoryListing.length - gLibNumItems;
+			if (dataHeight > 1) {
+				var scrollRatio = (GetStylePos('libscrollthumb', 1) - gThumbRangeTop) / scrollbarHeight;
+				libScrollPos = Math.round(scrollRatio * (directoryListing.length - gLibNumItems));
+				BuildLibrary();
+				libSetThumbPos();
+			}
+		}
+		
+		function PLScrollDown() {
+			var dataHeight = playlistFiles.length - gPLNumItems;
+			if (plScrollPos < dataHeight) {
+				plScrollPos = Math.min(plScrollPos+gScrollBy, dataHeight);
+				BuildPlaylist();
+				PLSetThumbPos();
+			}
+		}
+		
+		function PLScrollUp() {
+			if (plScrollPos > 0) {
+				plScrollPos = Math.max(plScrollPos-gScrollBy, 0);
+				BuildPlaylist();
+				PLSetThumbPos();
+			}
+		}
+		
+		function PLSetThumbPos() {
+			var scrollbarHeight = gThumbRangeBottom - gThumbRangeTop;
+			var dataHeight = playlistFiles.length - gPLNumItems;
+			if (dataHeight > 1) {
+				var scrollRatio = plScrollPos / dataHeight;
+				SetStylePos('plscrollthumb', 1, (gThumbRangeTop + (scrollRatio * scrollbarHeight)));
+			}
+		}
+		
+		function PLGetThumbPos() {
+			var scrollbarHeight = gThumbRangeBottom - gThumbRangeTop;
+			var dataHeight = playlistFiles.length - gPLNumItems;
+			if (dataHeight > 1) {
+				var scrollRatio = (GetStylePos('plscrollthumb', 1) - gThumbRangeTop) / scrollbarHeight;
+				plScrollPos = Math.round(scrollRatio * (playlistFiles.length - gPLNumItems));
+				BuildPlaylist();
+				PLSetThumbPos();
+			}
+		}
+
+		function SetLibHighlightBar() {
+			if ((libHighlightStart >= libScrollPos + gLibNumItems) || (libHighlightEnd < libScrollPos)) {
+				SetStyleVisible('libhighlight', false);
+				SetStyleVisible('libsinglehighlight', false);
+			}
+			else {
+				var displayHighlightStart = Math.max(libHighlightStart - libScrollPos, 0);
+				var displayHighlightEnd = Math.min(libHighlightEnd - libScrollPos, libScrollPos + gLibNumItems - 1);
+				var highlightHeight = (displayHighlightEnd - displayHighlightStart + 1) * gLibItemHeight;
+				var startPos = (displayHighlightStart * gLibItemHeight) + gLibBasePosY;
+				if ((highlightHeight / gLibItemHeight) == 1) {
+					SetStyleVisible('libhighlight', false);
+					SetStylePos('libsinglehighlight', 1, startPos);
+					SetStyleVisible('libsinglehighlight', true);
+				}
+				else {
+					SetStyleVisible('libsinglehighlight', false);
+					SetStyleText('libhighlight', '<img src="images/highlight.gif" width=' + gLibItemWidth + ' height=' + highlightHeight + '>');
+					SetStylePos('libhighlight', 1, startPos);
+					SetStyleVisible('libhighlight', true);
+				}
+			}
+			if ((libHighlightStart >= 0) && (libHighlightStart == libHighlightEnd) && (iconImages[libHighlightStart].indexOf('folder') >= 0)) {
+				SetOpenButtonEnabled(true);
+			}
+			else {
+				SetOpenButtonEnabled(false);
+			}
+		}
+		
+		function SetOpenButtonEnabled(isEnabled) {
+			SetStyleVisible('openFolderButtonDisabled', !isEnabled);
+			SetStyleVisible('openFolderButton', isEnabled);
+		}
+		
+		function SetRemoveButtonEnabled(isEnabled) {
+			SetStyleVisible('removeItemButtonDisabled', !isEnabled);
+			SetStyleVisible('removeItemButton', isEnabled);
+		}
+		
+		function stageCall(s) {
+			currentStepNumber++;
+			if ((currentStepNumber == gNumberOfSteps) || ((GetStylePos(s, 0) == xFinalValue) && (GetStylePos(s, 1) == yFinalValue))) {
+				SetStylePos(s, 0, xFinalValue);
+				SetStylePos(s, 1, yFinalValue);
+				SetStyleVisible(s, false);
+			}
+			else {
+				SetStylePos(s, 0, (GetStylePos(s, 0) - xStepValue));
+				SetStylePos(s, 1, (GetStylePos(s, 1) - yStepValue));
+				var currentTimer = setTimeout('stageCall("' + s + '")', gStepTiming);
+			}
+		}
+		
+		function moveInStages(s, xVal, yVal) {
+			currentStepNumber = 0;
+			xStepValue = ((GetStylePos(s, 0) - xVal) / gNumberOfSteps);
+			yStepValue = ((GetStylePos(s, 1) - yVal) / gNumberOfSteps);
+			xFinalValue = xVal;
+			yFinalValue = yVal;
+			var currentTimer = setTimeout('stageCall("' + s + '")', gStepTiming);
+		}
+		
+		function insertItems() {
+			var doSlice = (insertPos < playlistFiles.length);
+			var filesEndArray = playlistFiles.slice(insertPos);
+			var filesEndArrayDisplay = playlistFilesDisplay.slice(insertPos);
+			var weightsEndArray = playlistWeights.slice(insertPos);
+			playlistFiles.length = insertPos;
+			playlistFilesDisplay.length = insertPos;
+			playlistWeights.length = insertPos;
+			for (var i=0;i<draggedItems.length; i++) {
+				playlistFiles[playlistFiles.length] = draggedItems[i];
+				playlistFilesDisplay[playlistFilesDisplay.length] = draggedItemsDisplay[i];
+				playlistWeights[playlistWeights.length] = draggedItemWeights[i];
+			}
+			if (doSlice) {
+				for (i=0;i<filesEndArray.length;i++) {
+					playlistFiles[playlistFiles.length] = filesEndArray[i];
+					playlistFilesDisplay[playlistFilesDisplay.length] = filesEndArrayDisplay[i];
+					playlistWeights[playlistWeights.length] = weightsEndArray[i];
+				}
+			}
+			BuildPlaylist();
+		}
+		
+		function openFolder() {
+			var itemText = directoryListing[libHighlightStart];
+			var itemTextArray = itemText.split('<qtssobject name=chdelim format=urlencode/>');
+			itemText = itemTextArray[itemTextArray.length-1];
+			document.forms[0].elements['submitcurrentdir'].value = '<qtssobject name=currentdir format=nosinglequotes/><qtssobject name=chdelim/>' + itemText;
+			document.forms[0].elements['action'].value = 'RefreshPlaylistDir';
+			document.forms[0].elements['filename'].value = 'playlist_detail.html';
+			document.forms[0].submit()
+		}
+		
+		function openParentFolder() {
+			document.forms[0].elements['submitcurrentdir'].value = document.forms[0].elements['currentdir'].value;
+			document.forms[0].elements['action'].value = 'RefreshPlaylistDir';
+			document.forms[0].elements['filename'].value = 'playlist_detail.html';
+			document.forms[0].submit()
+		}
+	
+		function removeFromPlaylist() {
+			var filesEndArray = playlistFiles.slice(insertPos+1);
+			var filesEndArrayDisplay = playlistFilesDisplay.slice(insertPos+1);
+			var weightsEndArray = playlistWeights.slice(insertPos+1);
+			playlistFiles.length = insertPos;
+			playlistFilesDisplay.length = insertPos;
+			playlistWeights.length = insertPos;
+			for (i=0;i<filesEndArray.length;i++) {
+				playlistFiles[playlistFiles.length] = filesEndArray[i];
+				playlistFilesDisplay[playlistFilesDisplay.length] = filesEndArrayDisplay[i];
+				playlistWeights[playlistWeights.length] = weightsEndArray[i];
+			}
+			BuildPlaylist();
+			SetStyleVisible('inserthere', false);
+			SetRemoveButtonEnabled(false);
+		}
+		
+		function handleMouseDown(e) {
+			status = '';
+			var continueClick = true;
+			if (IsIE()) var theTarget = window.event.srcElement;    
+			else var theTarget = e.target;
+			if (IsIE()) var theButton = event.button;
+			else var theButton = e.which;
+			if (IsIE()) doContiguousSelection = window.event.shiftKey;
+			else if (IsNS6()) doContiguousSelection = e.shiftKey;
+			else doContiguousSelection = (e.modifiers == 4);
+			if (IsIE()) {
+				oldX = event.clientX + GetIEScrollPos(0);
+				oldY = event.clientY + GetIEScrollPos(1);
+			}
+			else {
+				oldX = e.pageX
+				oldY = e.pageY
+			}
+			
+			removeOldItem = (-1);
+			
+			if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY >= gScrollUpArrowTop) && (oldY <= (gScrollUpArrowTop + gScrollArrowHeight))) { // dir up scroll
+				dragStatus = 'timedscroll';
+				scrollWhich = 0;
+				scrollBy = (-1);
+				DoScroll();
+				continueClick = false;
+			}
+			
+			if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY > (gScrollUpArrowTop + gScrollArrowHeight)) && (oldY < GetStylePos('libscrollthumb', 1))) { // jump up
+				dragStatus = 'timedscroll';
+				scrollWhich = 0;
+				scrollBy = ((-1) * (gLibNumItems - 1));
+				DoScroll();
+				continueClick = false;
+			}
+			
+			if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY >= GetStylePos('libscrollthumb', 1)) && (oldY <= (GetStylePos('libscrollthumb', 1) + gThumbHeight))) { // dir scroll thumb
+				layerClicked = 'libscrollthumb';
+				dragStatus = 'scrolling';
+				continueClick = false;
+			}
+			
+			if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY > (GetStylePos('libscrollthumb', 1) + gThumbHeight)) && (oldY < gScrollDownArrowTop)) { // jump down
+				dragStatus = 'timedscroll';
+				scrollWhich = 0;
+				scrollBy = gLibNumItems - 1;
+				DoScroll();
+				continueClick = false;
+			}
+			
+			if ((oldX >= gDirScrollbarLeft) && (oldX <= (gDirScrollbarLeft + gScrollArrowWidth)) && (oldY >= gScrollDownArrowTop) && (oldY <= (gScrollDownArrowTop + gScrollArrowHeight))) { // dir up scroll
+				dragStatus = 'timedscroll';
+				scrollWhich = 0;
+				scrollBy = 1;
+				DoScroll();
+				continueClick = false;
+			}
+			
+			if ((oldX >= gPLScrollbarLeft) && (oldX <= (gPLScrollbarLeft + gScrollArrowWidth)) && (oldY >= gScrollUpArrowTop) && (oldY <= (gScrollUpArrowTop + gScrollArrowHeight))) { // PL up scroll
+				dragStatus = 'timedscroll';
+				scrollWhich = 1;
+				scrollBy = (-1);
+				DoScroll();
+				continueClick = false;
+			}
+			
+			if ((oldX >= gPLScrollbarLeft) && (oldX <= (gPLScrollbarLeft + gScrollArrowWidth)) && (oldY > (gScrollUpArrowTop + gScrollArrowHeight)) && (oldY < GetStylePos('plscrollthumb', 1))) { // jump up
+				dragStatus = 'timedscroll';
+				scrollWhich = 1;
+				scrollBy = ((-1) * (gLibNumItems - 1));
+				DoScroll();
+				continueClick = false;
+			}
+			
+			if ((oldX >= gPLScrollbarLeft) && (oldX <= (gPLScrollbarLeft + gScrollArrowWidth)) && (oldY >= GetStylePos('plscrollthumb', 1)) && (oldY <= (GetStylePos('plscrollthumb', 1) + gThumbHeight))) { // PL scroll thumb
+				layerClicked = 'plscrollthumb';
+				dragStatus = 'scrolling';
+				continueClick = false;
+			}
+			
+			if ((oldX >= gPLScrollbarLeft) && (oldX <= (gPLScrollbarLeft + gScrollArrowWidth)) && (oldY > (GetStylePos('plscrollthumb', 1) + gThumbHeight)) && (oldY < gScrollDownArrowTop)) { // jump down
+				dragStatus = 'timedscroll';
+				scrollWhich = 1;
+				scrollBy = gLibNumItems - 1;
+				DoScroll();
+				continueClick = false;
+			}
+			
+			if ((oldX >= gPLScrollbarLeft) && (oldX <= (gPLScrollbarLeft + gScrollArrowWidth)) && (oldY >= gScrollDownArrowTop) && (oldY <= (gScrollDownArrowTop + gScrollArrowHeight))) { // PL up scroll
+				dragStatus = 'timedscroll';
+				scrollWhich = 1;
+				scrollBy = 1;
+				DoScroll();
+				continueClick = false;
+			}
+			
+			if ((oldX >= gLibBasePosX) && (oldX <= gLibBasePosX+gLibItemWidth) && (oldY >= gLibBasePosY) && (oldY <= gLibBasePosY+(gLibNumItems*gLibItemHeight))) {
+				var itemClicked = (oldY - gLibBasePosY) / gLibItemHeight;
+				itemClicked = Math.floor(itemClicked);
+				itemClicked = itemClicked + libScrollPos;
+				if (itemClicked > (directoryListing.length - 1)) {
+					return false;
+				}
+				offsetX = oldX - gLibBasePosX;
+				offsetY = oldY - (gLibBasePosY + ((itemClicked - libScrollPos) * gLibItemHeight));
+				if ((itemClicked < libHighlightStart) || (itemClicked > libHighlightEnd)) {
+					if (doContiguousSelection) {
+						libHighlightStart = Math.min(itemClicked, libHighlightStart);
+						libHighlightEnd = Math.max(itemClicked, libHighlightEnd);
+					}
+					else {
+						libHighlightStart = itemClicked;
+						libHighlightEnd = itemClicked;
+					}
+					SetLibHighlightBar();
+				}
+				dragStatus = 'click';
+				SetStyleVisible('inserthere', false);
+				SetRemoveButtonEnabled(false);
+				continueClick = false;
+				if (isDblClick) { // double-click; handle
+					handleLibDblClick()
+				}
+				else { // first click; set isDblClick to true and set a timer to set it to false after the delay
+					SetDblClickTimer(); 
+				}
+			}
+			if ((oldX >= gPLBasePosX) && (oldX <= gPLBasePosX+gPLItemClickWidth) && (oldY >= gPLBasePosY) && (oldY <= gPLBasePosY+(gPLNumItems*gPLItemHeight))) {
+				insertPos = Math.min(Math.floor((oldY - gPLBasePosY) / gPLItemHeight), playlistFiles.length-1);
+				offsetX = oldX - gPLBasePosX;
+				offsetY = oldY - (gPLBasePosY + (insertPos * gPLItemHeight));
+				if (insertPos >= 0) {
+					dragStatus = 'plclick';
+					SetStylePos('inserthere', 0, gPLBasePosX);
+					SetStylePos('inserthere', 1, gPLBasePosY + (insertPos * gPLItemHeight));
+					SetStyleVisible('inserthere', true);
+					insertPos = insertPos + plScrollPos;
+					SetRemoveButtonEnabled(true);
+					if (isDblClick) { // double-click; handle
+						handlePLDblClick()
+					}
+					else { // first click; set isDblClick to true and set a timer to set it to false after the delay
+						SetDblClickTimer(); 
+					}
+				}
+				continueClick = false;
+			}
+			if (!continueClick) {
+				if (!IsIE()) {
+					document.captureEvents(Event.MOUSEMOVE);
+				}
+				document.onmousemove = handleDrag
+			}
+			
+			if (continueClick) return;
+			else return continueClick;
+		}
+		
+		function handleDrag(e) {
+			status = '';
+			if (IsIE()) {
+				currentX = event.clientX + GetIEScrollPos(0);
+				currentY = event.clientY + GetIEScrollPos(1);
+			}
+			else {
+				currentX = e.pageX
+				currentY = e.pageY
+			}
+
+			if (dragStatus == 'click') {
+				if ((Math.abs(currentX - oldX) > gDragThreshold) || (Math.abs(currentY - oldY) > gDragThreshold)) {
+					dragStatus = 'drag';
+					draggedItems.length = 0;
+					draggedItemsDisplay.length = 0;
+					for (var i=libHighlightStart; i<=libHighlightEnd; i++) {
+						draggedItems[draggedItems.length] = directoryListing[i];
+						draggedItemsDisplay[draggedItemsDisplay.length] = directoryListingDisplay[i];
+						draggedItemWeights[draggedItemWeights.length] = 5;
+					}
+					SetStylePos('draglayer', 0, currentX - offsetX);
+					SetStylePos('draglayer', 1, currentY - offsetY);
+					BuildDragLayer();
+				}
+			}
+			if (dragStatus == 'plclick') {
+				if ((Math.abs(currentX - oldX) > gDragThreshold) || (Math.abs(currentY - oldY) > gDragThreshold)) {
+					dragStatus = 'drag';
+					draggedItems.length = 0;
+					draggedItemsDisplay.length = 0;
+					draggedItems[draggedItems.length] = playlistFiles[insertPos];
+					draggedItemsDisplay[draggedItemsDisplay.length] = playlistFilesDisplay[insertPos];
+					draggedItemWeights[draggedItemWeights.length] = playlistWeights[insertPos];
+					offsetX = offsetX - 39;
+					SetStylePos('draglayer', 0, (currentX - offsetX));
+					SetStylePos('draglayer', 1, (currentY - offsetY));
+					var itemText = playlistFilesDisplay[insertPos];
+					itemTextArray = itemText.split('<qtssobject name=chdelim/>');
+					itemText = itemTextArray[itemTextArray.length-1];
+					if (itemText.length > gLibMaxChars) {
+						itemText = itemText.substr(0, gPLMaxChars) + "&#8230;";
+					}
+					SetStyleText('draglayer', '<span class=small>' + gTextSpacerImg + itemText + '<' + '/span>');
+					removeOldItem = insertPos;
+				}
+			}
+			if (dragStatus == 'drag') {
+				var maxPos = playlistFiles.length;
+				if (removeOldItem >= 0) {
+					maxPos--;
+				}
+				SetStylePos('draglayer', 0, currentX - offsetX);
+				SetStylePos('draglayer', 1, currentY - offsetY);
+				if ((currentX >= gPLBasePosX) && (currentX <= gPLBasePosX+gPLItemWidth) && (currentY >= gPLBasePosY) && (currentY <= gPLBasePosY+(gPLNumItems*gPLItemHeight))) {
+					insertPos = Math.min(Math.floor((currentY - gPLBasePosY) / gPLItemHeight), maxPos);
+					SetStylePos('inserthere', 0, gPLBasePosX);
+					SetStylePos('inserthere', 1, gPLBasePosY + (insertPos * gPLItemHeight));
+					insertPos = insertPos + plScrollPos;
+					SetStyleVisible('inserthere', true);
+				}
+				else {
+					SetStyleVisible('inserthere', false);
+				}
+			}
+			if (dragStatus == 'scrolling') {
+				SetStylePos(layerClicked, 1, Math.max(Math.min(currentY, gThumbRangeBottom), gThumbRangeTop));
+			}
+			
+			// set the status text
+			
+			var maxPos = playlistFiles.length;
+			if ((currentX >= gPLBasePosX) && (currentX <= gPLBasePosX+gPLItemWidth) && (currentY >= gPLBasePosY) && (currentY <= gPLBasePosY+(gPLNumItems*gPLItemHeight))) {
+				// check to see if we've switched positions
+				tooltipPosY = Math.min(Math.floor((currentY - gPLBasePosY) / gPLItemHeight), maxPos);
+				if (tooltipPosY < playlistFiles.length) {
+					if (status != playlistFilesDisplay[tooltipPosY]) {
+						status = playlistFilesDisplay[tooltipPosY];
+					}
+				}
+			}
+			var maxPos = directoryListing.length;
+			if ((currentX >= gLibBasePosX) && (currentX <= gLibBasePosX+gLibItemWidth) && (currentY >= gLibBasePosY) && (currentY <= gLibBasePosY+(gLibNumItems*gLibItemHeight))) {
+				// check to see if we've switched positions
+				tooltipPosY = Math.min(Math.floor((currentY - gLibBasePosY) / gLibItemHeight), maxPos);
+				if (tooltipPosY < directoryListing.length) {
+					if (status != directoryListingDisplay[tooltipPosY]) {
+						status = directoryListingDisplay[tooltipPosY];
+					}
+				}
+			}
+			
+			return false;
+		}
+		
+		function handleMouseUp() {
+			var continueClick = true;
+			if (!IsIE()) document.releaseEvents(Event.MOUSEMOVE);
+			if (dragStatus == 'drag') {
+				if (GetStyleVisible('inserthere')) {
+					SetStyleVisible('draglayer', false);
+					dragStatus = 'false';
+					if ((insertPos > removeOldItem) && (removeOldItem >= 0)) {
+						insertPos++;
+					}
+					insertItems();
+					if (removeOldItem >= 0) {
+						if (insertPos < removeOldItem) {
+							removeOldItem++;
+						}
+						insertPos = removeOldItem;
+						removeFromPlaylist();
+					}
+					SetStyleVisible('inserthere', false);
+				}
+				else {
+					moveInStages('draglayer', oldX, oldY);
+				}
+				continueClick = false;
+			}
+			if (dragStatus == 'scrolling') {
+				dragStatus = 'false';
+				if (layerClicked == 'libscrollthumb') libGetThumbPos();
+				else PLGetThumbPos();
+				continueClick = false;
+			}
+			if (dragStatus == 'timedscroll') {
+				dragStatus = 'false';
+				if (scrollWhich == 1) BuildPlaylist();
+			}
+			dragStatus = 'false';
+			if (continueClick) return;
+			else return continueClick;
+		}
+		
+		function UpdateHiddenFields() {
+			var myString = '';
+			var myString2 = '';
+			for (var i = 0; i < playlistFiles.length; i++) {
+				myString = myString + playlistFiles[i];
+				myString2 = myString2 + playlistWeights[i];
+				if (i < (playlistFiles.length - 1)) {
+					myString = myString + "\t";
+					myString2 = myString2 + "\t";
+				}
+			}
+			document.forms[0].submitplaylistfiles.value = myString;
+			document.forms[0].submitplaylistweights.value = myString2;
+		}
+
+		function onLoadScript() {
+			// handleBrowserOffsets();
+			BuildLibrary();
+			BuildPlaylist();
+			document.forms[0].elements['qtssCurPlaylistTitle'].focus();
+			document.forms[0].elements['qtssCurPlaylistTitle'].select();
+			document.onmousemove = handleDrag;
+		}
+		
+		function fixMountPoint() {
+			if ((document.forms[0].elements['isMP3'].value == '0') && (document.forms[0].elements['qtssCurPlaylistURL'].value.indexOf('.sdp') < 0) && (document.forms[0].elements['qtssCurPlaylistURL'].value != '')) {
+				document.forms[0].elements['qtssCurPlaylistURL'].value = document.forms[0].elements['qtssCurPlaylistURL'].value + '.sdp';
+			}
+			else if ((document.forms[0].elements['isMP3'].value == '1') && (document.forms[0].elements['qtssCurPlaylistURL'].value.indexOf('/') != 0)) {
+				document.forms[0].elements['qtssCurPlaylistURL'].value = '/' + document.forms[0].elements['qtssCurPlaylistURL'].value;
+			}
+		}
+		
+		function validateFormData() {
+			var playlistNameOK = true;
+			if (document.forms[0].elements['qtssCurPlaylistTitle'].value != document.forms[0].elements['qtssCurPlaylistTitle_shadow'].value) {
+				for (var i = 0; i < allPlaylists.length; i++) {
+					if (allPlaylists[i] == document.forms[0].elements['qtssCurPlaylistTitle'].value) playlistNameOK = false;
+				}
+			}
+			if (!playlistNameOK) {
+				entityAlert("<qtssstring name=PLErrNameConflict/>");
+				document.forms[0].elements['qtssCurPlaylistTitle'].value = document.forms[0].elements['qtssCurPlaylistTitle_shadow'].value;
+				return false;
+			}
+			fixMountPoint();
+			if (document.forms[0].elements['qtssCurPlaylistTitle'].value == '') {
+				entityAlert("<qtssstring name=PLErrNameCannotBeBlank/>");
+				document.forms[0].elements['qtssCurPlaylistTitle'].value = document.forms[0].elements['qtssCurPlaylistTitle_shadow'].value;
+				return false;
+			}
+			if (document.forms[0].elements['qtssCurPlaylistURL'].value.indexOf(' ') >= 0) {
+				entityAlert("<qtssstring name=PLErrMountPointCannotContainSpaces/>");
+				return false;
+			}
+			if (document.forms[0].elements['qtssCurPlaylistURL'].value == '') {
+				entityAlert("<qtssstring name=PLErrMountPointCannotBeBlank/>");
+				return false;
+			}
+			if ((document.forms[0].elements['qtssCurPlaylistMode'].value == 'weighted_random') && (document.forms[0].elements['qtssCurPlaylistRep'].value > playlistFiles.length)) {
+				entityAlert("<qtssstring name=PLErrRepetitionTooLarge/>");
+				return false;
+			}
+			return true;
+		}
+
+		// populate array from QTSS
+		
+		<qtssrepeater name=dirlisting>
+			directoryListing[directoryListing.length] = '<qtssobject name=qtssIndividualFileName format=urlencode/>';
+			directoryListingDisplay[directoryListingDisplay.length] = '<qtssobject name=qtssIndividualFileName format=unicode-convert/>';
+			iconImages[iconImages.length] = '<qtssobject name=qtssFileIcon/>';
+		</qtssrepeater>
+		
+		<qtssrepeater name=playlistitems>
+			playlistFiles[playlistFiles.length] = '<qtssobject name=qtssPlaylistItemName format=urlencode/>';
+			playlistFilesDisplay[playlistFilesDisplay.length] = '<qtssobject name=qtssPlaylistItemName format=unicode-convert/>';
+			playlistWeights[playlistWeights.length] = '<qtssobject name=qtssPlaylistItemWeight/>';
+		</qtssrepeater>
+		
+		<qtssrepeater name=playlists>
+			allPlaylists[allPlaylists.length] = '<qtssobject name=qtssPlaylistTitles format=nosinglequotes/>';
+		</qtssrepeater>
+		
+		
+		// re-route events to handlers
+		
+		if (!IsIE()) document.captureEvents(Event.MOUSEUP|Event.MOUSEDOWN|Event.MOUSEMOVE);
+		
+		document.onmousedown = handleMouseDown;
+		document.onmouseup = handleMouseUp;
+		
+	</script>
+</head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif" onload="onLoadScript()">
+<qtssobject type=validatedform>
+<input type=hidden name="filename" value=playlists.html>
+<input type=hidden name="action" value="CreatePlaylist">
+<input type=hidden name="submitplaylistfiles" value="">
+<input type=hidden name="submitplaylistweights" value="">
+<input type=hidden name="submitcurrentdir" value="">
+<qtssobject type=hidden name="qtssSvrDefaultDNSName"/>
+<qtssobject type=hidden name="isMP3"/>
+<qtssobject type=hidden name=qtssCurPlaylistName"/>
+	<table border="0" cellspacing="0" cellpadding="0" width="620">
+		<tr>
+			<td align=left valign="top" nowrap width="20"><img src="images/spacer.gif" width="20" height="20" align="top" alt=""></td>
+			<td valign="top" align="center">
+				<table border="0" cellspacing="0" cellpadding="2" width="100%">
+					<tr>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td align=left nowrap class="header"><qtssobject name="doctitle" /></td>
+					</tr>
+					<tr>
+						<td align=left><img src="images/divider.gif" width="600" height="1" align="middle" alt=""></td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td colspan=2>&nbsp;</td>
+		</tr>
+		<tr>
+			<td align=left valign="top" nowrap width="20"><img src="images/spacer.gif" width="20" height="20" align="top" alt=""></td>
+			<td align=center>
+				<table border="0" cellspacing="4" cellpadding="0" width="95%">
+					<tr>
+						<td align=left nowrap><b><qtssstring name="PLName" /></b></td>
+						<td align=left><qtssobject type=string name="qtssCurPlaylistTitle" param=" size=38 onchange=validateFormData()" /></td>
+						<td align=left width="16"><img src="images/spacer.gif" width="16" height="10" align="bottom" alt=""></td>
+						<td align=left nowrap><b><qtssstring name="PLPlayMode" /></b></td>
+						<td align=left nowrap><qtssobject type=select name="qtssCurPlaylistMode"><qtssobject format=option type=option name="qtssCurPlaylistMode" param=sequential><qtssstring name="PLPlayModeSequential" /></qtssobject><qtssobject format=option type=option name="qtssCurPlaylistMode" param=sequential_looped><qtssstring name="PLPlayModeSequentialLooped" /></qtssobject><qtssobject format=option type=option name="qtssCurPlaylistMode" param=weighted_random><qtssstring name="PLPlayModeWeightedRandom" /></qtssobject></qtssobject></td>
+					</tr>
+					<tr>
+						<td align=left nowrap>
+							<b><qtssstring name="MountPoint"/></b> 
+						</td>
+						<td align=left>
+							<qtssobject type=string name="qtssCurPlaylistURL" param=" size=38 maxlength=251 onchange=fixMountPoint()"/> 
+						</td>
+						<td align=left width="16">
+							&nbsp;
+						</td>
+						<td align=left valign="bottom">
+							<b><qtssstring name="PLRepetition"/></b> 
+						</td>
+						<td align=left valign="top" rowspan="2" class=small>
+							<qtssstring name="PLItemsRepeatAfter"/> <qtssobject type=string name="qtssCurPlaylistRep" param=" size=4 maxlength=4"> <qtssstring name="PLItemsHavePlayed"/>
+						</td>
+					</tr>
+					<tr>
+						<td align=left nowrap>
+							<b><qtssobject name="extraFieldLabel"/></b> 
+						</td>
+						<td align=left nowrap>
+							<qtssobject name="extraFieldHTML"/>
+						</td>
+						<td align=left width="16">
+							&nbsp;
+						</td>
+						<td align=left>
+							&nbsp;
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td colspan=2>&nbsp;</td>
+		</tr>
+		<tr>
+			<td align=left valign="top" nowrap width="20"><img src="images/spacer.gif" width="20" height="20" align="top" alt=""></td>
+			<td align=center>
+				<table border="0" cellspacing="0" cellpadding="2" width="95%">
+					<tr>
+						<td align=left><img src="images/divider.gif" width="100%" height="1" align="middle" alt=""></td>
+					</tr>
+					<tr>
+						<td class="small" align=center><qtssstring name="PLInstructions" /></td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td colspan=2>&nbsp;</td>
+		</tr>
+		<tr>
+			<td align=left valign="top" nowrap width="20"><img src="images/spacer.gif" width="20" height="20" align="top" alt=""></td>
+			<td align=center>
+				<table border="0" cellspacing="0" cellpadding="0" width="95%">
+					<tr>
+						<td align=left valign="top" width="220">
+							<b><qtssstring name="PLAvailableMedia"/>
+								<br>
+							</b><select name="currentdir" onchange="openParentFolder()"> 
+								<qtssrepeater name=pathlist>
+									<option value="<qtssobject name=dirpath format=urlencode/>">
+										<qtssobject name=dirname format=unicode-convert/>
+									</option>
+								</qtssrepeater>
+							</select> 
+						</td>
+						<td align=left width="30">
+							&nbsp; 
+						</td>
+						<td align=left valign="top">
+							<b><qtssstring name="PLItemsInPlaylist"/>
+								<br>
+							</b><span class="small"><qtssstring name="PLReorderInstructions"/></span> 
+						</td>
+					</tr>
+					<tr>
+						<td align=left colspan="3" height="190">
+							<img src="images/spacer.gif" width="1" height="1" vspace="188" alt=""> 
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td colspan=2>&nbsp;</td>
+		</tr>
+		<tr>
+			<td align=left valign="top" nowrap width="20"><img src="images/spacer.gif" width="20" height="20" align="top" alt=""></td>
+			<td align=center>
+				<table border="0" cellspacing="4" cellpadding="0" width="95%">
+					<tr>
+						<td align=left colspan=3>
+							<img src="images/divider.gif" width="100%" height="1" align="middle" alt=""> 
+						</td>
+					</tr>
+					<tr>
+						<td align=left>
+							&nbsp;
+						</td>
+					</tr>
+					<tr>
+						<td align=left colspan=3><qtssobject format=checkbox name="pllogging" param=enabled/>&nbsp;<b><qtssstring name=PLLogging/></b></td>
+					</tr>
+					<tr>
+						<td align=left>
+							&nbsp;
+						</td>
+					</tr>
+					<tr>
+						<td align=left colspan=3><qtssobject format=checkbox name=plexternal param=1/>&nbsp;<b><qtssstring name="PLRelayToExternal"/></b></td>
+					</tr>
+					<tr>
+						<td align=left>&nbsp;</td>
+						<td align=right><qtssstring name="RelayDetailsDestHostname"/></td>
+						<td align=left><qtssobject type=text name=plbroadcastip/></td>
+					</tr>
+					<qtssobject name="playlistUsernameHTML"/>
+					<tr>
+						<td align=left>&nbsp;</td>
+						<td align=right><qtssstring name="Password"/></td>
+						<td align=left><qtssobject type=password name=plbroadcastpassword/></td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td colspan=2>&nbsp;</td>
+		</tr>
+		<tr>
+			<td align=left valign="top" nowrap width="20">
+				<img src="images/spacer.gif" width="20" height="20" align="top" alt=""> 
+			</td>
+			<td align=center>
+				<table border=0 cellspacing=0 cellpadding=2 width="100%">
+					<tr>
+						<td align=right valign=top>
+							<img src="images/divider.gif" width=600 height=1 align=middle alt="">
+							<br>&nbsp;<br>
+							 <input type="submit" value="<qtssstring name=SubmitButtonTitle/>"> 
+						</td>
+					</tr>
+					<tr>
+						<td align=right valign=top>
+							<br>&nbsp;
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+
+	<div id="libbackground">
+		<table border=0 cellspacing=0 cellpadding=0>
+			<tr>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=233 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=233 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+				<td width=233 height=13 nowrap bgcolor="#c6c6d6" class=reallysmall><img src="images/headerpixel.gif" width=2 height=1 alt=""><qtssstring name="PLTitleHeader" /></td>
+				<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=233 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=233 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=320 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=1 height=320 alt=""></td>
+				<td width=233 height=320 bgcolor="#FFFFFF"><img src="images/whitepixel.gif" width=233 height=320 alt=""></td>
+				<td width=1 height=320 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=1 height=320 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=233 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=233 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			</tr>
+		</table>
+	</div>
+	
+	<div id="plbackground">
+		<table border=0 cellspacing=0 cellpadding=0>
+			<tr>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=40 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=40 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=210 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=210 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=68 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=68 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+				<td width=40 height=13 nowrap bgcolor="#c6c6d6" class=reallysmall><img src="images/headerpixel.gif" width=2 height=1 alt=""><qtssstring name="PLOrderHeader" /></td>
+				<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+				<td width=210 height=1 nowrap bgcolor="#c6c6d6" class=reallysmall><img src="images/headerpixel.gif" width=2 height=1 alt=""><qtssstring name="PLTitleHeader" /></td>
+				<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+				<td width=68 height=1 nowrap bgcolor="#c6c6d6" class=reallysmall><img src="images/headerpixel.gif" width=2 height=1 alt=""><qtssstring name="PLWeightHeader" /></td>
+				<td width=1 height=13><img src="images/greypixel.gif" width=1 height=13 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=40 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=40 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=210 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=210 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=68 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=68 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=320 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=1 height=320 alt=""></td>
+				<td width=40 height=320 bgcolor="#FFFFFF"><img src="images/whitepixel.gif" width=40 height=320 alt=""></td>
+				<td width=1 height=320 bgcolor="#8c93ad"><img src="images/whitepixel.gif" width=1 height=320 alt=""></td>
+				<td width=210 height=320 bgcolor="#FFFFFF"><img src="images/whitepixel.gif" width=210 height=320 alt=""></td>
+				<td width=1 height=320 bgcolor="#8c93ad"><img src="images/whitepixel.gif" width=1 height=320 alt=""></td>
+				<td width=68 height=320 bgcolor="#FFFFFF"><img src="images/whitepixel.gif" width=68 height=320 alt=""></td>
+				<td width=1 height=320 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=1 height=320 alt=""></td>
+			</tr>
+			<tr>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=40 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=40 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=210 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=210 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+				<td width=68 height=1 bgcolor="#8c93ad"><img src="images/greypixel.gif" width=68 height=1 alt=""></td>
+				<td width=1 height=1><img src="images/greypixel.gif" width=1 height=1 alt=""></td>
+			</tr>
+		</table>
+	</div>
+	<div id="libscrollbardisabled">
+		<table border=0 cellspacing=0 cellpadding=0>
+			<tr>
+				<td background="images/scroll_bg_inactive.gif" width=16 height=1><img src="images/greypixel.gif" width="16" height="1"></td>
+			</tr>
+			<tr>
+				<td background="images/scroll_bg_inactive.gif" height=320><img src="images/scroll_bg_inactive.gif" width="16" height="320"></td>
+			</tr>
+			<tr>
+				<td background="images/scroll_bg_inactive.gif" width=16 height=1><img src="images/greypixel.gif" width="16" height="1"></td>
+			</tr>
+		</table>
+	</div>
+	<div id="libscrollbar">
+		<table border=0 cellspacing=0 cellpadding=0>
+			<tr>
+				<td><img src="images/scroll_arrow_up.gif" width=16 height=16></td>
+			</tr>
+			<tr>
+				<td background="images/scroll_bg.gif" height=290><img src="images/scroll_bg.gif" width=16 height=290></td>
+			</tr>
+			<tr>
+				<td><img src="images/scroll_arrow_down.gif" width=16 height=16></td>
+			</tr>
+		</table>
+	</div>
+	<div id="libscrollthumb">
+		<img src="images/scroll_thumb.gif" width=16 height=16>
+	</div>
+	<div id="plscrollbardisabled">
+		<table border=0 cellspacing=0 cellpadding=0>
+			<tr>
+				<td background="images/scroll_bg_inactive.gif" width=16 height=1><img src="images/greypixel.gif" width="16" height="1"></td>
+			</tr>
+			<tr>
+				<td background="images/scroll_bg_inactive.gif" height=320><img src="images/scroll_bg_inactive.gif" width="16" height="320"></td>
+			</tr>
+			<tr>
+				<td background="images/scroll_bg_inactive.gif" width=16 height=1><img src="images/greypixel.gif" width="16" height="1"></td>
+			</tr>
+		</table>
+	</div>
+	<div id="plscrollbar">
+		<table border=0 cellspacing=0 cellpadding=0>
+			<tr>
+				<td><img src="images/scroll_arrow_up.gif" width=16 height=16></td>
+			</tr>
+			<tr>
+				<td background="images/scroll_bg.gif" height=290><img src="images/scroll_bg.gif" width=16 height=290></td>
+			</tr>
+			<tr>
+				<td><img src="images/scroll_arrow_down.gif" width=16 height=16></td>
+			</tr>
+		</table>
+	</div>
+	<div id="plscrollthumb">
+		<img src="images/scroll_thumb.gif" width=16 height=16>
+	</div>
+	<div id="inserthere">
+		<table border="0" cellspacing="0" cellpadding="0">
+			<tr>
+				<td align=left width="305" height="20" bgcolor="#E0E0E0"><img src="images/highlight.gif" alt="" width="305" height="20"></td>
+			</tr>
+		</table>
+	</div>
+	<div id="openFolderButton">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td align=left><a href="javascript:openFolder()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+				<td align=left><a href="javascript:openFolder()"><qtssstring name="PLOpenFolderButton" /></a></td>
+			</tr>
+		</table>
+	</div>
+	<div id="openFolderButtonDisabled">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td align=left><img src="images/link_disabled.gif" width=28 height=24 border=0></td>
+				<td align=left><qtssstring name="PLOpenFolderButton" /></td>
+			</tr>
+		</table>
+	</div>
+	<div id="removeItemButton">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td align=left><a href="javascript:removeFromPlaylist()"><img src="images/link.gif" width=28 height=24 border=0></a></td>
+				<td align=left><a href="javascript:removeFromPlaylist()"><qtssstring name="PLRemoveItemButton" /></a></td>
+			</tr>
+		</table>
+	</div>
+	<div id="removeItemButtonDisabled">
+		<table border=0 cellpadding=0 cellspacing=0>
+			<tr>
+				<td align=left><img src="images/link_disabled.gif" width=28 height=24 border=0></td>
+				<td align=left><qtssstring name="PLRemoveItemButton" /></td>
+			</tr>
+		</table>
+	</div>
+		
+	<div id="tooltip">
+		<!--placeholder ~~ will be populated dynamically-->
+	</div>
+
+	<div id="libsinglehighlight">
+		<img src="images/highlight.gif" width=218 height=20>
+	</div>
+	
+	<div id="libfiles">
+		<!--placeholder ~~ will be populated dynamically-->
+	</div>
+	
+	<div id="plfileorders">
+		<!--placeholder ~~ will be populated dynamically-->
+	</div>
+	
+	<div id="plfiles">
+		<!--placeholder ~~ will be populated dynamically-->
+	</div>
+	
+	<div id="plfileweights">
+		<!--placeholder ~~ will be populated dynamically-->
+	</div>
+	
+	<div id="plfileweightadjs">
+		<!--placeholder ~~ will be populated dynamically-->
+	</div>
+	
+	<div id="libhighlight">
+		<img src="images/highlight.gif" width=218 height=20>
+	</div>
+
+	<div id="draglayer">
+		<!--placeholder ~~ will be populated dynamically-->
+	</div>
+	
+</qtssobject>
+</body>
+</html>

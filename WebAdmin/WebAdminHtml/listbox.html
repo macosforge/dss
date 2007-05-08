@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>listbox test</title>
+	<meta name="generator" content="BBEdit 6.5.2">
+	<script type="text/javascript" src="includes/DarwinDragWidget.js"></script>
+	<script type="text/javascript" src="includes/DarwinListbox.js"></script>
+	<script type="text/javascript" src="includes/standardNav.js"></script>
+	
+	<style type="text/css">
+	
+		.line-item		
+		{
+			display: block;
+			width: 236px;
+			font-family: Monaco, monospace;
+			font-size: 10px;
+		}
+			
+	</style>
+		
+	<script type="text/javascript" language="Javascript">
+
+		darwinDragWidget = new DarwinDragWidget(window, 'Multiple Items Selected');
+		libraryControl = new DarwinListbox(window, 'library', 0, 0, 236, 320, '#FFFFFF', '#8C93AD', '#D7D7E6', true, true, false, false);
+		playlistControl = new DarwinListbox(window, 'playlist', 287, 12, 236, 320, '#FFFFFF', '#8C93AD', '#D7D7E6', true, true, true, true);
+		
+		// class for plain strings
+		function ImageAndStringListboxItem(imagename, description) {
+			this.imagename = imagename;
+			this.description = description;
+		}
+		
+		// method to draw plain string... return the HTML
+		ImageAndStringListboxItem.prototype.draw = function() {
+			var str = '<img src="images/' + this.imagename + '" width="16" height="16" hspace="2" vspace="2" align="middle">';
+			str = str + this.description;
+			return str;
+		}
+		
+		function populateListbox() {
+			var contents = new Array();
+			contents[contents.length] = new ImageAndStringListboxItem('mp3_file.gif', 'one');
+			contents[contents.length] = new ImageAndStringListboxItem('mp3_file.gif', 'two');
+			contents[contents.length] = new ImageAndStringListboxItem('mp3_file.gif', 'three');
+			contents[contents.length] = new ImageAndStringListboxItem('mp3_file.gif', 'four');
+			contents[contents.length] = new ImageAndStringListboxItem('mp3_file.gif', 'five');
+			contents[contents.length] = new ImageAndStringListboxItem('mp3_file.gif', 'six');
+			contents[contents.length] = new ImageAndStringListboxItem('mp3_file.gif', 'seven');
+			contents[contents.length] = new ImageAndStringListboxItem('mp3_file.gif', 'eight');
+			contents[contents.length] = new ImageAndStringListboxItem('mp3_file.gif', 'nine');
+			contents[contents.length] = new ImageAndStringListboxItem('mp3_file.gif', 'ten');
+			contents[contents.length] = new ImageAndStringListboxItem('mp3_file.gif', 'eleven');
+			contents[contents.length] = new ImageAndStringListboxItem('mp3_file.gif', 'twelve');
+			contents[contents.length] = new ImageAndStringListboxItem('mp3_file.gif', 'thirteen');
+			contents[contents.length] = new ImageAndStringListboxItem('mp3_file.gif', 'fourteen');
+			contents[contents.length] = new ImageAndStringListboxItem('mp3_file.gif', 'fifteen');
+			libraryControl.contents = contents;
+			libraryControl.draw();
+			playlistControl.contents = contents;
+			playlistControl.draw();
+		}
+	
+	</script>
+</head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif" onload="populateListbox()">
+
+<table>
+	<tr>
+		<td><script type="text/javascript">libraryControl.output();</script></td>
+		<td>&nbsp;&nbsp;&nbsp;</td>
+		<td><script type="text/javascript">playlistControl.output();</script></td>
+	</tr>
+</table>
+
+<script type="text/javascript" language="Javascript">
+
+	darwinDragWidget.output();
+	
+	var str = '';
+	var s = playlistControl.style
+	var count = 0;
+	var totalCount = 0;
+	
+	for (var i in s) {
+		totalCount++;
+		str += i;
+		if ((totalCount < 40) || totalCount > 50)
+			str += ":" + s[i];
+		str += "\n";
+		if (++count == 20) {
+			count = 0;
+			str = '';
+		}
+	}
+
+</script>
+	
+</body>
+</html>

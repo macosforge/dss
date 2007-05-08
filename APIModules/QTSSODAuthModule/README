@@ -1,0 +1,81 @@
+/////////////////////////////////////////////////////////////////////////
+//
+// Open Directory Authorization Module for QuickTime Streaming Server //
+//
+////////////////////////////////////////////////////////////////////////
+
+*********************
+* About this module *
+*********************
+
+The module was developed to allow QTSS to leverage Directory Services in Mac OS X Server for user and group information. Previously the user and group information for QTSS were stored in flat files, this would require the administrator to keep two separate user and group databases. This module still relies on qtacess-type file (this module looks for a file named dsqtaccess) for user and group access control lists. It should be noted that this module is for Mac OS X systems only.
+
+******************
+* How to Install *
+******************
+
+1. Copy the module file (QTSSDemoODAuthModule.bundle) into the Modules directory (/Library/QuickTimeStreaming/Modules)
+
+2. Create a dsqtaccess file in the directory you wish to control. You can use the attached template.
+
+4. Configure Directory Access to point to the directory you wish to gather user and group information.
+
+3. Restart QTSS.
+
+********************
+* dsqtaccess files *
+********************
+
+The dsqtaccess file is based on the qtaccess used by default installs of QTSS. There are some differences though, dsqtaccess files do not honor the following from qtaccess files:
+
+AuthScheme section
+AuthUserFile section
+AuthGroupFIle section
+<Limit READ/WRITE> section
+
+dsqtaccess simply ignores these sections, it will not harm the module to keep these section intact, the module will just not honor any of the directives. The AuthScheme is always basic. The AuthUserFile and AuthGroupFile are ignored because user and group information is pulled from Directory Services.
+
+The sections that are honored are:
+
+AuthName section
+require user section
+require group section
+
+------------------------
+- require user section -
+------------------------
+
+The "require user" section behaves exactly the same as a standard qtaccess file. This section is configured the same and honors "valid-user" and "any-user". The format is exactly the same, for example if one wanted to restrict access to jdoe and jsmith the following would be entered in the "require user" section:
+
+require jdoe jsmith
+
+These users could reside in the local NetInfo database, an LDAPv3 directory, Active Directory, NIS, etc or any combination. 
+
+If one wanted to allow any user that can be authenticated by Directory Service (NetInfo, LDAPv3, AD, etc.) the following would be entered in the "require user" section:
+
+require valid-user
+
+The "any-user" will allow all users without need of authentication.
+
+-------------------------
+- require group section -
+-------------------------
+
+The "require group" section behaves exactly as a standard qtacess file. If one wanted to restrict access to a group named "movie-watchers" one would enter the following the "require group" section:
+
+require group movie-watchers
+
+The group information can reside in the local NetInfo database, and LDAPv3 directory, Active Directory, NIS, etc or any combination. 
+
+****************
+* Known Issues *
+****************
+
+- AuthScheme only supports basic authentication. Digest authentication is technically possible but would require quite a few changes not only to the module but also other modules.
+
+
+***********
+* Version *
+***********
+
+0.1.0 - February 2005 - initial demonstration release

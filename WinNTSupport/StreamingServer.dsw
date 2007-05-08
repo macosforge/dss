@@ -1,0 +1,314 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "APICommonCode"=..\APICommonCode\APICommonCode.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "APIStubLib"=..\APIStubLib\APIStubLib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "CommonUtilitiesLib"=..\CommonUtilitiesLib\CommonUtilitiesLib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "MP3Broadcaster"=..\MP3Broadcaster\MP3Broadcaster.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name APICommonCode
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name CommonUtilitiesLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SafeInternalStdLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "PlaylistBroadcaster"=..\PlaylistBroadcaster.tproj\PlaylistBroadcaster.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name QTFileExternalLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SafeInternalStdLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name APICommonCode
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "QTFileExternalLib"=..\QTFileLib\QTFileExternalLib\QTFileExternalLib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name SafeInternalStdLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "QTFileLib"=..\QTFileLib\QTFileLib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name APIStubLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SafeInternalStdLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "QTSSRawFileModule"=..\APIModules\QTSSRawFileModule.bproj\QTSSRawFileModule.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name APICommonCode
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name APIStubLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name CommonUtilitiesLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SafeDynamicModuleStdLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "QTSSRefMovieModule"=..\APIModules\QTSSRefMovieModule\QTSSRefMovieModule.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name APICommonCode
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name APIStubLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name CommonUtilitiesLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SafeDynamicModuleStdLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "QTSSSpamDefenseModule"=..\APIModules\QTSSSpamDefenseModule.bproj\QTSSSpamDefenseModule.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name APICommonCode
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name APIStubLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name CommonUtilitiesLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SafeDynamicModuleStdLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "RegistrySystemPathEditor"=..\RegistrySystemPathEditor\RegistrySystemPathEditor.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name CommonUtilitiesLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SafeInternalStdLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "SafeDynamicModuleStdLib"=..\SafeStdLib\SafeDynamicModuleStdLib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name CommonUtilitiesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "SafeInternalStdLib"=..\SafeStdLib\SafeInternalStdLib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name CommonUtilitiesLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "StreamingLoadTool"=..\StreamingLoadTool\StreamingLoadTool.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name APICommonCode
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name CommonUtilitiesLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SafeInternalStdLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "StreamingServer"=.\StreamingServer.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name CommonUtilitiesLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name APICommonCode
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name APIStubLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SafeInternalStdLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name QTFileLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "qtpasswd"=..\qtpasswd.tproj\qtpasswd.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name CommonUtilitiesLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SafeInternalStdLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

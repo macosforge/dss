@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title><qtssstring name="ServerName"/></title>
+	<meta name="generator" content="BBEdit Prerelease">
+	<style type="text/css">
+		td { font-family: <qtssobject name=fontFaceCSS/>; font-size: 12px }
+		.large { font-weight: bold; font-size: 14px  }
+		.white { color: #FFFFFF }
+		input { font-size: 12px }
+	</style>
+	<qtssobject name=scriptTag>
+		//<script language=javascript>
+	
+		function onLoadScript() {
+			if ((document.forms[0]) && (document.forms[0].elements) && (document.forms[0].elements['qtssusername'])) {
+				document.forms[0].elements['qtssusername'].focus();
+				
+				if (document.forms[0].elements['filename'].value.indexOf('setup') != 0)
+					document.forms[0].elements['filename'].value = '';
+			}
+		}
+		
+		if (parent.frames.length > 0) {
+			parent.location = '/parse_xml.cgi';
+		}
+		
+	</script>
+</head>
+<body bgcolor="#FFFFFF" background="images/stripes_gray.gif" onload="onLoadScript()"><qtssobject type=form param="_top">
+<input type="hidden" name="action" value="login">
+<qtssobject name=filename type=hidden/>
+<qtssobject name=treatedFilename type=hidden/>
+<table border="0" width="100%" height="90%" cellspacing="0" cellpadding="0">
+	<tr>
+		<td align="center" valign="middle"><table border=0 cellspacing=0 cellpadding=0>
+			<tr>
+				<td colspan=3 valign=middle align=left><img src="images/dialog_top.gif" width=500 height=20></td>
+			</tr>
+			<tr>
+				<td background="images/dialog_side.gif" width=1><img src="images/dialog_side.gif" width="1" height="20"></td>
+				<td valign=middle align=left bgcolor="#FFFFFF" width=498><table border=0 width="98%" cellspacing=0 cellpadding=4>
+					<tr>
+						<td align=center width=110 valign=top><img src="images/nav_logo.gif" width="82" height="105" hspace=21 vspace=5></td>
+						<td valign=middle align=left><p class=large><qtssstring name=LoginTitle/></p>
+							<p><qtssstring name=LoginPleaseLogin/></p>
+						</td>
+					<tr>
+						<td valign=middle align=left></td>
+						<td valign=middle align=center><table border=0 cellspacing=4 cellpadding=0>
+							<tr>
+								<td valign=middle align=right><b><qtssstring name=LoginUsername/></b></td>
+								<td valign=middle align=left><input type=text name="qtssusername"></td>
+							</tr>
+							<tr>
+								<td valign=middle align=right><b><qtssstring name=LoginPassword/></b></td>
+								<td valign=middle align=left><input type="password" name="qtsspassword"></td>
+							</tr>
+							<tr>
+								<td valign=middle align=left></td>
+								<td valign=middle align=left>&nbsp;<br>&nbsp;<br><input type=submit value="&nbsp;<qtssstring name=LoginButton/>&nbsp;"/></td>
+							</tr>
+						</table></td>
+					<tr>
+				</table></td>
+				<td background="images/dialog_side.gif" width=1><img src="images/dialog_side.gif" width="1" height="20"></td>
+			</tr>
+			<tr>
+				<td colspan=3 valign=middle align=left><img src="images/dialog_bottom.gif" width="500" height="20" hspace=0 vspace=0></td>
+			</tr>
+		</table></td>
+	</tr>
+</table></qtssobject></body>
+</html>

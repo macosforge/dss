@@ -1,0 +1,15 @@
+#!/usr/bin/perl
+
+#kill qtss
+$pids = `ps -ax | awk '{print \$1" " \$5}' | awk '/QuickTimeStreamingServer/ {print \$1}'`;
+$pids =~ s/\n/ /;
+if ($pids ne '') {
+	`kill $pids`;
+}
+
+#kill streamingadminserver.pl
+$pids = `ps -ax | awk '/streamingadminserver.pl/ {print \$0}' | awk '/perl/ {print \$1}'`;
+$pids =~ s/\n/ /;
+if ($pids ne '') {
+	`kill $pids`;
+}
