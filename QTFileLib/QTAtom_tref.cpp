@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -22,7 +22,7 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-// $Id: QTAtom_tref.cpp,v 1.10 2003/08/15 23:53:14 sbasu Exp $
+// $Id: QTAtom_tref.cpp,v 1.1 2006/01/05 13:20:36 murata Exp $
 //
 // QTAtom_tref:
 //   The 'tref' QTAtom class.
@@ -110,5 +110,5 @@ Bool16 QTAtom_tref::Initialize(void)
 void QTAtom_tref::DumpAtom(void)
 {
     DEBUG_PRINT(("QTAtom_tref::DumpAtom - Dumping atom.\n"));
-    DEBUG_PRINT(("QTAtom_tref::DumpAtom - ..Number of track reference entries: %lu\n", (UInt32) fNumEntries));
+    DEBUG_PRINT(("QTAtom_tref::DumpAtom - ..Number of track reference entries: %"_U32BITARG_"\n", (UInt32) fNumEntries));
 }

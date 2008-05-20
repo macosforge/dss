@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -35,22 +35,30 @@
 #include "OS.h"
 #include <stdio.h>
 
+#define RTCP_PACKET_DEBUG 0
 
 //returns true if successful, false otherwise
 Bool16 RTCPPacket::ParsePacket(UInt8* inPacketBuffer, UInt32 inPacketLen)
 {
     if (inPacketLen < kRTCPPacketSizeInBytes)
         return false;
+        
     fReceiverPacketBuffer = inPacketBuffer;
-
+    if (RTCP_PACKET_DEBUG) qtss_printf("RTCPPacket::ParsePacket first 4 bytes of packet=%x \n", ntohl( *(UInt32 *)inPacketBuffer));
+    
     //the length of this packet can be no less than the advertised length (which is
     //in 32-bit words, so we must multiply) plus the size of the header (4 bytes)
+    if (RTCP_PACKET_DEBUG) qtss_printf("RTCPPacket::ParsePacket len=%"_U32BITARG_" min allowed=%"_U32BITARG_"\n", inPacketLen,(UInt32)((this->GetPacketLength() * 4) + kRTCPHeaderSizeInBytes));
     if (inPacketLen < (UInt32)((this->GetPacketLength() * 4) + kRTCPHeaderSizeInBytes))
+    {   if (RTCP_PACKET_DEBUG) qtss_printf("RTCPPacket::ParsePacket invalid len=%"_U32BITARG_"\n", inPacketLen);
         return false;
+    }
     
     //do some basic validation on the packet
     if (this->GetVersion() != kSupportedRTCPVersion)
+    {   if (RTCP_PACKET_DEBUG) qtss_printf("RTCPPacket::ParsePacket unsupported version\n");
         return false;
+    }
         
     return true;
 }
@@ -58,10 +66,10 @@ Bool16 RTCPPacket::ParsePacket(UInt8* inPacketBuffer, UInt32 inPacketLen)
 void RTCPReceiverPacket::Dump()//Override
 {
     RTCPPacket::Dump();
-    
+    qtss_printf("\n");
     for (int i = 0;i<this->GetReportCount(); i++)
     {
-        qtss_printf( "   [%d] H_ssrc=%lu, H_frac_lost=%d, H_tot_lost=%lu, H_high_seq=%lu H_jit=%lu, H_last_sr_time=%lu, H_last_sr_delay=%lu \n",
+        qtss_printf( "              RTCP RR Report[%d] H_ssrc=%"_U32BITARG_", H_frac_lost=%d, H_tot_lost=%"_U32BITARG_", H_high_seq=%"_U32BITARG_" H_jit=%"_U32BITARG_", H_last_sr_time=%"_U32BITARG_", H_last_sr_delay=%"_U32BITARG_" \n",
                              i,
                              this->GetReportSourceID(i),
                              this->GetFractionLostPackets(i),
@@ -76,7 +84,7 @@ void RTCPReceiverPacket::Dump()//Override
 }
 
 
-Bool16 RTCPReceiverPacket::ParseReceiverReport(UInt8* inPacketBuffer, UInt32 inPacketLength)
+Bool16 RTCPReceiverPacket::ParseReport(UInt8* inPacketBuffer, UInt32 inPacketLength)
 {
     Bool16 ok = this->ParsePacket(inPacketBuffer, inPacketLength);
     if (!ok)
@@ -85,11 +93,13 @@ Bool16 RTCPReceiverPacket::ParseReceiverReport(UInt8* inPacketBuffer, UInt32 inP
     fRTCPReceiverReportArray = inPacketBuffer + kRTCPPacketSizeInBytes;
     
     //this is the maximum number of reports there could possibly be
-    int theNumReports = (inPacketLength - kRTCPPacketSizeInBytes) / kReportBlockOffsetSizeInBytes;
+    int theMaxReports = (inPacketLength - kRTCPPacketSizeInBytes) / kReportBlockOffsetSizeInBytes;
 
     //if the number of receiver reports is greater than the theoretical limit, return an error.
-    if (this->GetReportCount() > theNumReports)
+    if (this->GetReportCount() > theMaxReports)
+    {  if (RTCP_PACKET_DEBUG) printf("RTCPReceiverPacket::ParseReport this rtcp report count=%d > max reports=%d\n",this->GetReportCount(), theMaxReports);
         return false;
+    }
         
     return true;
 }
@@ -132,11 +142,30 @@ UInt32 RTCPReceiverPacket::GetCumulativeTotalLostPackets()
 }
 
 
+Bool16 RTCPSenderReportPacket::ParseReport(UInt8* inPacketBuffer, UInt32 inPacketLength)
+{
+    Bool16 ok = this->ParsePacket(inPacketBuffer, inPacketLength);
+    if (!ok)
+        return false;
+    if (inPacketLength < kRTCPPacketSizeInBytes + kRTCPSRPacketSenderInfoInBytes)
+		return false;
+    
+	fRTCPReceiverReportArray = inPacketBuffer + kRTCPPacketSizeInBytes + kRTCPSRPacketSenderInfoInBytes;
+    
+    //this is the maximum number of reports there could possibly be
+    int theNumReports = (inPacketLength - kRTCPPacketSizeInBytes - kRTCPSRPacketSenderInfoInBytes) / kReportBlockOffsetSizeInBytes;
+
+    //if the number of receiver reports is greater than the theoretical limit, return an error.
+    if (this->GetReportCount() > theNumReports)
+        return false;
+        
+    return true;
+}
 
 
 void RTCPPacket::Dump()
 {  
-    qtss_printf( "H_vers=%d, H_pad=%d, H_rprt_count=%d, H_type=%d, H_length=%d, H_ssrc=%ld\n",
+    qtss_printf( "H_vers=%d, H_pad=%d, H_rprt_count=%d, H_type=%d, H_length=%d, H_ssrc=%"_S32BITARG_"",
              this->GetVersion(),
              (int)this->GetHasPadding(),
              this->GetReportCount(),

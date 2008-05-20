@@ -381,6 +381,10 @@ RelaySaveText						"Your relay was saved successfully."
 RelayErrNoName						"You must enter a relay name."
 RelayErrNoSourceIP					"You must enter a source IP address or hostname."
 RelayErrMulticastTTLIncorrect		"The Multicast TTL must be a number between 1 and 255."
+RelayErrNoDestType					"One of your relay destinations has no type. Please pick one (announced or unnanounced)."
+RelayErrNoDestMountpoint			"One of your announced relay destinations has no mount point. Please specify one before saving."
+RelayErrNoDestBasePort				"One of your unannounced relay destinations has no base port. Please specify one before saving."
+RelayErrNameConflict				"A relay with this name already exists. Please choose a different name."
 RelayDeleteConfirm					"Are you sure you want to delete the selected relay?"
 
 # QuickTime Broadcaster Admin (Mac OS X Only)

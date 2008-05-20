@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -52,11 +52,12 @@ class RTPSessionOutput : public ReflectorOutput
         virtual ~RTPSessionOutput() {}
         
         ReflectorSession* GetReflectorSession() { return fReflectorSession; }
-        
+       void InitializeStreams();
+         
         // This writes the packet out to the proper QTSS_RTPStreamObject.
         // If this function returns QTSS_WouldBlock, timeToSendThisPacketAgain will
         // be set to # of msec in which the packet can be sent, or -1 if unknown
-        virtual QTSS_Error  WritePacket(StrPtrLen* inPacketData, void* inStreamCookie, UInt32 inFlags, SInt64 packetLatenessInMSec, SInt64* timeToSendThisPacketAgain, UInt64* packetIDPtr, SInt64* arrivalTimeMSec );
+        virtual QTSS_Error  WritePacket(StrPtrLen* inPacketData, void* inStreamCookie, UInt32 inFlags, SInt64 packetLatenessInMSec, SInt64* timeToSendThisPacketAgain, UInt64* packetIDPtr, SInt64* arrivalTimeMSec,Bool16 firstPacket );
         virtual void TearDown();
         
         SInt64                  GetReflectorSessionInitTime()                    { return fReflectorSession->GetInitTimeMS(); }
@@ -65,6 +66,8 @@ class RTPSessionOutput : public ReflectorOutput
         
         virtual Bool16  IsPlaying();
         
+        void SetBufferDelay (UInt32 delay) { fBufferDelayMSecs = delay; }
+
     private:
     
         QTSS_ClientSessionObject fClientSession;

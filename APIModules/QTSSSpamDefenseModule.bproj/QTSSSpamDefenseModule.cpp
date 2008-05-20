@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -38,6 +38,7 @@
 #include "OSMemory.h"
 
 static QTSS_ModulePrefsObject sPrefs = NULL;
+static QTSS_StreamRef           sErrorLogStream = NULL;
 
 class IPAddrTableKey;
 
@@ -172,6 +173,7 @@ QTSS_Error Initialize(QTSS_Initialize_Params* inParams)
 {
     // Setup module utils
     QTSSModuleUtils::Initialize(inParams->inMessages, inParams->inServer, inParams->inErrorLogStream);
+	sErrorLogStream = inParams->inErrorLogStream;
     sPrefs = QTSSModuleUtils::GetModulePrefsObject(inParams->inModule);
     sMutex = NEW OSMutex();
     sHashTable = NEW IPAddrHashTable(277);//277 is prime, I think...
@@ -203,7 +205,6 @@ QTSS_Error Authorize(QTSS_StandardRTSP_Params* inParams)
     (void)QTSS_GetValuePtr(inParams->inRTSPSession, qtssRTSPSesRemoteAddr, 0, (void**)&theIPAddr, &theLen);
     if ((theIPAddr == NULL) || (theLen != sizeof(UInt32)))
     {
-        Assert(0);
         return QTSS_NoErr;
     }
 
@@ -225,10 +226,11 @@ QTSS_Error Authorize(QTSS_StandardRTSP_Params* inParams)
     // Check to see if this client has too many connections open. If it does,
     // return an error, otherwise, allow the connection and increment the
     // refcount.
-    if (theElem->GetRefCount() >= sNumConnsPerIP)
+    if (theElem->GetRefCount() >= sNumConnsPerIP) {
+		QTSSModuleUtils::LogErrorStr(qtssMessageVerbosity, "Blocking connection from IP address");
         return QTSSModuleUtils::SendErrorResponse(inParams->inRTSPRequest, qtssClientForbidden,
                                                     sTooManyConnectionsErr);
-    else
+    } else
         theElem->IncrementRefCount();
         
     // Mark the request so we'll know subsequent ones aren't the first.
@@ -254,7 +256,6 @@ QTSS_Error SessionClosing(QTSS_RTSPSession_Params* inParams)
     (void)QTSS_GetValuePtr(inParams->inRTSPSession, qtssRTSPSesRemoteAddr, 0, (void**)&theIPAddr, &theLen);
     if ((theIPAddr == NULL) || (theLen != sizeof(UInt32)))
     {
-        Assert(0);
         return QTSS_NoErr;
     }
 

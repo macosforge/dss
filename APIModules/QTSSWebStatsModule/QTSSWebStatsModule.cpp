@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -58,6 +58,9 @@ static QTSS_PrefsObject         sServerPrefs = NULL;
 static Bool16                   sFalse = false;
 static time_t                   sStartupTime = 0;
 
+static char*	sDefaultURL = "";
+static StrPtrLen sDefaultURLStr;
+static char*	sDefaultURLPrefName = "web_stats_url";
 
 
 static QTSS_Error   QTSSWebStatsModuleDispatch(QTSS_Role inRole, QTSS_RoleParamPtr inParams);
@@ -122,6 +125,10 @@ QTSS_Error Initialize(QTSS_Initialize_Params* inParams)
     sServerPrefs = inParams->inPrefs;
     
     sStartupTime = ::time(NULL);
+    
+	sDefaultURLStr.Delete();
+    sDefaultURLStr.Set(QTSSModuleUtils::GetStringAttribute(sPrefs, sDefaultURLPrefName, sDefaultURL)); 
+
     return QTSS_NoErr;
 }
 
@@ -157,6 +164,7 @@ QTSS_Error FilterRequest(QTSS_Filter_Params* inParams)
         0, 0, 0, 0, 0, 1             //250-255
     };
 
+
     //check to see if we should handle this request. Invokation is triggered
     //by a "GET /" request
     
@@ -181,14 +189,14 @@ QTSS_Error FilterRequest(QTSS_Filter_Params* inParams)
             Bool16  displayHelp = false;
             
             
-            OSCharArrayDeleter theWebStatsURL(GetPrefAsString(sPrefs, "web_stats_url"));
+            OSCharArrayDeleter theWebStatsURL(GetPrefAsString(sPrefs, sDefaultURLPrefName));
             StrPtrLen theWebStatsURLPtr(theWebStatsURL.GetObject());
             
             // If there isn't any web stats URL, we can just return at this point
             if (theWebStatsURLPtr.Len == 0)
                 return QTSS_NoErr;
                 
-            fullRequest.ConsumeUntil(&strPtr, StringParser::sEOLWhitespaceMask);
+            fullRequest.ConsumeUntil(&strPtr, StringParser::sEOLWhitespaceQueryMask);
             if ( strPtr.Len != 0 && strPtr.Equal(theWebStatsURLPtr) )   //it's a "stats" request
             {
                 if ( fullRequest.Expect('?') )
@@ -289,9 +297,10 @@ void SendStats(QTSS_StreamRef inStream, UInt32  refreshInterval, Bool16 displayH
                                     {"numudpsockets", 51},
                                     {"apiversion", 52},
                                     {"numreliableudpbuffers", 53},
-                                    {"reliableudpwastedbytes", 54}
+                                    {"reliableudpwastedbytes", 54},
+                                    {"numtaskthreads", 55}
     };
-    const int kMaxFieldNum = 54;
+    const int kMaxFieldNum = 55;
     static char* kEmptyStr = "?";
     char* thePrefStr = kEmptyStr;
 
@@ -301,7 +310,7 @@ void SendStats(QTSS_StreamRef inStream, UInt32  refreshInterval, Bool16 displayH
 
     if (refreshInterval > 0)
     {
-        qtss_sprintf(buffer, "<META HTTP-EQUIV=Refresh CONTENT=%lu>\n", refreshInterval);
+        qtss_sprintf(buffer, "<META HTTP-EQUIV=Refresh CONTENT=%"_U32BITARG_">\n", refreshInterval);
         (void)QTSS_Write(inStream, buffer, ::strlen(buffer), NULL, 0);
     }
         
@@ -330,7 +339,7 @@ void SendStats(QTSS_StreamRef inStream, UInt32  refreshInterval, Bool16 displayH
         static StrPtrLen sHelpLine6("<P>The three possible parameters to stats are:</P>\n");
         static StrPtrLen sHelpLine7("<P>\"help\"  -- shows the help information you're reading right now.</P>\n");
         static StrPtrLen sHelpLine8("<P>\"refresh=&#91;n&#93;\"  -- tells the browser to automatically update the page every &#91;n&#93; seconds.</P>\n");
-        static StrPtrLen sHelpLine9("<P>\"fields=&#91;fieldList&#93;\"  -- show only the fields specified in &#91;fieldList&#93;</P>\n");
+        static StrPtrLen sHelpLine9("<P>\"fields=&#91;fieldList&#93;\"  -- show only the fields specified in comma delimited &#91;fieldList&#93;</P>\n");
         static StrPtrLen sHelpLine10("<BLOCKQUOTE>The following fields are available for use with the \"fields\" option:</P><BLOCKQUOTE><DL>\n");
         
         (void)QTSS_Write(inStream, sHelpLine1.Ptr, sHelpLine1.Len, NULL, 0);
@@ -430,10 +439,27 @@ void SendStats(QTSS_StreamRef inStream, UInt32  refreshInterval, Bool16 displayH
             
             case 3:
             {
+                char uptimebuffer[1024];
                 time_t curTime = ::time(NULL); 
-                char buffer[kTimeStrSize];
-                qtss_sprintf(buffer, "<b>Current Time: </b> %s<BR>\n", qtss_ctime(&curTime, buffer, sizeof(buffer)));
-                (void)QTSS_Write(inStream, buffer, ::strlen(buffer), NULL, 0);      
+                qtss_sprintf(uptimebuffer, "<b>Current Time: </b> %s<BR>\n", qtss_ctime(&curTime, buffer, sizeof(buffer)));
+                (void)QTSS_Write(inStream, uptimebuffer, ::strlen(uptimebuffer), NULL, 0);    
+                
+                time_t upTime = curTime - sStartupTime;
+                #define kDaySeconds  (24 * 60 * 60)
+                #define kHourSeconds  (60 * 60)
+                #define kMinuteSeconds 60
+
+                UInt32 upTimeDays = upTime / kDaySeconds;
+                UInt32 upTimeHours = (upTime % kDaySeconds) / kHourSeconds;
+                UInt32 upTimeMinutes = (upTime % kHourSeconds) / kMinuteSeconds;
+                UInt32 upTimeSeconds = (upTime % kMinuteSeconds);
+                qtss_snprintf(uptimebuffer,sizeof(uptimebuffer), "<b>Up Time Total Seconds: </b> %"_U32BITARG_"<BR>\n", upTime);
+                uptimebuffer[sizeof(uptimebuffer) -1] = 0;
+                (void)QTSS_Write(inStream, uptimebuffer, ::strlen(uptimebuffer), NULL, 0);    
+                       
+                qtss_snprintf(uptimebuffer,sizeof(uptimebuffer), "<b>Up Time: </b> %"_U32BITARG_" days %"_U32BITARG_" hours %"_U32BITARG_" minutes %"_U32BITARG_" seconds <BR>\n", upTimeDays, upTimeHours,upTimeMinutes, upTimeSeconds);
+                uptimebuffer[sizeof(uptimebuffer) -1] = 0;
+                (void)QTSS_Write(inStream, uptimebuffer, ::strlen(uptimebuffer), NULL, 0);    
             }
             break;
             
@@ -446,9 +472,11 @@ void SendStats(QTSS_StreamRef inStream, UInt32  refreshInterval, Bool16 displayH
             case 5:
             {
                 StrPtrLen theVersion;
-                (void)QTSS_GetValuePtr(sServer, qtssSvrServerVersion, 0, (void**)&theVersion.Ptr, &theVersion.Len);
+                (void)QTSS_GetValuePtr(sServer, qtssSvrRTSPServerHeader, 0, (void**)&theVersion.Ptr, &theVersion.Len);
                 Assert(theVersion.Ptr != NULL);
-                qtss_sprintf(buffer, "<b>Server Version: </b> %s<BR>\n", theVersion.Ptr);
+                if (theVersion.Len > 7) //Skip the "Server:" text
+                   theVersion.Ptr += 7;
+                qtss_sprintf(buffer, "<b>Server Version: </b>%s<BR>\n", theVersion.Ptr);
                 (void)QTSS_Write(inStream, buffer, ::strlen(buffer), NULL, 0);      
             }
             break;
@@ -465,7 +493,7 @@ void SendStats(QTSS_StreamRef inStream, UInt32  refreshInterval, Bool16 displayH
     
             case 7:
             {
-            
+                char statusBuffer[1024];
                 const char* states[]    = { "Starting Up",
                                             "Running",
                                             "Refusing Connections",
@@ -477,12 +505,11 @@ void SendStats(QTSS_StreamRef inStream, UInt32  refreshInterval, Bool16 displayH
                 (void)QTSS_GetValue(sServer, qtssSvrState, 0, &theState, &theLen);
 
                 if (theState == qtssRunningState)
-                {	char buffer[kTimeStrSize];
-                    qtss_sprintf(buffer, "<b>Status: </b> %s since %s<BR>", states[theState], qtss_ctime(&sStartupTime,buffer,sizeof(buffer)));
+                {	qtss_snprintf(statusBuffer, sizeof(statusBuffer), "<b>Status: </b> %s since %s<BR>", states[theState], qtss_ctime(&sStartupTime,buffer,sizeof(buffer)));
                 }
                 else
-                    qtss_sprintf(buffer, "<b>Status: </b> %s<BR>", states[theState]);
-                (void)QTSS_Write(inStream, buffer, ::strlen(buffer), NULL, 0);      
+                    qtss_snprintf(statusBuffer,sizeof(statusBuffer), "<b>Status: </b> %s<BR>", states[theState]);
+                (void)QTSS_Write(inStream, statusBuffer, ::strlen(statusBuffer), NULL, 0);      
             }
             break;
             
@@ -565,7 +592,7 @@ void SendStats(QTSS_StreamRef inStream, UInt32  refreshInterval, Bool16 displayH
                 theLen = sizeof(curBandwidth);
                 (void)QTSS_GetValue(sServer, qtssRTPSvrCurBandwidth, 0, &curBandwidth, &theLen);
 
-                qtss_sprintf(buffer, "<b>Current Throughput: </b> %lu kbits<BR>\n", curBandwidth/1024);
+                qtss_sprintf(buffer, "<b>Current Throughput: </b> %"_U32BITARG_" kbits<BR>\n", curBandwidth/1024);
                 (void)QTSS_Write(inStream, buffer, ::strlen(buffer), NULL, 0);      
             }
             break;
@@ -612,7 +639,7 @@ void SendStats(QTSS_StreamRef inStream, UInt32  refreshInterval, Bool16 displayH
             case 23:
             {
                 (void)QTSS_GetValueAsString(sServerPrefs, qtssPrefsMaximumBandwidth, 0, &thePrefStr);
-                qtss_sprintf(buffer, "<b>Maximum Throughput: </b> %s<BR>\n",thePrefStr);
+                qtss_sprintf(buffer, "<b>Maximum Throughput: </b> %s Kbits<BR>\n",thePrefStr);
                 (void)QTSS_Write(inStream, buffer, ::strlen(buffer), NULL, 0);
             }
             break;
@@ -836,8 +863,8 @@ void SendStats(QTSS_StreamRef inStream, UInt32  refreshInterval, Bool16 displayH
     
             case 48:
             {
-                                if (sReflectorPrefs != NULL)
-                                {
+                if (sReflectorPrefs != NULL)
+                {
                     thePrefStr = GetPrefAsString(sReflectorPrefs, "reflector_bucket_size");
                     qtss_sprintf(buffer, "<b>Reflector Bucket Size: </b> %s<BR>\n", thePrefStr);
                     (void)QTSS_Write(inStream, buffer, ::strlen(buffer), NULL, 0);      
@@ -890,7 +917,7 @@ void SendStats(QTSS_StreamRef inStream, UInt32  refreshInterval, Bool16 displayH
                 UInt32 reliableUDPBuffers = 0;
                 UInt32 blahSize = sizeof(reliableUDPBuffers);
                 (void)QTSS_GetValue(sServer, qtssSvrNumReliableUDPBuffers, 0, &reliableUDPBuffers, &blahSize);
-                qtss_sprintf(buffer, "<b>Num Reliable UDP Retransmit Buffers: </b> %lu<BR>\n", reliableUDPBuffers);
+                qtss_sprintf(buffer, "<b>Num Reliable UDP Retransmit Buffers: </b> %"_U32BITARG_"<BR>\n", reliableUDPBuffers);
                 (void)QTSS_Write(inStream, buffer, ::strlen(buffer), NULL, 0);      
             }
             break;
@@ -900,10 +927,20 @@ void SendStats(QTSS_StreamRef inStream, UInt32  refreshInterval, Bool16 displayH
                 UInt32 wastedBufSpace = 0;
                 UInt32 blahSize2 = sizeof(wastedBufSpace);
                 (void)QTSS_GetValue(sServer, qtssSvrReliableUDPWastageInBytes, 0, &wastedBufSpace, &blahSize2);
-                qtss_sprintf(buffer, "<b>Amount of buffer space being wasted in UDP Retrans buffers: </b> %lu<BR>\n", wastedBufSpace);
+                qtss_sprintf(buffer, "<b>Amount of buffer space being wasted in UDP Retrans buffers: </b> %"_U32BITARG_"<BR>\n", wastedBufSpace);
                 (void)QTSS_Write(inStream, buffer, ::strlen(buffer), NULL, 0);      
             }
             break;
+            
+            case 55:
+            {
+                (void)QTSS_GetValueAsString(sServer, qtssSvrNumThreads, 0, &thePrefStr);
+                qtss_sprintf(buffer, "<b>Number of Task Threads: </b> %s<BR>\n", thePrefStr);
+                (void)QTSS_Write(inStream, buffer, ::strlen(buffer), NULL, 0);      
+            }
+            break;
+             
+            
     
             default:        
                 break;

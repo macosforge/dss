@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -70,7 +70,12 @@ QTSSAttrInfoDict::AttrInfo  RTSPSessionInterface::sAttributes[] =
     /* 11 */{ "qtssRTSPSesLastURLRealm",    NULL,           qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModePreempSafe  },
     
     /* 12 */{ "qtssRTSPSesLocalPort",       SetupParams,    qtssAttrDataTypeUInt16,     qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable },
-    /* 13 */{ "qtssRTSPSesRemotePort",      SetupParams,    qtssAttrDataTypeUInt16,     qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable }
+    /* 13 */{ "qtssRTSPSesRemotePort",      SetupParams,    qtssAttrDataTypeUInt16,     qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable },
+    /* 14 */{ "qtssRTSPSes3GPPObject",      NULL,           qtssAttrDataTypeQTSS_Object,qtssAttrModeRead | qtssAttrModePreempSafe },
+    
+    /* 15 */{ "qtssRTSPSesLastDigestChallenge",NULL,        qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModePreempSafe  }
+    
+
 };
 
 
@@ -110,7 +115,9 @@ RTSPSessionInterface::RTSPSessionInterface()
 	fSentOptionsRequest(false),
 	fOptionsRequestSendTime(-1),
 	fRoundTripTime(-1),
-	fRoundTripTimeCalculation(true)
+	fRoundTripTimeCalculation(true),
+	fRTSPSession3GPP(QTSServerInterface::GetServer()->GetPrefs()->Get3GPPEnabled() ),
+	fRTSPSession3GPPPtr(&fRTSPSession3GPP)
 {
 
     fTimeoutTask.SetTask(this);
@@ -122,10 +129,12 @@ RTSPSessionInterface::RTSPSessionInterface()
     this->SetVal(qtssRTSPSesEventCntxt, &fOutputSocketP, sizeof(fOutputSocketP));
     this->SetVal(qtssRTSPSesType, &fSessionType, sizeof(fSessionType));
     this->SetVal(qtssRTSPSesStreamRef, &fStreamRef, sizeof(fStreamRef));
+    this->SetVal(qtssRTSPSes3GPPObject, &fRTSPSession3GPPPtr, sizeof(fRTSPSession3GPPPtr));
 
     this->SetEmptyVal(qtssRTSPSesLastUserName, &fUserNameBuf[0], kMaxUserNameLen);
     this->SetEmptyVal(qtssRTSPSesLastUserPassword, &fUserPasswordBuf[0], kMaxUserPasswordLen);
     this->SetEmptyVal(qtssRTSPSesLastURLRealm, &fUserRealmBuf[0], kMaxUserRealmLen);
+    
     
     fInputStream.ShowRTSP(QTSServerInterface::GetServer()->GetPrefs()->GetRTSPDebugPrintfs());
     fOutputStream.ShowRTSP(QTSServerInterface::GetServer()->GetPrefs()->GetRTSPDebugPrintfs());

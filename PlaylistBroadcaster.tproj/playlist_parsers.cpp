@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -279,18 +279,18 @@ bool SDPFileParser::GetRTPMap(TextLine *theLinePtr,PayLoad *payloadPtr)
 {
     bool lineOK = false;
     SimpleString *aWordPtr;
-	SimpleString mapString("rtpmap");
+    SimpleString mapString("rtpmap");
     
     do
     {       
         if (!theLinePtr || !payloadPtr) break;
         
-		aWordPtr = theLinePtr->fWords.SetPos(1); // the attribute name
-		if (!aWordPtr) break;
-		if (!Compare(aWordPtr, &mapString, false))
-			break;
+        aWordPtr = theLinePtr->fWords.SetPos(1); // the attribute name
+        if (!aWordPtr) break;
+        if (!Compare(aWordPtr, &mapString, false))
+            break;
 
-		aWordPtr = theLinePtr->fWords.Next(); // the Payload ID
+        aWordPtr = theLinePtr->fWords.Next(); // the Payload ID
         if (!aWordPtr) break;   
 		payloadPtr->payloadID = aWordPtr->GetInt();
     
@@ -496,7 +496,7 @@ SInt32 SDPFileParser::ParseSDP(char *theBuff)
 SInt32 SDPFileParser::ReadSDP(char *filename)
 {
     int result = -1;
-    long int bytes= 0;
+    SInt32 bytes= 0;
     
     FILE *f = NULL;
     

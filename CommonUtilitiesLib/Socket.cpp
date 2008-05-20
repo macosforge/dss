@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -181,7 +181,7 @@ OS_Error    Socket::SetSocketRcvBufSize(UInt32 inNewSize)
 }
 
 
-OS_Error Socket::Bind(UInt32 addr, UInt16 port)
+OS_Error Socket::Bind(UInt32 addr, UInt16 port, UInt16 test)
 {
     socklen_t len = sizeof(fLocalAddr);
     ::memset(&fLocalAddr, 0, sizeof(fLocalAddr));
@@ -189,7 +189,26 @@ OS_Error Socket::Bind(UInt32 addr, UInt16 port)
     fLocalAddr.sin_port = htons(port);
     fLocalAddr.sin_addr.s_addr = htonl(addr);
     
-    int err = ::bind(fFileDesc, (sockaddr *)&fLocalAddr, sizeof(fLocalAddr));
+    int err;
+    
+#if 0
+    if (test) // pick some ports or conditions to return an error on.
+    {
+        if (6971 == port)
+        {
+            fLocalAddr.sin_port = 0;
+            fLocalAddr.sin_addr.s_addr = 0;
+            return EINVAL;
+        }
+        else
+        {
+            err = ::bind(fFileDesc, (sockaddr *)&fLocalAddr, sizeof(fLocalAddr));
+        }
+    }
+    else
+#endif
+        err = ::bind(fFileDesc, (sockaddr *)&fLocalAddr, sizeof(fLocalAddr));
+
     
     if (err == -1)
     {
@@ -230,7 +249,7 @@ StrPtrLen*  Socket::GetLocalAddrStr()
 
         printf("Socket::GetLocalAddrStr Search IPs failed, numIPs=%d\n",SocketUtils::GetNumIPAddrs());
         for (UInt32 x = 0; x < SocketUtils::GetNumIPAddrs(); x++)
-        {    printf("ip[%lu]=",x); SocketUtils::GetIPAddrStr(x)->PrintStr("\n");
+        {    printf("ip[%"_U32BITARG_"]=",x); SocketUtils::GetIPAddrStr(x)->PrintStr("\n");
         }
         printf("this ip = %d = ",theAddr.s_addr); fLocalAddrStrPtr->PrintStr("\n");
 

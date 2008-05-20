@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -22,7 +22,7 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-// $Id: QTAtom_stsd.cpp,v 1.10 2003/08/15 23:53:14 sbasu Exp $
+// $Id: QTAtom_stsd.cpp,v 1.1 2006/01/05 13:20:36 murata Exp $
 //
 // QTAtom_stsd:
 //   The 'stsd' QTAtom class.
@@ -218,5 +218,5 @@ UInt16 QTAtom_stsd::SampleDescriptionToDataReference(UInt32 SampleDescriptionID)
 void QTAtom_stsd::DumpAtom(void)
 {
     DEBUG_PRINT(("QTAtom_stsd::DumpAtom - Dumping atom.\n"));
-    DEBUG_PRINT(("QTAtom_stsd::DumpAtom - ..Number of sample description entries: %ld\n", fNumEntries));
+    DEBUG_PRINT(("QTAtom_stsd::DumpAtom - ..Number of sample description entries: %"_S32BITARG_"\n", fNumEntries));
 }

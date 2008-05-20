@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -181,7 +181,7 @@ QTSS_Error RTSPRequestStream::ReadRequest()
         {
             DateBuffer theDate;
             DateTranslator::UpdateDateBuffer(&theDate, 0); // get the current GMT date and time
-			qtss_printf("\n\n#C->S:\n#time: ms=%lu date=%s\n", (UInt32) OS::StartTimeMilli_Int(), theDate.GetDateBuffer());
+			qtss_printf("\n\n#C->S:\n#time: ms=%"_U32BITARG_" date=%s\n", (UInt32) OS::StartTimeMilli_Int(), theDate.GetDateBuffer());
 
             if (fSocket != NULL)    
             {

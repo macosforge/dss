@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -28,7 +28,7 @@
 #include "OSMemory.h"
 
 #include "MyAssert.h"
-
+#include "OSHeaders.h"
 
 #include <stdlib.h> 
 
@@ -59,7 +59,7 @@ static Bool16 SampleConfigSetter( const char* paramName, const char* paramValue[
     
     while ( paramValue[x] )
     {
-        qtss_printf( " value(%li): %s ", (long)x, paramValue[x] );
+        qtss_printf( " value(%"_S32BITARG_"): %s ", (SInt32)x, (char *) paramValue[x] );
         x++;
     }
     
@@ -112,8 +112,8 @@ int ParseConfigFile(
     
     if ( configFile )
     {
-        long    lineBuffSize = kConfParserMaxLineSize;
-        long    wordBuffSize = kConfParserMaxParamSize;
+        SInt32    lineBuffSize = kConfParserMaxLineSize;
+        SInt32    wordBuffSize = kConfParserMaxParamSize;
         
         
         char    lineBuff[kConfParserMaxLineSize];

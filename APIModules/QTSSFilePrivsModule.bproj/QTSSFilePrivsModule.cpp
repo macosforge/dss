@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -551,24 +551,24 @@ Bool16 QTSSAuthorize(QTSS_StandardRTSP_Params* inParams, char* pathBuff)
     {
 
         theErr = QTSS_GetValue (inParams->inRTSPRequest,qtssRTSPReqUserName,0, (void *) nameStr.Ptr, &nameStr.Len);
-        //qtss_printf("GetValue qtssRTSPReqUserName err =%ld \n",theErr);
+        //qtss_printf("GetValue qtssRTSPReqUserName err =%"_S32BITARG_" \n",theErr);
         
-        if ( (theErr != QTSS_NoErr) || (nameStr.Len == 0) || (nameStr.Ptr == NULL) || (*nameStr.Ptr == NULL))
+        if ( (theErr != QTSS_NoErr) || (nameStr.Len == 0) || (nameStr.Ptr == NULL) || (*nameStr.Ptr == '\0'))
         {
             //qtss_printf ("no user name\n");
             noUserName = true;
         }
             
-        //qtss_printf("RTSPRequest dictionary name =%s  len = %ld\n",nameStr.Ptr, nameStr.Len);
+        //qtss_printf("RTSPRequest dictionary name =%s  len = %"_S32BITARG_"\n",nameStr.Ptr, nameStr.Len);
 
         theErr = QTSS_GetValue (inParams->inRTSPRequest,qtssRTSPReqUserPassword,0, (void *) passwordStr.Ptr, &passwordStr.Len);
-        //qtss_printf("GetValue qtssRTSPReqUserName err =%ld \n",theErr);
-        if ( (theErr != QTSS_NoErr) || (passwordStr.Len == 0) || (passwordStr.Ptr == NULL) || (*passwordStr.Ptr == NULL))
+        //qtss_printf("GetValue qtssRTSPReqUserName err =%"_S32BITARG_" \n",theErr);
+        if ( (theErr != QTSS_NoErr) || (passwordStr.Len == 0) || (passwordStr.Ptr == NULL) || (*passwordStr.Ptr == '\0'))
         {
             //qtss_printf ("no Password\n");
             noPassword = true;
         }
-        //qtss_printf("RTSPRequest dictionary password =%s len = %ld \n",passwordStr.Ptr, passwordStr.Len);
+        //qtss_printf("RTSPRequest dictionary password =%s len = %"_S32BITARG_" \n",passwordStr.Ptr, passwordStr.Len);
 
         if (noUserName && noPassword) isSpecialGuest = true;
         

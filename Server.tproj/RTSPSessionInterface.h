@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -40,6 +40,7 @@
 #include "QTSS.h"
 #include "QTSSDictionary.h"
 #include "atomic.h"
+#include "RTSPSession3GPP.h"
 
 class RTSPSessionInterface : public QTSSDictionary, public Task
 {
@@ -202,6 +203,9 @@ protected:
 	SInt64					fOptionsRequestSendTime;
 	SInt32					fRoundTripTime;
 	Bool16					fRoundTripTimeCalculation;
+	
+	RTSPSession3GPP         fRTSPSession3GPP;
+	RTSPSession3GPP*        fRTSPSession3GPPPtr;
 		
     static unsigned int sSessionIDCounter;
     static Bool16           sDoBase64Decoding;

@@ -2,9 +2,9 @@
  * Copyright (c) 2003 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -60,7 +60,7 @@
 struct MyCondition
 {
     mach_port_t             fWaitPort;
-    long                    fNumWaiting;
+    SInt32                  fNumWaiting;
 };
 
 typedef struct MyCondition MyCondition;

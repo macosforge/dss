@@ -5,7 +5,7 @@ dir APIModules/QTSSAccessLogModule
 dir APIModules/QTSSFileModule
 dir APIModules/QTSSFlowControlModule
 dir APIModules/QTSSReflectorModule
-dir APIModules/QTSSSvrControlModule
+dir APIModules/QTSSDSAuthModule
 dir APIModules/QTSSWebDebugModule
 dir APIModules/QTSSWebStatsModule
 dir APIModules/QTSSDemoAuthorizationModule.bproj

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -44,6 +44,7 @@
 #include "StringParser.h"
 #include "OSMemory.h"
 #include "OSHeaders.h"
+#include "OSArrayObjectDeleter.h"
 
 #include <errno.h>
 
@@ -154,7 +155,7 @@ void Authenticator::Clean()
     delete [] fPasswordSPL.Ptr; fPasswordSPL.Set(NULL,0); 
     delete [] fRealmSPL.Ptr;fRealmSPL.Set(NULL,0); 
     delete [] fMethodSPL.Ptr; fMethodSPL.Set(NULL,0); 
-    
+	delete [] fURISPL.Ptr ; fURISPL.Set(NULL);
 }
 
 
@@ -217,8 +218,7 @@ void Authenticator::ParseTag(StringParser *parserPtr,StrPtrLen *outTagPtr)
     parserPtr->ConsumeUntil(NULL,sNOTWhiteQuoteOrEOLorEqual);
     parserPtr->ConsumeUntil(outTagPtr, sWhiteQuoteOrEOLorEqual); // stop on whitespace " or =
     
-    //qtss_printf("Authenticator::ParseTag =%s\n",STRTOCHAR(outTagPtr));
-
+	//qtss_printf("Authenticator::ParseTag =%s\n",STRTOCHAR(outTagPtr));
 }
 
 Bool16 Authenticator::CopyParam(StrPtrLen *inPtr, StrPtrLen *destPtr)
@@ -239,9 +239,7 @@ Bool16 Authenticator::CopyParam(StrPtrLen *inPtr, StrPtrLen *destPtr)
     if (destPtr->Len > 0)
     {   ::memcpy(destPtr->Ptr,inPtr->Ptr,inPtr->Len);
     }
-
     return true;
-    
 }
 
 
@@ -262,15 +260,16 @@ Bool16 Authenticator::GetParamValue(StringParser *valueSourcePtr, StrPtrLen *out
     if ( (temp.Len > 0) &&  ( '"' == temp.Ptr[temp.Len -1] )  )// if quote read to next quote or end
     {   
         valueSourcePtr->ConsumeUntil(outParamValuePtr, '"');
-        //qtss_printf("Found quoted value=%s\n",STRTOCHAR(outParamValuePtr));
+		//qtss_printf("Found quoted value=%s\n",STRTOCHAR(outParamValuePtr));
     }
     else // get just the non-whitespace or EOL
-    {   //qtss_printf("Authenticator::GetParamValue No quotes\n");
+    {
+		//qtss_printf("Authenticator::GetParamValue No quotes\n");
         valueSourcePtr->ConsumeWhitespace();
         valueSourcePtr->ConsumeUntilWhitespace(outParamValuePtr);
     }
 
-    //qtss_printf("Authenticator::GetParamValue len = %lu =%s\n",outParamValuePtr->Len, STRTOCHAR(outParamValuePtr));
+    //qtss_printf("Authenticator::GetParamValue len = %"_U32BITARG_" =%s\n",outParamValuePtr->Len, STRTOCHAR(outParamValuePtr));
     
     return true;
 }
@@ -333,7 +332,8 @@ void    Authenticator::ResetRequestLen(StrPtrLen *theRequestPtr, StrPtrLen *theP
 }
 
 
-char * Authenticator::GetRequestHeader( StrPtrLen *inSourceStr, StrPtrLen *searchHeaderStr,StrPtrLen *outHeaderStr)
+//char * Authenticator::GetRequestHeader( StrPtrLen *inSourceStr, StrPtrLen *searchHeaderStr,StrPtrLen *outHeaderStr)
+char * Authenticator::GetRequestHeader( StrPtrLen *inSourceStr, StrPtrLen *searchHeaderStr)
 {
     StrPtrLen   headers;
     StrPtrLen   headersTerminator("\r\n\r\n");  
@@ -510,12 +510,12 @@ void DigestAuth::AddAuthParam(StrPtrLen *theTagPtr, StrPtrLen *theValuePtr, Bool
         fReqFields.fReqParamTags[fReqFields.fNumFields -1] = theTagPtr;
         fReqFields.fReqParamValues[fReqFields.fNumFields -1] = theValuePtr;
         fReqFields.fQuoted[fReqFields.fNumFields -1] = quoted;
-        //qtss_printf("DigestAuth::AddAuthParam [%lu] tag=%s ",fReqFields.fNumFields -1, STRTOCHAR(theTagPtr));
+		//qtss_printf("DigestAuth::AddAuthParam [%"_U32BITARG_"] tag=%s ",fReqFields.fNumFields -1, STRTOCHAR(theTagPtr));
         //qtss_printf("value=%s \n",STRTOCHAR(theValuePtr));
-        
     }
     else
-    {   //qtss_printf("DigestAuth::AddAuthParam ignored [%lu] tag=%s value=%s \n",fReqFields.fNumFields -1, STRTOCHAR(theTagPtr),STRTOCHAR(theValuePtr));            
+    {   
+		//qtss_printf("DigestAuth::AddAuthParam ignored [%"_U32BITARG_"] tag=%s value=%s \n",fReqFields.fNumFields -1, STRTOCHAR(theTagPtr),STRTOCHAR(theValuePtr));            
     }
     
 }
@@ -541,7 +541,7 @@ void DigestAuth::GenerateAuthorizationRequestLine(StrPtrLen *requestPtr)
     
     qtss_sprintf(fAuthBuffer.Ptr, "%s %s ",sAuthorizationStr.Ptr, sAuthDigestStr.Ptr);
     
-    //qtss_printf ("DigestAuth::GenerateAuthorizationRequestLine buffsize = %lu fAuthBuffer= %s\n",buffsize, fAuthBuffer.Ptr);
+    //qtss_printf ("DigestAuth::GenerateAuthorizationRequestLine buffsize = %"_U32BITARG_" fAuthBuffer= %s\n",buffsize, fAuthBuffer.Ptr);
         
     StrPtrLen *theTagPtr;
     StrPtrLen *theValuePtr;
@@ -577,12 +577,12 @@ void DigestAuth::GenerateAuthorizationRequestLine(StrPtrLen *requestPtr)
         if (paramIndex < fReqFields.fNumFields -1)
             strcat(fAuthBuffer.Ptr,",");
         
-        //qtss_printf("DigestAuth::GenerateAuthorizationRequestLine bufferLen=%ld fAuthBuffer= %s\n",::strlen(fAuthBuffer.Ptr),fAuthBuffer.Ptr);
+        //qtss_printf("DigestAuth::GenerateAuthorizationRequestLine bufferLen=%"_S32BITARG_" fAuthBuffer= %s\n",::strlen(fAuthBuffer.Ptr),fAuthBuffer.Ptr);
     }
     
     ::strcat(fAuthBuffer.Ptr, "\r\n");
 
-    //qtss_printf("DigestAuth::GenerateAuthorizationRequestLine bufferLen=%ld fAuthBuffer= %s\n",::strlen(fAuthBuffer.Ptr),fAuthBuffer.Ptr);
+    //qtss_printf("DigestAuth::GenerateAuthorizationRequestLine bufferLen=%"_S32BITARG_" fAuthBuffer= %s\n",::strlen(fAuthBuffer.Ptr),fAuthBuffer.Ptr);
 }
 
 void DigestAuth::ResetAuthParams()
@@ -598,23 +598,28 @@ void DigestAuth::MakeRequestDigest()
     fRequestDigestStr.Ptr = NULL;
     StrPtrLen emptyStr;
     StrPtrLen hA1;
-    //qtss_printf("DigestAuth::MakeRequestDigest fNameSPL=%s\n",STRTOCHAR(&fNameSPL));
-    //qtss_printf("DigestAuth::MakeRequestDigest fRealmSPL=%s\n",STRTOCHAR(&fRealmSPL));
-    //qtss_printf("DigestAuth::MakeRequestDigest fPasswordSPL=%s\n",STRTOCHAR(&fPasswordSPL));
-    //qtss_printf("DigestAuth::MakeRequestDigest fnonce=%s\n",STRTOCHAR(&fnonce));
-    //qtss_printf("DigestAuth::MakeRequestDigest fcnonce=%s\n",STRTOCHAR(&fcnonce));
+
+	/*
+		qtss_printf("DigestAuth::MakeRequestDigest fNameSPL=%s\n",STRTOCHAR(&fNameSPL));
+		qtss_printf("DigestAuth::MakeRequestDigest fRealmSPL=%s\n",STRTOCHAR(&fRealmSPL));
+		qtss_printf("DigestAuth::MakeRequestDigest fPasswordSPL=%s\n",STRTOCHAR(&fPasswordSPL));
+		qtss_printf("DigestAuth::MakeRequestDigest fnonce=%s\n",STRTOCHAR(&fnonce));
+		qtss_printf("DigestAuth::MakeRequestDigest fcnonce=%s\n",STRTOCHAR(&fcnonce));
+	*/
 
     ::CalcHA1( &sMD5Str, &fNameSPL, &fRealmSPL, &fPasswordSPL, &fnonce, &fcnonce, &hA1);
 
-    //qtss_printf("DigestAuth::MakeRequestDigest CalcHA1=%s\n",STRTOCHAR(&hA1));
-    //qtss_printf("DigestAuth::MakeRequestDigest fnonce=%s\n",STRTOCHAR(&fnonce));
-    //qtss_printf("DigestAuth::MakeRequestDigest fNonceCountStr=%s\n",STRTOCHAR(&fNonceCountStr));
-    //qtss_printf("DigestAuth::MakeRequestDigest fcnonce=%s\n",STRTOCHAR(&fcnonce));
-    //qtss_printf("DigestAuth::MakeRequestDigest fqop=%s\n",STRTOCHAR(&fqop));
-    //qtss_printf("DigestAuth::MakeRequestDigest fMethodSPL=%s\n",STRTOCHAR(&fMethodSPL));
-    //qtss_printf("DigestAuth::MakeRequestDigest fURISPL=%s\n",STRTOCHAR(&fURISPL));
-    //qtss_printf("DigestAuth::MakeRequestDigest emptyStr=%s\n",STRTOCHAR(&emptyStr));
-    //qtss_printf("DigestAuth::MakeRequestDigest fMethodSPL=%s\n",STRTOCHAR(&emptyStr));
+	/*
+		qtss_printf("DigestAuth::MakeRequestDigest CalcHA1=%s\n",STRTOCHAR(&hA1));
+		qtss_printf("DigestAuth::MakeRequestDigest fnonce=%s\n",STRTOCHAR(&fnonce));
+		qtss_printf("DigestAuth::MakeRequestDigest fNonceCountStr=%s\n",STRTOCHAR(&fNonceCountStr));
+		qtss_printf("DigestAuth::MakeRequestDigest fcnonce=%s\n",STRTOCHAR(&fcnonce));
+		qtss_printf("DigestAuth::MakeRequestDigest fqop=%s\n",STRTOCHAR(&fqop));
+		qtss_printf("DigestAuth::MakeRequestDigest fMethodSPL=%s\n",STRTOCHAR(&fMethodSPL));
+		qtss_printf("DigestAuth::MakeRequestDigest fURISPL=%s\n",STRTOCHAR(&fURISPL));
+		qtss_printf("DigestAuth::MakeRequestDigest emptyStr=%s\n",STRTOCHAR(&emptyStr));
+		qtss_printf("DigestAuth::MakeRequestDigest fMethodSPL=%s\n",STRTOCHAR(&emptyStr));
+	*/
 
     ::CalcRequestDigest(&hA1, &fnonce, &fNonceCountStr, &fcnonce, &fqop, &fMethodSPL, &fURISPL, &emptyStr, &fRequestDigestStr); 
     delete [] hA1.Ptr;
@@ -626,7 +631,7 @@ void DigestAuth::MakeCNonce()
     fAuthTime = OS::UnixTime_Secs();
     
     char timeStr[64];
-    qtss_sprintf(timeStr,"%lu",(UInt32) fAuthTime);
+    qtss_sprintf(timeStr,"%"_U32BITARG_"",(UInt32) fAuthTime);
     StrPtrLen timeSPL(timeStr);
     
     delete [] fcnonce.Ptr;
@@ -706,7 +711,6 @@ DigestAuth::~DigestAuth()
     delete [] fRequestDigestStr.Ptr;fRequestDigestStr.Set(NULL,0);  
     delete [] fURIStr.Ptr;          fURIStr.Set(NULL,0);  
     delete [] fcnonce.Ptr;          fcnonce.Set(NULL,0);  
-    delete [] fNonceCountStr.Ptr;   fNonceCountStr.Set(NULL,0);  
     delete [] fnonce.Ptr;           fnonce.Set(NULL,0);  
     delete [] fopaque.Ptr;          fopaque.Set(NULL,0);  
     delete [] fqop.Ptr;             fqop.Set(NULL,0);  
@@ -816,7 +820,7 @@ RTSPClient::InterleavedParams RTSPClient::sInterleavedParams;
 RTSPClient::RTSPClient(ClientSocket* inSocket, Bool16 verbosePrinting, char* inUserAgent)
 :   fAuthenticator(NULL),
     fSocket(inSocket),
-    fVerbose(verbosePrinting),
+    fVerboseLevel(verbosePrinting ? 1 : 0),
     fCSeq(1),
     fStatus(0),
     fSessionID(sEmptyString),
@@ -824,44 +828,38 @@ RTSPClient::RTSPClient(ClientSocket* inSocket, Bool16 verbosePrinting, char* inU
     fContentLength(0),
     fSetupHeaders(NULL),
     fNumChannelElements(kMinNumChannelElements),
-    fNumSSRCElements(0),
-    fSSRCMapSize(kMinNumChannelElements),
     fNumFieldIDElements(0),
     fFieldIDMapSize(kMinNumChannelElements),
     fPacketBuffer(NULL),
     fPacketBufferOffset(0),
     fPacketOutstanding(false),
     fRecvContentBuffer(NULL),
-    fSendBufferLen(0),
     fContentRecvLen(0),
     fHeaderRecvLen(0),
     fHeaderLen(0),
     fSetupTrackID(0),
-    fTransactionStarted(false),
-    fReceiveInProgress(false),
-    fReceivedResponse(false),
-    fConnected(false),
-    fResponseCount(0),
+    fState(kInitial),
+    fAuthAttempted(false),
     fTransportMode(kPlayMode), 
     fPacketDataInHeaderBufferLen(0),
     fPacketDataInHeaderBuffer(NULL),
     fUserAgent(NULL),
-    fControlID(RTSPClient::sControlID)
+    fControlID(RTSPClient::sControlID),
+	fGuarenteedBitRate(0),
+	fMaxBitRate(0),
+	fMaxTransferDelay(0),
+	fBandwidth(0),
+	fBufferSpace(0),
+	fDelayTime(0)
 {
-#if DEBUG
-    fIsFirstPacket = true;
-#endif
-
     fChannelTrackMap = NEW ChannelMapElem[kMinNumChannelElements];
     ::memset(fChannelTrackMap, 0, sizeof(ChannelMapElem) * kMinNumChannelElements);
-    fSSRCMap = NEW SSRCMapElem[kMinNumChannelElements];
-    ::memset(fSSRCMap, 0, sizeof(SSRCMapElem) * kMinNumChannelElements);
+
     fFieldIDMap = NEW FieldIDArrayElem[kMinNumChannelElements];
     ::memset(fFieldIDMap, 0, sizeof(FieldIDArrayElem) * kMinNumChannelElements);
     
     ::memset(fSendBuffer, 0,kReqBufSize + 1);
     ::memset(fRecvHeaderBuffer, 0,kReqBufSize + 1);
-    fHaveTransactionBuffer = false;
     
     fSetupHeaders = NEW char[2];
     fSetupHeaders[0] = '\0';
@@ -891,9 +889,10 @@ RTSPClient::~RTSPClient()
         
     delete [] fSetupHeaders;
     delete [] fChannelTrackMap;
-    delete [] fSSRCMap;
     delete [] fFieldIDMap;
     delete [] fPacketBuffer;
+	
+	delete fAuthenticator;
         
     delete [] fUserAgent;
     if (fControlID != RTSPClient::sControlID)
@@ -963,53 +962,70 @@ void RTSPClient::SetSetupParams(Float32 inLateTolerance, char* inMetaInfoFields)
 
 OS_Error RTSPClient::SendDescribe(Bool16 inAppendJunkData)
 {
-    if (!fTransactionStarted)
+    if (!IsTransactionInProgress())
     {
         qtss_sprintf(fMethod,"%s","DESCRIBE");
 
+		StringFormatter fmt(fSendBuffer, kReqBufSize);
+        fmt.PutFmtStr(
+            	"DESCRIBE %s RTSP/1.0\r\n"
+				"CSeq: %"_U32BITARG_"\r\n"
+				"Accept: application/sdp\r\n"
+				"User-agent: %s\r\n",
+				fURL.Ptr, fCSeq, fUserAgent);
+		if (fBandwidth != 0)
+			fmt.PutFmtStr("Bandwidth: %"_U32BITARG_"\r\n", fBandwidth);
+
         if (inAppendJunkData)
         {
-            qtss_sprintf(fSendBuffer, "DESCRIBE %s RTSP/1.0\r\nCSeq: %lu\r\nAccept: application/sdp\r\nContent-Length: 200\r\nUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fUserAgent);
+            fmt.PutFmtStr("Content-Length: 200\r\n\r\n");
+			for(UInt32 i = 0; i < 200; ++i)
+				fmt.PutChar('d');
+			/*
+            qtss_sprintf(fSendBuffer, "DESCRIBE %s RTSP/1.0\r\nCSeq: %"_U32BITARG_"\r\nAccept: application/sdp\r\nContent-Length: 200\r\nUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fUserAgent);
             UInt32 theBufLen = ::strlen(fSendBuffer);
             Assert((theBufLen + 200) < kReqBufSize);
             for (UInt32 x = theBufLen; x < (theBufLen + 200); x++)
                 fSendBuffer[x] = 'd';
             fSendBuffer[theBufLen + 200] = '\0';
+			*/
         }
         else
         {
-            qtss_sprintf(fSendBuffer, "DESCRIBE %s RTSP/1.0\r\nCSeq: %lu\r\nAccept: application/sdp\r\nUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fUserAgent);
+			fmt.PutFmtStr("\r\n");
+            //qtss_sprintf(fSendBuffer, "DESCRIBE %s RTSP/1.0\r\nCSeq: %"_U32BITARG_"\r\nAccept: application/sdp\r\nUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fUserAgent);
         }
+		fmt.PutTerminator();
     }
     return this->DoTransaction();
 }
 
 OS_Error RTSPClient::SendSetParameter()
 {
-    if (!fTransactionStarted)
+    if (!IsTransactionInProgress())
     {
         qtss_sprintf(fMethod,"%s","SET_PARAMETER");
-        qtss_sprintf(fSendBuffer, "SET_PARAMETER %s RTSP/1.0\r\nCSeq:%lu\r\nUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fUserAgent);
+        qtss_sprintf(fSendBuffer, "SET_PARAMETER %s RTSP/1.0\r\nCSeq:%"_U32BITARG_"\r\nUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fUserAgent);
     }
     return this->DoTransaction();
 }
 
 OS_Error RTSPClient::SendOptions()
 {
-    if (!fTransactionStarted)
+    if (!IsTransactionInProgress())
     {
         qtss_sprintf(fMethod,"%s","OPTIONS");
-        qtss_sprintf(fSendBuffer, "OPTIONS * RTSP/1.0\r\nCSeq:%lu\r\nUser-agent: %s\r\n\r\n", fCSeq, fUserAgent);
+        qtss_sprintf(fSendBuffer, "OPTIONS * RTSP/1.0\r\nCSeq:%"_U32BITARG_"\r\nUser-agent: %s\r\n\r\n", fCSeq, fUserAgent);
      }
     return this->DoTransaction();
 }
 
 OS_Error RTSPClient::SendOptionsWithRandomDataRequest(SInt32 dataSize)
 {
-    if (!fTransactionStarted)
+    if (!IsTransactionInProgress())
     {
         qtss_sprintf(fMethod,"%s","OPTIONS");
-        qtss_sprintf(fSendBuffer, "OPTIONS * RTSP/1.0\r\nCSeq:%lu\r\nUser-agent: %s\r\nRequire: x-Random-Data-Size\r\nx-Random-Data-Size: %ld\r\n\r\n", fCSeq, fUserAgent, dataSize);
+        qtss_sprintf(fSendBuffer, "OPTIONS * RTSP/1.0\r\nCSeq:%"_U32BITARG_"\r\nUser-agent: %s\r\nRequire: x-Random-Data-Size\r\nx-Random-Data-Size: %"_S32BITARG_"\r\n\r\n", fCSeq, fUserAgent, dataSize);
      }
     return this->DoTransaction();
 }
@@ -1019,14 +1035,35 @@ OS_Error RTSPClient::SendReliableUDPSetup(UInt32 inTrackID, UInt16 inClientPort)
 {
     fSetupTrackID = inTrackID; // Needed when SETUP response is received.
     fSendBuffer[0] = 0;
-    if (!fTransactionStarted)
+    if (!IsTransactionInProgress())
     {
         qtss_sprintf(fMethod,"%s","SETUP");
-        
+
+		StringFormatter fmt(fSendBuffer, kReqBufSize);
+		
         if (fTransportMode == kPushMode)
-			qtss_sprintf(fSendBuffer, "SETUP %s/%s=%lu RTSP/1.0\r\nCSeq: %lu\r\n%sTransport: RTP/AVP;unicast;client_port=%u-%u;mode=record\r\nx-Retransmit: our-retransmit\r\nUser-agent: %s\r\n\r\n", fURL.Ptr,fControlID, inTrackID, fCSeq, fSessionID.Ptr, inClientPort, inClientPort + 1, fUserAgent);
-        else 
-            qtss_sprintf(fSendBuffer, "SETUP %s/%s=%lu RTSP/1.0\r\nCSeq: %lu\r\n%sTransport: RTP/AVP;unicast;client_port=%u-%u\r\nx-Retransmit: our-retransmit\r\nUser-agent: %s\r\n\r\n", fURL.Ptr,fControlID, inTrackID, fCSeq, fSessionID.Ptr, inClientPort, inClientPort + 1, fUserAgent);
+			fmt.PutFmtStr(
+                "SETUP %s/%s=%"_U32BITARG_" RTSP/1.0\r\n"
+                "CSeq: %"_U32BITARG_"\r\n"
+                "%sTransport: RTP/AVP;unicast;client_port=%u-%u;mode=record\r\n"
+                "x-Retransmit: our-retransmit\r\n"
+                "User-agent: %s\r\n",
+                fURL.Ptr,fControlID, inTrackID, fCSeq, fSessionID.Ptr, inClientPort, inClientPort + 1, fUserAgent);
+        else
+            fmt.PutFmtStr(
+                "SETUP %s/%s=%"_U32BITARG_" RTSP/1.0\r\n"
+                "CSeq: %"_U32BITARG_"\r\n"
+                "%sTransport: RTP/AVP;unicast;client_port=%u-%u\r\n"
+                "x-Retransmit: our-retransmit\r\n"
+                "User-agent: %s\r\n",
+                fURL.Ptr,fControlID, inTrackID, fCSeq, fSessionID.Ptr, inClientPort, inClientPort + 1, fUserAgent);
+
+		if (fBandwidth != 0)
+			fmt.PutFmtStr("Bandwidth: %"_U32BITARG_"\r\n", fBandwidth);
+
+        Attach3GPPHeaders(fmt, inTrackID);
+		fmt.PutFmtStr("\r\n");
+		fmt.PutTerminator();
     }
     return this->DoTransaction();
 }
@@ -1035,14 +1072,33 @@ OS_Error RTSPClient::SendUDPSetup(UInt32 inTrackID, UInt16 inClientPort)
 {
     fSetupTrackID = inTrackID; // Needed when SETUP response is received.
     
-    if (!fTransactionStarted)
+    if (!IsTransactionInProgress())
     {
         qtss_sprintf(fMethod,"%s","SETUP");
         
+		StringFormatter fmt(fSendBuffer, kReqBufSize);
+		
         if (fTransportMode == kPushMode)
-            qtss_sprintf(fSendBuffer, "SETUP %s/%s=%lu RTSP/1.0\r\nCSeq: %lu\r\n%sTransport: RTP/AVP;unicast;client_port=%u-%u;mode=record\r\nUser-agent: %s\r\n\r\n", fURL.Ptr,fControlID, inTrackID, fCSeq, fSessionID.Ptr, inClientPort, inClientPort + 1, fUserAgent);
-        else 
-            qtss_sprintf(fSendBuffer, "SETUP %s/%s=%lu RTSP/1.0\r\nCSeq: %lu\r\n%sTransport: RTP/AVP;unicast;client_port=%u-%u\r\n%sUser-agent: %s\r\n\r\n", fURL.Ptr,fControlID, inTrackID, fCSeq, fSessionID.Ptr, inClientPort, inClientPort + 1, fSetupHeaders, fUserAgent);
+			fmt.PutFmtStr(
+                    "SETUP %s/%s=%"_U32BITARG_" RTSP/1.0\r\n"
+                    "CSeq: %"_U32BITARG_"\r\n"
+                    "%sTransport: RTP/AVP;unicast;client_port=%u-%u;mode=record\r\n"
+                    "User-agent: %s\r\n",
+                    fURL.Ptr,fControlID, inTrackID, fCSeq, fSessionID.Ptr, inClientPort, inClientPort + 1, fUserAgent);
+        else
+            fmt.PutFmtStr(
+                    "SETUP %s/%s=%"_U32BITARG_" RTSP/1.0\r\n"
+                    "CSeq: %"_U32BITARG_"\r\n"
+                    "%sTransport: RTP/AVP;unicast;client_port=%u-%u\r\n"
+                    "%sUser-agent: %s\r\n",
+                    fURL.Ptr,fControlID, inTrackID, fCSeq, fSessionID.Ptr, inClientPort, inClientPort + 1, fSetupHeaders, fUserAgent);
+
+		if (fBandwidth != 0)
+			fmt.PutFmtStr("Bandwidth: %"_U32BITARG_"\r\n", fBandwidth);
+
+		Attach3GPPHeaders(fmt, inTrackID);
+		fmt.PutFmtStr("\r\n");
+		fmt.PutTerminator();
     }
     return this->DoTransaction();
 }
@@ -1051,21 +1107,41 @@ OS_Error RTSPClient::SendTCPSetup(UInt32 inTrackID, UInt16 inClientRTPid, UInt16
 {
     fSetupTrackID = inTrackID; // Needed when SETUP response is received.
     
-    if (!fTransactionStarted)
+    if (!IsTransactionInProgress())
     {   
         qtss_sprintf(fMethod,"%s","SETUP");
         
+		StringFormatter fmt(fSendBuffer, kReqBufSize);
+		
         if (fTransportMode == kPushMode)
-            qtss_sprintf(fSendBuffer, "SETUP %s/%s=%lu RTSP/1.0\r\nCSeq: %lu\r\n%sTransport: RTP/AVP/TCP;unicast;mode=record;interleaved=%u-%u\r\nUser-agent: %s\r\n\r\n", fURL.Ptr,fControlID, inTrackID, fCSeq, fSessionID.Ptr,inClientRTPid, inClientRTCPid, fUserAgent);
-        else 
-            qtss_sprintf(fSendBuffer, "SETUP %s/%s=%lu RTSP/1.0\r\nCSeq: %lu\r\n%sTransport: RTP/AVP/TCP;unicast;interleaved=%u-%u\r\n%sUser-agent: %s\r\n\r\n", fURL.Ptr,fControlID, inTrackID, fCSeq, fSessionID.Ptr, inClientRTPid, inClientRTCPid,fSetupHeaders, fUserAgent);
+			fmt.PutFmtStr(
+                    "SETUP %s/%s=%"_U32BITARG_" RTSP/1.0\r\n"
+                    "CSeq: %"_U32BITARG_"\r\n"
+                    "%sTransport: RTP/AVP/TCP;unicast;mode=record;interleaved=%u-%u\r\n"
+                    "User-agent: %s\r\n",
+                    fURL.Ptr,fControlID, inTrackID, fCSeq, fSessionID.Ptr,inClientRTPid, inClientRTCPid, fUserAgent);
+        else
+            fmt.PutFmtStr(
+                    "SETUP %s/%s=%"_U32BITARG_" RTSP/1.0\r\n"
+                    "CSeq: %"_U32BITARG_"\r\n"
+                    "%sTransport: RTP/AVP/TCP;unicast;interleaved=%u-%u\r\n"
+                    "%sUser-agent: %s\r\n",
+                    fURL.Ptr,fControlID, inTrackID, fCSeq, fSessionID.Ptr, inClientRTPid, inClientRTCPid,fSetupHeaders, fUserAgent);
+
+		if (fBandwidth != 0)
+			fmt.PutFmtStr("Bandwidth: %"_U32BITARG_"\r\n", fBandwidth);
+
+        Attach3GPPHeaders(fmt, inTrackID);
+		fmt.PutFmtStr("\r\n");
+		fmt.PutTerminator();
+
     }
 
     return this->DoTransaction();
 
 }
 
-OS_Error RTSPClient::SendPlay(UInt32 inStartPlayTimeInSec, Float32 inSpeed)
+OS_Error RTSPClient::SendPlay(UInt32 inStartPlayTimeInSec, Float32 inSpeed, UInt32 inTrackID)
 {
     char speedBuf[128];
     speedBuf[0] = '\0';
@@ -1073,10 +1149,28 @@ OS_Error RTSPClient::SendPlay(UInt32 inStartPlayTimeInSec, Float32 inSpeed)
     if (inSpeed != 1)
         qtss_sprintf(speedBuf, "Speed: %f5.2\r\n", inSpeed);
         
-    if (!fTransactionStarted)
-    {   qtss_sprintf(fMethod,"%s","PLAY");
-        qtss_sprintf(fSendBuffer, "PLAY %s RTSP/1.0\r\nCSeq: %lu\r\n%sRange: npt=%lu.0-\r\n%sx-prebuffer: maxtime=3.0\r\nUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fSessionID.Ptr, inStartPlayTimeInSec, speedBuf, fUserAgent);
-        //qtss_sprintf(fSendBuffer, "PLAY %s RTSP/1.0\r\nCSeq: %lu\r\n%sRange: npt=7.0-\r\n%sx-prebuffer: maxtime=3.0\r\nUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fSessionID.Ptr, speedBuf, fUserAgent);
+    if (!IsTransactionInProgress())
+    {
+	 	qtss_sprintf(fMethod,"%s","PLAY");
+		
+		StringFormatter fmt(fSendBuffer, kReqBufSize);
+		
+        fmt.PutFmtStr(
+				"PLAY %s RTSP/1.0\r\n"
+				"CSeq: %"_U32BITARG_"\r\n"
+				"%sRange: npt=%"_U32BITARG_".0-\r\n" 
+				"%sx-prebuffer: maxtime=3.0\r\n" 
+				"User-agent: %s\r\n",
+				fURL.Ptr, fCSeq, fSessionID.Ptr, inStartPlayTimeInSec, speedBuf, fUserAgent);
+
+		if (fBandwidth != 0)
+			fmt.PutFmtStr("Bandwidth: %"_U32BITARG_"\r\n", fBandwidth);
+
+        Attach3GPPHeaders(fmt, inTrackID);
+		fmt.PutFmtStr("\r\n");
+		fmt.PutTerminator();
+
+        //qtss_sprintf(fSendBuffer, "PLAY %s RTSP/1.0\r\nCSeq: %"_U32BITARG_"\r\n%sRange: npt=7.0-\r\n%sx-prebuffer: maxtime=3.0\r\nUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fSessionID.Ptr, speedBuf, fUserAgent);
     }
     return this->DoTransaction();
 }
@@ -1088,21 +1182,36 @@ OS_Error RTSPClient::SendPacketRangePlay(char* inPacketRangeHeader, Float32 inSp
     
     if (inSpeed != 1)
         qtss_sprintf(speedBuf, "Speed: %f5.2\r\n", inSpeed);
-        
-    if (!fTransactionStarted)
+ 
+    if (!IsTransactionInProgress())
     {
-        qtss_sprintf(fMethod,"%s","PLAY");
-        qtss_sprintf(fSendBuffer, "PLAY %s RTSP/1.0\r\nCSeq: %lu\r\n%sx-Packet-Range: %s\r\n%sUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fSessionID.Ptr, inPacketRangeHeader, speedBuf, fUserAgent);
+	 	qtss_sprintf(fMethod,"%s","PLAY");
+		
+		StringFormatter fmt(fSendBuffer, kReqBufSize);
+		
+        fmt.PutFmtStr(
+                "PLAY %s RTSP/1.0\r\n"
+                "CSeq: %"_U32BITARG_"\r\n"
+                "%sx-Packet-Range: %s\r\n"
+                "%sUser-agent: %s\r\n\r\n",
+                fURL.Ptr, fCSeq, fSessionID.Ptr, inPacketRangeHeader, speedBuf, fUserAgent);
+
+		if (fBandwidth != 0)
+			fmt.PutFmtStr("Bandwidth: %"_U32BITARG_"\r\n", fBandwidth);
+
+        Attach3GPPHeaders(fmt);
+		fmt.PutFmtStr("\r\n");
+		fmt.PutTerminator();
     }
     return this->DoTransaction();   
 }
 
 OS_Error RTSPClient::SendReceive(UInt32 inStartPlayTimeInSec)
 {
-    if (!fTransactionStarted)
+    if (!IsTransactionInProgress())
     {
         qtss_sprintf(fMethod,"%s","RECORD");
-        qtss_sprintf(fSendBuffer, "RECORD %s RTSP/1.0\r\nCSeq: %lu\r\n%sRange: npt=%lu.0-\r\nUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fSessionID.Ptr, inStartPlayTimeInSec, fUserAgent);
+        qtss_sprintf(fSendBuffer, "RECORD %s RTSP/1.0\r\nCSeq: %"_U32BITARG_"\r\n%sRange: npt=%"_U32BITARG_".0-\r\nUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fSessionID.Ptr, inStartPlayTimeInSec, fUserAgent);
     }
     return this->DoTransaction();
 }
@@ -1110,16 +1219,16 @@ OS_Error RTSPClient::SendReceive(UInt32 inStartPlayTimeInSec)
 OS_Error RTSPClient::SendAnnounce(char *sdp)
 {
 //ANNOUNCE rtsp://server.example.com/permanent_broadcasts/TestBroadcast.sdp RTSP/1.0
-    if (!fTransactionStarted)
+    if (!IsTransactionInProgress())
     {   
         qtss_sprintf(fMethod,"%s","ANNOUNCE");
         if (sdp == NULL)
-            qtss_sprintf(fSendBuffer, "ANNOUNCE %s RTSP/1.0\r\nCSeq: %lu\r\nAccept: application/sdp\r\nUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fUserAgent);
+            qtss_sprintf(fSendBuffer, "ANNOUNCE %s RTSP/1.0\r\nCSeq: %"_U32BITARG_"\r\nAccept: application/sdp\r\nUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fUserAgent);
         else
         {   UInt32 len = strlen(sdp);
             if(len > kReqBufSize)
                 return OS_NotEnoughSpace;
-            qtss_sprintf(fSendBuffer, "ANNOUNCE %s RTSP/1.0\r\nCSeq: %lu\r\nContent-Type: application/sdp\r\nUser-agent: %s\r\nContent-Length: %lu\r\n\r\n%s", fURL.Ptr, fCSeq, fUserAgent, len, sdp);
+            qtss_sprintf(fSendBuffer, "ANNOUNCE %s RTSP/1.0\r\nCSeq: %"_U32BITARG_"\r\nContent-Type: application/sdp\r\nUser-agent: %s\r\nContent-Length: %"_U32BITARG_"\r\n\r\n%s", fURL.Ptr, fCSeq, fUserAgent, len, sdp);
         }   
     }
     return this->DoTransaction();
@@ -1127,7 +1236,7 @@ OS_Error RTSPClient::SendAnnounce(char *sdp)
 
 OS_Error RTSPClient::SendRTSPRequest(iovec* inRequest, UInt32 inNumVecs)
 {
-    if (!fTransactionStarted)
+    if (!IsTransactionInProgress())
     {
         UInt32 curOffset = 0;
         for (UInt32 x = 0; x < inNumVecs; x++)
@@ -1208,16 +1317,21 @@ OS_Error RTSPClient::SendInterleavedWrite(UInt8 channel, UInt16 len, char*data,B
     if (theErr != 0)
         outLenSent = 0;
 
-    //qtss_printf("RTSPClient::SendInterleavedWrite Send channel=%u bufferlen=%u err=%ld outLenSent=%lu\n",(UInt16) extraChannel, sendLen,theErr,outLenSent);
+    if(fVerboseLevel >= 3)
+		qtss_printf("RTSPClient::SendInterleavedWrite Send channel=%u bufferlen=%u err=%"_S32BITARG_" outLenSent=%"_U32BITARG_"\n",(UInt16) sInterleavedParams.extraChannel, sendLen,theErr,outLenSent);
     if (theErr == 0 && outLenSent != sendLen) 
     {   if (sInterleavedParams.extraLen > 0) // sending extra len so keep sending it.
-        {   //qtss_printf("RTSPClient::SendInterleavedWrite partial Send channel=%u bufferlen=%u err=%ld amountSent=%lu \n",(UInt16) extraChannel,sendLen,theErr,outLenSent);
+        {   
+			if (fVerboseLevel >= 3)
+				qtss_printf("RTSPClient::SendInterleavedWrite partial Send channel=%u bufferlen=%u err=%"_S32BITARG_" amountSent=%"_U32BITARG_" \n",(UInt16) sInterleavedParams.extraChannel,sendLen,theErr,outLenSent);
             sInterleavedParams.extraLen = sendLen - outLenSent;
             sInterleavedParams.extraByteOffset += outLenSent;
             sInterleavedParams.extraBytes = &fSendBuffer[sInterleavedParams.extraByteOffset];
         }
         else // we were sending a new packet so record the data
-        {   //qtss_printf("RTSPClient::SendInterleavedWrite partial Send channel=%u bufferlen=%u err=%ld amountSent=%lu \n",(UInt16) channel,sendLen,theErr,outLenSent);
+        {   
+			if (fVerboseLevel >= 3)
+				qtss_printf("RTSPClient::SendInterleavedWrite partial Send channel=%u bufferlen=%u err=%"_S32BITARG_" amountSent=%"_U32BITARG_" \n",(UInt16) channel,sendLen,theErr,outLenSent);
             sInterleavedParams.extraBytes = &fSendBuffer[outLenSent];
             sInterleavedParams.extraLen = sendLen - outLenSent;
             sInterleavedParams.extraChannel = channel;
@@ -1229,18 +1343,23 @@ OS_Error RTSPClient::SendInterleavedWrite(UInt8 channel, UInt16 len, char*data,B
         if (theErr == 0)
         {   
             if (sInterleavedParams.extraLen > 0) // we were busy sending some old data and it all got sent
-            {   //qtss_printf("RTSPClient::SendInterleavedWrite FULL Send channel=%u bufferlen=%u err=%ld amountSent=%lu \n",(UInt16) extraChannel,sendLen,theErr,outLenSent);
+            {   
+				if (fVerboseLevel >= 3)
+					qtss_printf("RTSPClient::SendInterleavedWrite FULL Send channel=%u bufferlen=%u err=%"_S32BITARG_" amountSent=%"_U32BITARG_" \n",(UInt16) sInterleavedParams.extraChannel,sendLen,theErr,outLenSent);
             }
             else 
             {   // it all worked so ask for more data
-                //qtss_printf("RTSPClient::SendInterleavedWrite FULL Send channel=%u bufferlen=%u err=%ld amountSent=%lu \n",(UInt16) channel,sendLen,theErr,outLenSent);
+				if (fVerboseLevel >= 3)
+					qtss_printf("RTSPClient::SendInterleavedWrite FULL Send channel=%u bufferlen=%u err=%"_S32BITARG_" amountSent=%"_U32BITARG_" \n",(UInt16) channel,sendLen,theErr,outLenSent);
             }
             sInterleavedParams.extraLen = 0;
             sInterleavedParams.extraBytes = NULL;
             sInterleavedParams.extraByteOffset = 0;
         }
         else // we got an error so nothing was sent
-        {   //qtss_printf("RTSPClient::SendInterleavedWrite Send ERR sending=%ld \n",theErr);
+        {   
+			if (fVerboseLevel >= 3)
+				qtss_printf("RTSPClient::SendInterleavedWrite Send ERR sending=%"_S32BITARG_" \n",theErr);
 
             if (sInterleavedParams.extraLen == 0) // retry the new packet
             {   
@@ -1256,9 +1375,9 @@ OS_Error RTSPClient::SendInterleavedWrite(UInt8 channel, UInt16 len, char*data,B
 
 OS_Error RTSPClient::SendTeardown()
 {
-    if (!fTransactionStarted)
+    if (!IsTransactionInProgress())
     {   qtss_sprintf(fMethod,"%s","TEARDOWN");
-        qtss_sprintf(fSendBuffer, "TEARDOWN %s RTSP/1.0\r\nCSeq: %lu\r\n%sUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fSessionID.Ptr, fUserAgent);
+        qtss_sprintf(fSendBuffer, "TEARDOWN %s RTSP/1.0\r\nCSeq: %"_U32BITARG_"\r\n%sUser-agent: %s\r\n\r\n", fURL.Ptr, fCSeq, fSessionID.Ptr, fUserAgent);
     }
     return this->DoTransaction();
 }
@@ -1300,7 +1419,8 @@ OS_Error    RTSPClient::GetMediaPacket(UInt32* outTrackID, Bool16* outIsRTCP, ch
     {
         //
         // If there is some packet data in the header buffer, clear it out
-        //qtss_printf("%d bytes of packet data in header buffer\n",fPacketDataInHeaderBufferLen);
+        if (fVerboseLevel >= 3)
+			qtss_printf("%"_U32BITARG_" bytes of packet data in header buffer\n",fPacketDataInHeaderBufferLen);
         
         Assert(fPacketDataInHeaderBuffer[0] == '$');
         Assert(fPacketDataInHeaderBufferLen < (kMaxPacketSize - fPacketBufferOffset));
@@ -1323,22 +1443,23 @@ OS_Error    RTSPClient::GetMediaPacket(UInt32* outTrackID, Bool16* outIsRTCP, ch
         Assert(fPacketBuffer[0] == '$');
         UInt16* thePacketLenP = (UInt16*)fPacketBuffer;
         UInt16 thePacketLen = ntohs(thePacketLenP[1]);
-        
+        UInt8  channelIndex = fPacketBuffer[1];
         if (fPacketBufferOffset >= (thePacketLen + kPacketHeaderLen))
         {
             // We have a complete packet. Return it to the caller.
-            Assert(fPacketBuffer[1] < fNumChannelElements); // This is really not a safe assert, but anyway...
-            *outTrackID = fChannelTrackMap[fPacketBuffer[1]].fTrackID;
-            *outIsRTCP = fChannelTrackMap[fPacketBuffer[1]].fIsRTCP;
+            Assert(channelIndex < fNumChannelElements); // This is really not a safe assert, but anyway...]
+            if (channelIndex >= fNumChannelElements)
+                return -1;
+                
+            *outTrackID = fChannelTrackMap[channelIndex].fTrackID;
+            *outIsRTCP = fChannelTrackMap[channelIndex].fIsRTCP;
             *outLen = thePacketLen;
             
             // Next time we call this function, we will blow away the packet, but until then
             // we leave it untouched.
             fPacketOutstanding = true;
             *outBuffer = &fPacketBuffer[kPacketHeaderLen];
-#if DEBUG
-            fIsFirstPacket = false;
-#endif
+
             return OS_NoErr;
         }
     }
@@ -1347,7 +1468,7 @@ OS_Error    RTSPClient::GetMediaPacket(UInt32* outTrackID, Bool16* outIsRTCP, ch
 
 UInt32  RTSPClient::GetSSRCByTrack(UInt32 inTrackID)
 {
-    for (UInt32 x = 0; x < fNumSSRCElements; x++)
+    for (UInt32 x = 0; x < fSSRCMap.size(); x++)
     {
         if (inTrackID == fSSRCMap[x].fTrackID)
             return fSSRCMap[x].fSSRC;
@@ -1365,129 +1486,92 @@ RTPMetaInfoPacket::FieldID* RTSPClient::GetFieldIDArrayByTrack(UInt32 inTrackID)
     return NULL;
 }
 
-
 OS_Error RTSPClient::DoTransaction()
 {
-
-    OS_Error theErr = OS_NoErr;
-    Bool16 isAuthenticated = false;
-    
-    fSendBufferLen = ::strlen(fSendBuffer);
-    StrPtrLen theRequest(fSendBuffer,fSendBufferLen);
+	OS_Error theErr = OS_NoErr;
+    StrPtrLen theRequest(fSendBuffer, ::strlen(fSendBuffer));
     StrPtrLen theMethod(fMethod);
     
-    if (fAuthenticator != NULL && !fTransactionStarted) 
-    {   
-        fAuthenticator->SetMethod(&theMethod);
-        fAuthenticator->AttachAuthParams(&theRequest);
-        isAuthenticated = true;     
-    }
+	for(;;)
+	{
+		switch(fState)
+		{
+			//Initial state: getting ready to send the request; the authenticator is initialized if it exists.
+			//This is the only state where a new request can be made.
+			case kInitial:
+				if (fAuthenticator != NULL)
+				{
+					fAuthAttempted = true;
+        			fAuthenticator->RemoveAuthLine(&theRequest); // reset to original request
+        			fAuthenticator->ResetAuthParams(); // if we had a 401 on an authenticated request clean up old params and try again with the new response data
+        			fAuthenticator->SetName(&fName);
+        			fAuthenticator->SetPassword(&fPassword);
+        			fAuthenticator->SetMethod(&theMethod);
+        			fAuthenticator->SetURI(&fURL);
+        			fAuthenticator->AttachAuthParams(&theRequest);
+				}
+        		fCSeq++;	//this assumes that the sequence number will not be read again until the next transaction
+        		fPacketDataInHeaderBufferLen = 0;
 
-    if (!fTransactionStarted)
-    {   
-        //
-        // Make sure that if there is some packet data in the header buffer, we forget all about it.
-        fPacketDataInHeaderBufferLen = 0;
+				fState = kRequestSending;
+				break;
+
+			//Request Sending state: keep on calling Send while Send returns EAGAIN or EINPROGRESS
+			case kRequestSending:
+        		theErr = fSocket->Send(theRequest.Ptr, theRequest.Len);
         
-        fCSeq++;
-    }
+        		if (theErr != OS_NoErr)
+				{
+					if (fVerboseLevel >= 3)
+						qtss_printf("RTSPClient::DoTransaction Send len=%"_U32BITARG_" err = %"_S32BITARG_"\n", theRequest.Len, theErr);
+            		return theErr;
+				}
+        		if (fVerboseLevel >= 1)
+            		qtss_printf("\n-----REQUEST-----len=%"_U32BITARG_"\n%s\n", theRequest.Len, STRTOCHAR(&theRequest));
+        
+
+				//Done sending request; moving onto the response
+        		fContentRecvLen = 0;
+        		fHeaderRecvLen = 0;
+        		fHeaderLen = 0;
+        		::memset(fRecvHeaderBuffer, 0, kReqBufSize+1);
+
+            	fState = kResponseReceiving;
+				break;
+
+			//Response Receiving state: keep on calling ReceiveResponse while it returns EAGAIN or EINPROGRESS
+			case kResponseReceiving:
+			//Header Received state: the response header has been received(and parsed), but the entity(response content) has not been completely received
+			case kHeaderReceived:
+        		theErr = this->ReceiveResponse();  //note that this function can change the fState
+
+        		if (fVerboseLevel >= 3)
+					qtss_printf("RTSPClient::DoTransaction ReceiveResponse fStatus=%"_U32BITARG_" len=%"_U32BITARG_" err = %"_S32BITARG_"\n",fStatus, fHeaderRecvLen, theErr);
     
-    if (!fReceiveInProgress)
-    {   fResponseCount = 0;
-        StrPtrLen theTransaction;
-        fTransactionStarted = true;
-        if (!fHaveTransactionBuffer)
-        {   fHaveTransactionBuffer = true;
-            theTransaction.Set(theRequest.Ptr,theRequest.Len);
-        }
-        theErr = fSocket->Send(theTransaction.Ptr, theTransaction.Len);
-        
-        if (fVerbose)
-            qtss_printf("\n-----REQUEST-----len=%lu\n%s\n", theRequest.Len, STRTOCHAR(&theRequest));
-        //qtss_printf("RTSPClient::DoTransaction Send len=%lu err = %ld\n",theTransaction.Len, theErr);
-        
-        if (theErr != OS_NoErr)
-            return theErr;
-            
-        fHaveTransactionBuffer = false;
-        
+        		if (theErr != OS_NoErr)
+            		return theErr;
 
-        // Done sending request, we're moving onto receiving the response
-        fConnected = true;
-        fContentRecvLen = 0;
-        fHeaderRecvLen = 0;
-        fReceivedResponse = false;
-        fReceiveInProgress = true;
-        memset(fRecvHeaderBuffer,0,kReqBufSize+1);
-
-    }
-    
-    if (fReceiveInProgress)
-    {
-        Assert(theErr == OS_NoErr);
-        theErr = this->ReceiveResponse();
-        //qtss_printf("RTSPClient::DoTransaction ReceiveResponse fStatus=%lu len=%lu err = %ld\n",fStatus, fHeaderRecvLen, theErr);
-    
-        if (theErr != OS_NoErr)
-            return theErr;
-
-        fReceiveInProgress = false;
-    }
-    
-
-    if (!fReceiveInProgress && (401 == fStatus) && (fAuthenticator != NULL) ) // authentication required or authentication failed
-    {
-        fResponseCount ++;
-        if (fResponseCount != 1) // just try to authenticate once against a 401.
-            return 0;
-        fAuthenticator->RemoveAuthLine(&theRequest); // reset to original request
-        fAuthenticator->ResetAuthParams(); // if we had a 401 on an authenticated request clean up old params and try again with the new response data
-        fAuthenticator->SetName(&fName);
-        fAuthenticator->SetPassword(&fPassword);
-        fAuthenticator->SetMethod(&theMethod);
-        fAuthenticator->SetURI(&fURL);
-        fAuthenticator->AttachAuthParams(&theRequest);
-
-        if (fVerbose)
-            qtss_printf("\n-----REQUEST----\n%s\n", STRTOCHAR(&theRequest));
-        
-        
-        StrPtrLen theTransaction;
-        if (!fHaveTransactionBuffer)
-        {   fHaveTransactionBuffer = true;
-            theTransaction.Set(theRequest.Ptr,theRequest.Len);
-        }
-
-        theErr = fSocket->Send(theTransaction.Ptr, theTransaction.Len);
-        //qtss_printf("fSocket->Send err =%ld len=%lu\n",theErr, theTransaction.Len);
-        if (theErr != OS_NoErr)
-            return theErr;
-
-        fHaveTransactionBuffer = false; 
-        
-        fContentRecvLen = 0;
-        fHeaderRecvLen = 0;
-        fReceivedResponse = false;
-        fRecvHeaderBuffer[0] = 0;
-        fHeaderLen = 0;
-        memset(fRecvHeaderBuffer,0,kReqBufSize+1);
-        
-        fReceiveInProgress = true;
-        fTransactionStarted = true;
-        return EAGAIN;
-    }
-    
-    
-    return theErr;
+				//The response has been completely received and parsed.  If the response is 401 unauthorized, then redo the request with authorization
+				fState = kInitial;
+				if (fStatus == 401 && fAuthenticator != NULL && !fAuthAttempted)
+					break;
+				else
+					return OS_NoErr;
+				break;
+		}
+	}
+	Assert(false);  //not reached
+	return 0;
 }
 
 
-
+//This implementation cannot parse interleaved headers with entity content.
 OS_Error RTSPClient::ReceiveResponse()
 {
+	Assert(fState == kResponseReceiving | fState == kHeaderReceived);
     OS_Error theErr = OS_NoErr;
 
-    while (!fReceivedResponse)
+    while (fState == kResponseReceiving)
     {
         UInt32 theRecvLen = 0;
         //fRecvHeaderBuffer[0] = 0;
@@ -1497,8 +1581,8 @@ OS_Error RTSPClient::ReceiveResponse()
         
         fHeaderRecvLen += theRecvLen;
         fRecvHeaderBuffer[fHeaderRecvLen] = 0;
-        if (fVerbose)
-            qtss_printf("\n-----RESPONSE----\n%s\n", fRecvHeaderBuffer);
+        if (fVerboseLevel >= 1)
+            qtss_printf("\n-----RESPONSE (len: %"_U32BITARG_")----\n%s\n", fHeaderRecvLen, fRecvHeaderBuffer);
 
         //fRecvHeaderBuffer[fHeaderRecvLen] = '\0';
         // Check to see if we've gotten a complete header, and if the header has even started       
@@ -1513,11 +1597,12 @@ OS_Error RTSPClient::ReceiveResponse()
         }
         else if (theHeaderStart != fRecvHeaderBuffer)
         {
+			//strip off everything before the RTSP
             fHeaderRecvLen -= theHeaderStart - fRecvHeaderBuffer;
             ::memmove(fRecvHeaderBuffer, theHeaderStart, fHeaderRecvLen);
             //fRecvHeaderBuffer[fHeaderRecvLen] = '\0';
         }
-        //qtss_printf("RTSPClient::ReceiveResponse fRecvHeaderBuffer=%s\n",fRecvHeaderBuffer);
+
         char* theResponseData = ::strstr(fRecvHeaderBuffer, "\r\n\r\n");    
 
         if (theResponseData != NULL)
@@ -1526,7 +1611,7 @@ OS_Error RTSPClient::ReceiveResponse()
             theResponseData += 4;
             
             // We've got a new response
-            fReceivedResponse = true;
+			fState = kHeaderReceived;
             
             // Figure out how much of the content body we've already received
             // in the header buffer. If we are interleaving, this may also be packet data
@@ -1539,7 +1624,7 @@ OS_Error RTSPClient::ReceiveResponse()
             fContentLength = 0;
         
             // Parse the response.
-            StrPtrLen theData(fRecvHeaderBuffer, (theResponseData - (&fRecvHeaderBuffer[0])));
+            StrPtrLen theData(fRecvHeaderBuffer, fHeaderLen);
             StringParser theParser(&theData);
             
             theParser.ConsumeLength(NULL, 9); //skip past RTSP/1.0
@@ -1581,21 +1666,23 @@ OS_Error RTSPClient::ReceiveResponse()
                 }
                 else if (theKey.NumEqualIgnoreCase(sContentLenHeader.Ptr, sContentLenHeader.Len))
                 {
+					//exclusive with interleaved
                     StringParser theCLengthParser(&theKey);
                     theCLengthParser.ConsumeUntil(NULL, StringParser::sDigitMask);
                     fContentLength = theCLengthParser.ConsumeInteger(NULL);
                     
                     delete [] fRecvContentBuffer;
                     fRecvContentBuffer = NEW char[fContentLength + 1];
+					::memset(fRecvContentBuffer, '\0', fContentLength + 1);
                     
                     // Immediately copy the bit of the content body that we've already
                     // read off of the socket.
+					Assert(fContentRecvLen <= fContentLength)
                     ::memcpy(fRecvContentBuffer, theResponseData, fContentRecvLen);
-                    
                 }
                 else if (theKey.NumEqualIgnoreCase(sAuthenticateHeader.Ptr, sAuthenticateHeader.Len))
                 {   
-                    if (fVerbose)
+                    if (fVerboseLevel >= 3)
                         qtss_printf("\n--CHALLENGE RECEIVED\n");
                     #if ENABLE_AUTHENTICATION   
                         if (fAuthenticator != NULL) // already have an authenticator
@@ -1605,14 +1692,14 @@ OS_Error RTSPClient::ReceiveResponse()
                         Assert(fAuthenticator != NULL);
                         if (!fAuthenticator) 
                             return 401; // what to do? the challenge is bad can't authenticate.
-                        else if (fVerbose)
+                        else if (fVerboseLevel >= 3)
                         {   if (fAuthenticator->GetType() == Authenticator::kBasicType)
                                 qtss_printf("--CREATED BASIC AUTHENTICATOR\n");
                             else if (fAuthenticator->GetType() == Authenticator::kDigestType)
                                 qtss_printf("--CREATED DIGEST AUTHENTICATOR\n");
                         }
                     #else
-                        if (fVerbose) 
+                        if (fVerboseLevel >= 3) 
                             qtss_printf("--AUTHENTICATION IS DISABLED\n");
                     #endif                  
                 }
@@ -1625,6 +1712,7 @@ OS_Error RTSPClient::ReceiveResponse()
                     {
                         static StrPtrLen sServerPort("server_port");
                         static StrPtrLen sInterleaved("interleaved");
+						static StrPtrLen sSSRC("ssrc");
 
                         theTransportParser.GetThru(&theSubHeader, ';');
                         if (theSubHeader.NumEqualIgnoreCase(sServerPort.Ptr, sServerPort.Len))
@@ -1633,8 +1721,24 @@ OS_Error RTSPClient::ReceiveResponse()
                             thePortParser.ConsumeUntil(NULL, StringParser::sDigitMask);
                             fServerPort = (UInt16) thePortParser.ConsumeInteger(NULL);
                         }
-                        else if (theSubHeader.NumEqualIgnoreCase(sInterleaved.Ptr, sInterleaved.Len))
-                            this->ParseInterleaveSubHeader(&theSubHeader);                          
+                        else if (theSubHeader.NumEqualIgnoreCase(sInterleaved.Ptr, sInterleaved.Len))	//exclusive with Content-length
+                            this->ParseInterleaveSubHeader(&theSubHeader);
+						else if (theSubHeader.NumEqualIgnoreCase(sSSRC.Ptr, sSSRC.Len))
+						{
+                            StringParser ssrcParser(&theSubHeader);
+							StrPtrLen ssrcStr;
+							
+							ssrcParser.GetThru(NULL, '=');
+                            ssrcParser.ConsumeWhitespace();
+                            ssrcParser.ConsumeUntilWhitespace(&ssrcStr);
+							
+							if (ssrcStr.Len > 0)
+							{
+								OSArrayObjectDeleter<char> ssrcCStr = ssrcStr.GetAsCString();
+								unsigned long ssrc = ::strtoul(ssrcCStr.GetObject(), NULL, 16);
+								fSSRCMap.push_back(SSRCMapElem(fSetupTrackID, ssrc));
+							}
+						}
                     }
                 }
                 else if (theKey.NumEqualIgnoreCase(sRTPInfoHeader.Ptr, sRTPInfoHeader.Len))
@@ -1652,39 +1756,37 @@ OS_Error RTSPClient::ReceiveResponse()
             }
             
             //
-            // Check to see if there is any packet data in the header buffer
+            // Check to see if there is any packet data in the header buffer; everything that is left should be packet data
             if (fContentRecvLen > fContentLength)
             {
                 fPacketDataInHeaderBuffer = theResponseData + fContentLength;
                 fPacketDataInHeaderBufferLen = fContentRecvLen - fContentLength;
             }
         }
-        else if (fHeaderRecvLen == kReqBufSize)
+        else if (fHeaderRecvLen == kReqBufSize) //the "\r\n" is not found --> read more data
             return ENOBUFS; // This response is too big for us to handle!
     }
     
+	//the advertised data length is less than what has been received...need to read more data
     while (fContentLength > fContentRecvLen)
     {
         UInt32 theContentRecvLen = 0;
         theErr = fSocket->Read(&fRecvContentBuffer[fContentRecvLen], fContentLength - fContentRecvLen, &theContentRecvLen);
         if (theErr != OS_NoErr)
         {
-            fEventMask = EV_RE;
+            //fEventMask = EV_RE;
             return theErr;
         }
         fContentRecvLen += theContentRecvLen;       
     }
-    
-    // We're all done, reset all our state information.
-    fReceivedResponse = false;
-    fReceiveInProgress = false;
-    fTransactionStarted = false;
-
     return OS_NoErr;
 }
 
+//DOES NOT CURRENT WORK AS ADVERTISED; so I took it out
+//RTP-Info has sequence number, not SSRC
 void    RTSPClient::ParseRTPInfoHeader(StrPtrLen* inHeader)
 {
+/*
     static StrPtrLen sURL("url");
     StringParser theParser(inHeader);
     theParser.ConsumeUntil(NULL, 'u'); // consume until "url"
@@ -1711,12 +1813,14 @@ void    RTSPClient::ParseRTPInfoHeader(StrPtrLen* inHeader)
         static StrPtrLen sURLSubHeader("url");
         static StrPtrLen sSSRCSubHeader("ssrc");
         
+		//DOES NOT WORK IF THE URL contains NUMBERS!!!!!!
         if (theRTPInfoSubHeader.NumEqualIgnoreCase(sURLSubHeader.Ptr, sURLSubHeader.Len))
         {
             StringParser theURLParser(&theRTPInfoSubHeader);
             theURLParser.ConsumeUntil(NULL, StringParser::sDigitMask);
             fSSRCMap[fNumSSRCElements].fTrackID = theURLParser.ConsumeInteger(NULL);
         }
+		// This RTP-Info header should not have an ssrc field!!!
         else if (theRTPInfoSubHeader.NumEqualIgnoreCase(sSSRCSubHeader.Ptr, sSSRCSubHeader.Len))
         {
             StringParser theURLParser(&theRTPInfoSubHeader);
@@ -1727,8 +1831,8 @@ void    RTSPClient::ParseRTPInfoHeader(StrPtrLen* inHeader)
         // Move onto the next parameter
         (void)theParser.GetThru(&theRTPInfoSubHeader, ';');
     }
-    
-    fNumSSRCElements++;
+
+    fNumSSRCElements++;*/
 }
 
 void    RTSPClient::ParseRTPMetaInfoHeader(StrPtrLen* inHeader)
@@ -1782,6 +1886,35 @@ void    RTSPClient::ParseInterleaveSubHeader(StrPtrLen* inSubHeader)
     fChannelTrackMap[theRTPChannel].fIsRTCP = false;
     fChannelTrackMap[theRTCPChannel].fTrackID = fSetupTrackID;
     fChannelTrackMap[theRTCPChannel].fIsRTCP = true;
+}
+
+//Use a trackID of kUInt32_Max to turn the Rate-Adaptation header off.
+void RTSPClient::Attach3GPPHeaders(StringFormatter &fmt, UInt32 inTrackID)
+{
+    if (fGuarenteedBitRate != 0 | fMaxBitRate != 0 | fMaxTransferDelay != 0)
+    {
+        fmt.PutFmtStr("3GPP-Link-Char: url=\"%s\"", fURL.Ptr);
+        
+        if (fGuarenteedBitRate != 0)
+            fmt.PutFmtStr("; GBW=%"_U32BITARG_, fGuarenteedBitRate);
+        if (fMaxBitRate != 0)
+            fmt.PutFmtStr("; MBW=%"_U32BITARG_, fMaxBitRate);
+        if (fMaxTransferDelay != 0)
+             fmt.PutFmtStr("; MTD=%"_U32BITARG_, fMaxTransferDelay);
+        fmt.PutFmtStr("\r\n");
+    }
+	
+    if ((fBufferSpace != 0 | fDelayTime != 0) && inTrackID != kUInt32_Max)
+    {
+        fmt.PutFmtStr("3GPP-Adaptation: ");
+
+        fmt.PutFmtStr("url=\"%s/%s=%"_U32BITARG_"\"", fURL.Ptr, fControlID, inTrackID);
+        if (fBufferSpace != 0)
+            fmt.PutFmtStr("; size=%"_U32BITARG_, fBufferSpace);
+        if (fDelayTime != 0)
+            fmt.PutFmtStr("; target-time=%"_U32BITARG_, fDelayTime);
+        fmt.PutFmtStr("\r\n");
+    }
 }
 
 #define _RTSPCLIENTTESTING_ 0

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -139,7 +139,7 @@ class ElementNode
         void    GetMyAccess(StrPtrLen* str)     { Assert(str); if (str != NULL) str->Set(fSelfPtr->fAccessData,fSelfPtr->fAccessLen);};
         QTSS_Object GetMySource()               {   
                                                     Assert(fSelfPtr != NULL); 
-                                                    //qtss_printf("GetMySource fSelfPtr->fAPISource = %lu \n", fSelfPtr->fAPISource); 
+                                                    //qtss_printf("GetMySource fSelfPtr->fAPISource = %"_U32BITARG_" \n", fSelfPtr->fAPISource); 
                                                     return fSelfPtr->fAPISource;        
                                                 };
 
@@ -206,7 +206,7 @@ class ElementNode
                                                         if (source != NULL) 
                                                             return source; 
                                                         else 
-                                                        {   //qtss_printf("GetSource return fDataSource = %lu \n",fDataSource);
+                                                        {   //qtss_printf("GetSource return fDataSource = %"_U32BITARG_" \n",fDataSource);
                                                             return fDataSource;
                                                         }
                                                     };

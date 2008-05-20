@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -99,6 +99,10 @@ class Task
         Bool16                  Valid(); // for debugging
 		char            fTaskName[48];
 		void            SetTaskName(char* name);
+		
+        void            SetDefaultThread(TaskThread* defaultThread) { fDefaultThread = defaultThread; }
+        void            SetThreadPicker(unsigned int* picker);
+        static unsigned int* GetBlockingTaskThreadPicker() {return &sBlockingTaskThreadPicker; }
         
     protected:
     
@@ -116,7 +120,7 @@ class Task
                                                         fUseThisThread = (TaskThread*)OSThread::GetCurrent();
                                                         Assert(fUseThisThread != NULL);
                                                         if (TASK_DEBUG) if (fTaskName[0] == 0) ::strcpy(fTaskName, " corrupt task");
-                                                        if (TASK_DEBUG) qtss_printf("Task::ForceSameThread fUseThisThread %lu task %s enque elem=%lu enclosing %lu\n", (UInt32)fUseThisThread, fTaskName,(UInt32) &fTaskQueueElem,(UInt32) this);
+                                                        if (TASK_DEBUG) qtss_printf("Task::ForceSameThread fUseThisThread %p task %s enque elem=%p enclosing %p\n", (void*) fUseThisThread, fTaskName,(void *)&fTaskQueueElem, (void *)this);
                                                     }
         SInt64                  CallLocked()        {   ForceSameThread();
                                                         fWriteLock = true;
@@ -135,6 +139,7 @@ class Task
         
         EventFlags      fEvents;
         TaskThread*     fUseThisThread;
+        TaskThread*     fDefaultThread;
         Bool16          fWriteLock;
 
 #if DEBUG
@@ -148,8 +153,10 @@ class Task
         OSHeapElem      fTimerHeapElem;
         OSQueueElem     fTaskQueueElem;
         
+        unsigned int *pickerToUse;
         //Variable used for assigning tasks to threads in a round-robin fashion
-        static unsigned int sThreadPicker;
+        static unsigned int sShortTaskThreadPicker; //default picker
+        static unsigned int sBlockingTaskThreadPicker;
         
         friend class    TaskThread; 
 };
@@ -191,14 +198,21 @@ class TaskThreadPool {
 public:
 
     //Adds some threads to the pool
-    static Bool16   AddThreads(UInt32 numToAdd);
+    static Bool16   AddThreads(UInt32 numToAdd); // creates the threads: takes NumShortTaskThreads + NumBLockingThreads,  sets num short task threads.
     static void     SwitchPersonality( char *user = NULL, char *group = NULL);
     static void     RemoveThreads();
+    static TaskThread* GetThread(UInt32 index);
+    static UInt32  GetNumThreads() { return sNumTaskThreads; }
+    static void SetNumShortTaskThreads(UInt32 numToAdd) { sNumShortTaskThreads = numToAdd; }
+    static void SetNumBlockingTaskThreads(UInt32 numToAdd) { sNumBlockingTaskThreads = numToAdd; }
     
 private:
 
     static TaskThread**     sTaskThreadArray;
     static UInt32           sNumTaskThreads;
+    static UInt32           sNumShortTaskThreads;
+    static UInt32           sNumBlockingTaskThreads;
+    
     static OSMutexRW        sMutexRW;
     
     friend class Task;

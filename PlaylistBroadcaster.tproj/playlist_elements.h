@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -49,19 +49,19 @@
 class MediaStream;
 
 struct SoundDescription {
-    long                            descSize;                   /* total size of SoundDescription including extra data */
-    long                            dataFormat;                 /* sound format */
-    long                            resvd1;                     /* reserved for apple use. set to zero */
-    short                           resvd2;                     /* reserved for apple use. set to zero */
-    short                           dataRefIndex;
-    short                           version;                    /* which version is this data */
-    short                           revlevel;                   /* what version of that codec did this */
-    long                            vendor;                     /* whose  codec compressed this data */
-    short                           numChannels;                /* number of channels of sound */
-    short                           sampleSize;                 /* number of bits per sample */
-    short                           compressionID;              /* unused. set to zero. */
-    short                           packetSize;                 /* unused. set to zero. */
-    unsigned long                   sampleRate;                 /* sample rate sound is captured at */
+    SInt32                           descSize;                   /* total size of SoundDescription including extra data */
+    SInt32                           dataFormat;                 /* sound format */
+    SInt32                           resvd1;                     /* reserved for apple use. set to zero */
+    SInt16                           resvd2;                     /* reserved for apple use. set to zero */
+    SInt16                           dataRefIndex;
+    SInt16                           version;                    /* which version is this data */
+    SInt16                           revlevel;                   /* what version of that codec did this */
+    SInt32                           vendor;                     /* whose  codec compressed this data */
+    SInt16                           numChannels;                /* number of channels of sound */
+    SInt16                           sampleSize;                 /* number of bits per sample */
+    SInt16                           compressionID;              /* unused. set to zero. */
+    SInt16                           packetSize;                 /* unused. set to zero. */
+    UInt32                   		 sampleRate;                 /* sample rate sound is captured at */
 };
 
 
@@ -86,7 +86,7 @@ class TypeMap {
         SimpleString                fTheTypeStr;
         SimpleString                fProtocolStr;
         ArrayList<PayLoad>          fPayLoadTypes;
-        ArrayList<short>            fPayLoads;
+        ArrayList<SInt16>            fPayLoads;
     
 };
 
@@ -97,9 +97,9 @@ class RTpPacket
 
 struct SoundHeader {
     char bytes[4];
-    long skip1;
+    SInt32 skip1;
     char sndtype[4];
-    long skip2;
+    SInt32 skip2;
     char test[4];
 };
 
@@ -109,7 +109,7 @@ struct SoundHeader {
         char    *fThePacket;
         int     fLength;
         bool    fHasSoundDescription;
-        long    fSoundDescriptionLen;
+        SInt32    fSoundDescriptionLen;
 
         RTpPacket()  : fThePacket(NULL), fLength(0), fHasSoundDescription(false), fSoundDescriptionLen(0) {};
          
@@ -297,8 +297,8 @@ class MediaStream
             bool            fIsVideoStream;
             
             char            *fSoundDescriptionBuffer;
-            long            fSavedSoundDescSize;
-            short           fSavedDataRefIndex;
+            SInt32            fSavedSoundDescSize;
+            SInt16           fSavedDataRefIndex;
             UDPSocketPair   *fSocketPair;
             QTRTPFile       *fRTPFilePtr;
         };

@@ -34,8 +34,7 @@ CPPFILES = 	../OSMemory_Modules/OSMemory_Modules.cpp \
 			../../APICommonCode/SDPSourceInfo.cpp \
 			../../APICommonCode/SourceInfo.cpp \
 			../../RTPMetaInfoLib/RTPMetaInfoPacket.cpp \
-			AccessCheck.cpp \
-			QTSSDemoModule.cpp
+			QTSSDemoAuthorizationModule.cpp
 
 LIBFILES =      ../../CommonUtilitiesLib/libCommonUtilitiesLib.a
 

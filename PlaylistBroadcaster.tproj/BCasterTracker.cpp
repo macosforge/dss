@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -72,7 +72,7 @@ void TestBCasterTracker(int x )
             error = tracker.Remove( x );
             
             if ( error )    // remove the xth item from the list.
-                qtss_printf( "Playlist Broadcast (%li) not found.\n", (long)x );
+                qtss_printf( "Playlist Broadcast (%li) not found.\n", (SInt32)x );
             else
                 tracker.Save();
         }
@@ -96,8 +96,8 @@ static void ShowElement( PLDoubleLinkedListNode<TrackingElement>* ten,  void* us
         info = ", (not running)";
     
     
-    //qtss_printf(  "[%li] %li %s%s\n", (long)*showIndex, (long)ten->fElement->mPID, ten->fElement->mName, info );
-    qtss_printf(  "[%3li] %s; pid: %li%s\n", (long)*showIndex, ten->fElement->mName,  (long)ten->fElement->mPID,  info );
+    //qtss_printf(  "[%li] %li %s%s\n", (SInt32)*showIndex, (SInt32)ten->fElement->mPID, ten->fElement->mName, info );
+    qtss_printf(  "[%3li] %s; pid: %li%s\n", (SInt32)*showIndex, ten->fElement->mName,  (SInt32)ten->fElement->mPID,  info );
     
     
     *(int*)userData = *showIndex + 1;
@@ -137,7 +137,7 @@ bool BCasterTracker::IsProcessRunning( pid_t pid )
 // Generic unix code
 
     char    procPath[256];
-    qtss_sprintf( procPath, "ps -p%li | grep %li > %s ",(long)pid,(long)pid,gTrackerFileTempDataPath); 
+    qtss_sprintf( procPath, "ps -p%li | grep %li > %s ",(SInt32)pid,(SInt32)pid,gTrackerFileTempDataPath); 
 
     int result = system(procPath);
     if (0 == result)
@@ -149,7 +149,7 @@ bool BCasterTracker::IsProcessRunning( pid_t pid )
     // a no-grep version to find the pid
     
     char pidStr[32];
-    qtss_sprintf( pidStr, "%li",(long)pid);    
+    qtss_sprintf( pidStr, "%li",(SInt32)pid);    
     
     char procPath[64] = "ps -p";
     ::strcat( procPath, pidStr);    
@@ -346,14 +346,14 @@ BCasterTracker::~BCasterTracker()
         int  err = OSThread::GetErrno();
                 
         if ( ::fseek( mTrackerFile, mEofPos, SEEK_SET ) < 0 )
-            qtss_printf( "fseek at close eof(%li), err(%li), fileno(%li)\n", mEofPos, (long)err, (long)fileno(mTrackerFile) );
+            qtss_printf( "fseek at close eof(%li), err(%li), fileno(%li)\n", mEofPos, (SInt32)err, (SInt32)fileno(mTrackerFile) );
             
         if ( ::fflush( mTrackerFile ) )
-            qtss_printf( "fflush at close eof(%li), err(%li), fileno(%li)\n", mEofPos, (long)err, (long)fileno(mTrackerFile) );
+            qtss_printf( "fflush at close eof(%li), err(%li), fileno(%li)\n", mEofPos, (SInt32)err, (SInt32)fileno(mTrackerFile) );
 
         if ( ::ftruncate( fileno(mTrackerFile), (off_t)mEofPos ) )
         {   
-            qtss_printf( "ftruncate at close eof(%li), err(%li), fileno(%li)\n", mEofPos, (long)err, (long)fileno(mTrackerFile) );
+            qtss_printf( "ftruncate at close eof(%li), err(%li), fileno(%li)\n", mEofPos, (SInt32)err, (SInt32)fileno(mTrackerFile) );
         }
         
         (void)::fclose(  mTrackerFile  );
@@ -371,7 +371,7 @@ static bool SaveElement( PLDoubleLinkedListNode<TrackingElement>* ten,  void* us
             
     */
     
-    qtss_sprintf( buff, "%li \"%s\"\n", (long)ten->fElement->mPID, ten->fElement->mName );
+    qtss_sprintf( buff, "%li \"%s\"\n", (SInt32)ten->fElement->mPID, ten->fElement->mName );
     
     // linux version of fputs returns <0 for err, or num bytes written
     // mac os X version of fputs returns <0 for err, or 0 for no err
@@ -435,12 +435,12 @@ BCasterTracker::BCasterTracker( const char* name )
     
     calendarTime = ::time(NULL) + 10;
     
-    // wait a long time for access to the file.
+    // wait a SInt32 time for access to the file.
     // 2 possible loops  one to try to open ( and possible create ) the file
     // the second to obtain an exclusive lock on the file.
     
     // the app should probably fail if this cannot be done within the alloted time
-    //qtss_printf("time=%ld\n",calendarTime);
+    //qtss_printf("time=%"_S32BITARG_"\n",calendarTime);
     
     
     while ( mTrackerFile == NULL && calendarTime > ::time(NULL) ) 
@@ -513,8 +513,8 @@ BCasterTracker::BCasterTracker( const char* name )
         
     if ( mTrackerFile )
     {
-        long    lineBuffSize = kTrackerLineBuffSize;        
-        long    wordBuffSize = kTrackerLineBuffSize;        
+        SInt32    lineBuffSize = kTrackerLineBuffSize;        
+        SInt32    wordBuffSize = kTrackerLineBuffSize;        
         char    lineBuff[kTrackerLineBuffSize];
         char    wordBuff[kTrackerLineBuffSize];
         

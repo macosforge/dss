@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -265,12 +265,8 @@ QTSS_Error LogError(QTSS_RoleParamPtr inParamBlock)
     
                 sDupErrorStringCount = 0;
             }
-#if __MacOSX__
             ::strlcpy(sLastErrorString, inParamBlock->errorParams.inBuffer, sizeof(sLastErrorString));
-#else
-            ::strncpy(sLastErrorString, inParamBlock->errorParams.inBuffer,  sizeof(sLastErrorString));
-            sLastErrorString[sizeof(sLastErrorString) -1] = 0;
-#endif        
+        
         }
 
         //The error logger is the bottleneck for any and all messages printed by the server.
@@ -373,7 +369,7 @@ void    WriteShutdownMessage()
     
     char tempBuffer[kMaxLogStringLen];
     if (result)
-        qtss_snprintf(tempBuffer,sizeof(tempBuffer), "# Streaming STARTUP %s\n", theDateBuffer);
+        qtss_snprintf(tempBuffer, sizeof(tempBuffer), "# Streaming SHUTDOWN %s\n", theDateBuffer);
 
     if ( result && sErrorLog != NULL )
         sErrorLog->WriteToLog(tempBuffer, kAllowLogToRoll);

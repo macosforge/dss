@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -22,7 +22,7 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-// $Id: QTAtom_stsc.h,v 1.9 2004/05/14 23:03:13 murata Exp $
+// $Id: QTAtom_stsc.h,v 1.1 2006/01/05 13:20:36 murata Exp $
 //
 // QTAtom_stsc:
 //   The 'stsc' QTAtom class.

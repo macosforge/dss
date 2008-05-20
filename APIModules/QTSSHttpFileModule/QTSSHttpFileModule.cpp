@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -541,7 +541,7 @@ QTSS_Error FilterRequest(QTSS_Filter_Params* inParams)
                                                 
                                             }
 #if HTTP_FILE_DEBUGGING
-                                            qtss_printf("Number of .mov files in the directory: %lu\n", fileCount);
+                                            qtss_printf("Number of .mov files in the directory: %"_U32BITARG_"\n", fileCount);
 #endif          
                                             // Go back to the beginning of the directory
                                             ::rewinddir(theDirectory);
@@ -558,7 +558,7 @@ QTSS_Error FilterRequest(QTSS_Filter_Params* inParams)
                                                     fileNames[fileCount] = fileName;
                                                     fileCount ++;
 #if HTTP_FILE_DEBUGGING
-                                                    qtss_printf("%lu : %s\n", fileCount, fileName);
+                                                    qtss_printf("%"_U32BITARG_" : %s\n", fileCount, fileName);
 #endif          
                                                 }
                                             }
@@ -600,9 +600,9 @@ QTSS_Error FilterRequest(QTSS_Filter_Params* inParams)
                                                 //Find the approximate bit rate for each .mov file in the directory
                                                 bitRate = GetBitRate(filePath);
 #if HTTP_FILE_DEBUGGING
-                                                qtss_printf("%lu\t: Path = %s\n", arrayIndex + 1, filePath);
+                                                qtss_printf("%"_U32BITARG_"\t: Path = %s\n", arrayIndex + 1, filePath);
                                                 qtss_printf("Url = %s\n", url);
-                                                qtss_printf("Rate = %lu\n", bitRate); 
+                                                qtss_printf("Rate = %"_U32BITARG_"\n", bitRate); 
 #endif
                                                 if ( bitRate != 0 )
                                                 {
@@ -665,7 +665,7 @@ QTSS_Error FilterRequest(QTSS_Filter_Params* inParams)
                                             ::memcpy(theFileBuffer, responseHeader->Ptr, responseHeader->Len);  
                                             
                                             // We need content length string for logging purposes 
-                                            qtss_sprintf(contentLength, "%lu", moovLen);
+                                            qtss_sprintf(contentLength, "%"_U32BITARG_"", moovLen);
                                             
                                             //Delete the http request object ...no use for it anymore
                                             delete httpRequest;
@@ -716,7 +716,7 @@ QTSS_Error FilterRequest(QTSS_Filter_Params* inParams)
                                             ::memcpy(theFileBuffer + headerLength, refMovieBuf.GetObject(), index);
                                             
                                             // We need content length string for logging purposes 
-                                            qtss_sprintf(contentLength, "%lu", index);
+                                            qtss_sprintf(contentLength, "%"_U32BITARG_"", index);
                                             
                                             // Write the contents of the file buffer to the request stream and return
                                             QTSS_Write(theRequest, theFileBuffer, (headerLength + index), NULL, 0);
@@ -862,7 +862,7 @@ QTSS_Error FilterRequest(QTSS_Filter_Params* inParams)
                                         theReadOffset += theRecvLen;
                                         theOffset += theRecvLen;
 #if HTTP_FILE_DEBUGGING
-                                        qtss_printf("Got %lu bytes back from file read. Now at: %"_64BITARG_"u\n", theRecvLen, theOffset);
+                                        qtss_printf("Got %"_U32BITARG_" bytes back from file read. Now at: %"_64BITARG_"u\n", theRecvLen, theOffset);
 #endif
                                         if (theRecvLen < theBufferSize)
                                         {
@@ -888,7 +888,7 @@ QTSS_Error FilterRequest(QTSS_Filter_Params* inParams)
                                         theWriteOffset += theWrittenLen;
 
 #if HTTP_FILE_DEBUGGING
-                                        qtss_printf("Got %lu bytes back from socket write.\n", theWrittenLen);
+                                        qtss_printf("Got %"_U32BITARG_" bytes back from socket write.\n", theWrittenLen);
 #endif
                                         if (theWriteOffset < theFileBufferLen)
                                         {
@@ -1052,7 +1052,7 @@ UInt32 GetBitRate(char* filePath)
         rate = 150000;
 
 #if HTTP_FILE_DEBUGGING
-    qtss_printf("Actual rate: %lu\n", actualRate);
+    qtss_printf("Actual rate: %"_U32BITARG_"\n", actualRate);
 #endif
 
     return rate;

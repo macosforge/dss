@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -46,6 +46,8 @@
 #include "OSQueue.h"
 #include "StrPtrLen.h"
 
+#define MODULE_DEBUG 0
+
 class QTSSModule : public QTSSDictionary, public Task
 {
     public:
@@ -86,14 +88,37 @@ class QTSSModule : public QTSSDictionary, public Task
         QTSSPrefs*      GetPrefsDict()  { return fPrefs; }
         QTSSDictionary* GetAttributesDict() { return fAttributes; }
         OSMutex*        GetAttributesMutex() { return &fAttributesMutex; }
+
+        //convert QTSS.h 4 char id roles to private role index
+        SInt32 GetPrivateRoleIndex(QTSS_Role apiRole);
+
         
         // This calls into the module.
         QTSS_Error  CallDispatch(QTSS_Role inRole, QTSS_RoleParamPtr inParams)
-            {  return (fDispatchFunc)(inRole, inParams);    }
+        {  
+            SInt32 theRoleIndex  = -1;
+            
+            if (MODULE_DEBUG)
+            {    this->GetValue(qtssModName)->PrintStr("QTSSModule::CallDispatch ENTER module=", " role=");
+                 theRoleIndex = GetPrivateRoleIndex(inRole);
+                 if (theRoleIndex != -1)
+                    qtss_printf(" %s ENTR\n", sRoleNames[theRoleIndex]);
+                
+            }  
+            QTSS_Error theError = (fDispatchFunc)(inRole, inParams);  
+
+            if (MODULE_DEBUG)
+            {   this->GetValue(qtssModName)->PrintStr("QTSSModule::CallDispatch EXIT  module=", " role=");
+                if (theRoleIndex != -1)
+                    qtss_printf(" %s EXIT\n", sRoleNames[theRoleIndex]);
+            }
+            
+            return theError;
+        }
         
 
         // These enums allow roles to be stored in a more optimized way
-                
+        // add new RoleNames to sRoleNames in QTSSModule.cpp for debugging       
         enum
         {
             kInitializeRole =           0,
@@ -153,6 +178,7 @@ class QTSSModule : public QTSSDictionary, public Task
         static Bool16       sHasRTSPAuthenticateModule;
     
         static QTSSAttrInfoDict::AttrInfo   sAttributes[];
+        static char* sRoleNames[];
         
         QTSS_ModuleState    fModuleState;
 

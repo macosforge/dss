@@ -225,7 +225,7 @@ rm -f ./APIModules/QTSSRawFileModule.bproj/QTSSRawFileModule
 rm -f ./APIModules/QTSSDemoAuthorizationModule.bproj/QTSSDemoAuthorizationModule
 rm -f ./APIModules/QTSSAccessModule.bproj/QTSSAccessModule
 rm -f ./result
-rm -rf ./StreamingServer.pbproject/StreamingServer.pbproj
+
 echo "rm Win modules"
 rm -rf ./WinNTSupport/dynmodules/
 rm -rf ./WinNTSupport/dynmodules_disabled/
@@ -234,8 +234,10 @@ echo "rm Win Build directories"
 ./deleteWinBuildDirs .
 rm -rf ./WinNTSupport/build/
 rm -rf ./WinNTSupport/DarwinStreamingServer/
-rm -f ./WinNTSupport/StreamingServer.sln
-rm -f ./WinNTSupport/StreamingServer.suo
 
-rm ./.gdb_history
+rm -f ./.gdb_history
 
+echo "rm extra project files"
+rm -rf StreamingServer.pbproject/StreamingServer.pbproj
+rm -f StreamingServer.xcodeproj/*.mode1
+rm -f StreamingServer.xcodeproj/*.pbxuser

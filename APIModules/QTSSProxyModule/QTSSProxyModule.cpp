@@ -2,9 +2,9 @@
  * Copyright (c) 1999 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -670,7 +670,7 @@ UInt32 ReplaceSessionAndTransportHeaders(StrPtrLen* inResponse, iovec* outNewRes
         {
             //
             // Mark off the length of the last section of the header
-			outNewResponse[curVecIndex].iov_len = ((UInt32) theHeaderName.Ptr) - ((UInt32) outNewResponse[curVecIndex].iov_base );
+			outNewResponse[curVecIndex].iov_len = (UInt32) ((PointerSizedUInt) theHeaderName.Ptr) - ((PointerSizedUInt) outNewResponse[curVecIndex].iov_base );
             *outNewResponseLen += outNewResponse[curVecIndex].iov_len;
             
             //
@@ -694,7 +694,7 @@ UInt32 ReplaceSessionAndTransportHeaders(StrPtrLen* inResponse, iovec* outNewRes
             
             //
             // Mark off the length of the last section of the header
-            outNewResponse[curVecIndex].iov_len = ((UInt32) reqParser.GetCurrentPosition()) - ((UInt32) outNewResponse[curVecIndex].iov_base);
+            outNewResponse[curVecIndex].iov_len = (UInt32) ((PointerSizedUInt) reqParser.GetCurrentPosition()) - ((PointerSizedUInt) outNewResponse[curVecIndex].iov_base);
             *outNewResponseLen += outNewResponse[curVecIndex].iov_len;
             
             //
@@ -731,7 +731,7 @@ UInt32 ReplaceSessionAndTransportHeaders(StrPtrLen* inResponse, iovec* outNewRes
     
     //
     // Finish off the vec by marking the len of the last section
-    outNewResponse[curVecIndex].iov_len = ((UInt32) reqParser.GetCurrentPosition()) -  ((UInt32) outNewResponse[curVecIndex].iov_base );
+    outNewResponse[curVecIndex].iov_len = (UInt32) ((PointerSizedUInt) reqParser.GetCurrentPosition()) -  ((PointerSizedUInt) outNewResponse[curVecIndex].iov_base );
 
     //
     // And finish off the total length

@@ -2,9 +2,9 @@
  * Copyright (c) 2003 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -35,8 +35,8 @@ void
 main(int argc, char **argv)
 {
     int i, j;
-    long long ts1, ts2;
-    long long ts3, ts4;
+    SInt64 ts1, ts2;
+    SInt64 ts3, ts4;
     struct timescale tsc;
     double scale;
 
@@ -61,8 +61,8 @@ main(int argc, char **argv)
     utimescale(&tsc);
     scale = (double)tsc.tsc_numerator / (double)tsc.tsc_denominator;
 
-    ts1 = (long long)((double)ts1 * scale);
-    ts2 = (long long)((double)ts2 * scale);
+    ts1 = (SInt64)((double)ts1 * scale);
+    ts2 = (SInt64)((double)ts2 * scale);
 
     qtss_printf("ts1 = %qd, ts2 = %qd, micro seconds = %qd\n",
             ts1, ts2, (ts2 - ts1));

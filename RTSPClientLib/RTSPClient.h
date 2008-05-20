@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -25,8 +25,10 @@
 /*
     File:       RTSPClient.h
 
-    
-    
+	Works only for QTSS.
+	Assumes that different streams within a session is distinguished by trackID=
+	For example, streams within sample.mov would be refered to as sample.mov/trackID=4
+	Does not work if the URL contains digits!!!
 */
 
 #ifndef __RTSP_CLIENT_H__
@@ -37,6 +39,8 @@
 #include "TCPSocket.h"
 #include "ClientSocket.h"
 #include "RTPMetaInfoPacket.h"
+#include "StringFormatter.h"
+#include "SVector.h"
 
 // for authentication
 #include "StringParser.h"
@@ -69,10 +73,13 @@ class Authenticator
         StrPtrLen fMethodSPL; // client -- must be all caps
         time_t    fAuthTime;
         
-        char *GetRequestHeader( StrPtrLen *inSourceStr, StrPtrLen *searchHeaderStr,StrPtrLen *outHeaderStr = NULL);
+        //the outHeaderStr argument is not actually implemented
+        //char *GetRequestHeader( StrPtrLen *inSourceStr, StrPtrLen *searchHeaderStr,StrPtrLen *outHeaderStr = NULL);
+        char *GetRequestHeader( StrPtrLen *inSourceStr, StrPtrLen *searchHeaderStr);
+        //Does nothing if the Authorization header is not found
         void RemoveAuthLine(StrPtrLen *theRequestPtr);      
 
-        Bool16 CopyParam(StrPtrLen *inPtr, StrPtrLen *outPtr);
+        static Bool16 CopyParam(StrPtrLen *inPtr, StrPtrLen *outPtr);
         
         void SetName(StrPtrLen *inNamePtr);             
         void SetPassword(StrPtrLen *inPasswordPtr); 
@@ -218,10 +225,10 @@ class RTSPClient
         static void     SetUserAgentStr(char* inUserAgent) { sUserAgent = inUserAgent; }
     
         // verbosePrinting = print out all requests and responses
-        RTSPClient(ClientSocket* inSocket, Bool16 verbosePrinting, char* inUserAgent = NULL);
+        RTSPClient(ClientSocket* inSocket, Bool16 verbosePrinting = false, char* inUserAgent = NULL);
         ~RTSPClient();
         
-        // This must be called before any other function. Sets up very important info.
+        // This must be called before any other function. Sets up very important info; sets the URL
         void        Set(const StrPtrLen& inURL);
         
         //
@@ -243,7 +250,7 @@ class RTSPClient
         OS_Error    SendReliableUDPSetup(UInt32 inTrackID, UInt16 inClientPort);
         OS_Error    SendUDPSetup(UInt32 inTrackID, UInt16 inClientPort);
         OS_Error    SendTCPSetup(UInt32 inTrackID, UInt16 inClientRTPid, UInt16 inClientRTCPid);
-        OS_Error    SendPlay(UInt32 inStartPlayTimeInSec, Float32 inSpeed = 1);
+        OS_Error    SendPlay(UInt32 inStartPlayTimeInSec, Float32 inSpeed = 1, UInt32 inTrackID = kUInt32_Max); //use a inTrackID of kUInt32_Max to turn off per stream headers
         OS_Error    SendPacketRangePlay(char* inPacketRangeHeader, Float32 inSpeed = 1);
         OS_Error    SendReceive(UInt32 inStartPlayTimeInSec);       
         OS_Error    SendAnnounce(char *sdp);
@@ -258,9 +265,9 @@ class RTSPClient
         OS_Error    SendRTSPRequest(iovec* inRequest, UInt32 inNumVecs);
 
                 //
-                // Once you call all of the above functions, assuming they return an error, you
-                // should call DoTransaction until it returns OS_NoErr, then you can move onto your
-                // next request
+        // Once you call all of the above functions, assuming they return an error, you
+        // should call DoTransaction until it returns OS_NoErr, then you can move onto your
+        // next request
         OS_Error    DoTransaction();
         
         //
@@ -282,7 +289,25 @@ class RTSPClient
                     
         // set control id string default is "trackID"
         void    SetControlID(char* controlID);
- 		            
+
+        // level 0, 1, 2, or 3
+        void    SetVerboseLevel(UInt32 level) { fVerboseLevel = level; }
+
+        //Sets the 3GPP-Link-Char header values; set to all 0 to not send this header
+        void Set3GPPLinkChars(UInt32 GBW = 0, UInt32 MBW = 0, UInt32 MTD = 0)
+        {
+            fGuarenteedBitRate = GBW;
+            fMaxBitRate = MBW;
+            fMaxTransferDelay = MTD;
+        }
+        //Use 0 for undefined
+        void SetBandwidth(UInt32 bps = 0)   { fBandwidth = bps; }
+		void Set3GPPRateAdaptation(UInt32 bufferSpace = 0, UInt32 delayTime = 0)
+		{
+			fBufferSpace = bufferSpace;
+			fDelayTime = delayTime;
+		}
+  
          // ACCESSORS
 
         StrPtrLen*  GetURL()                { return &fURL; }
@@ -297,8 +322,8 @@ class RTSPClient
         
         char*       GetResponse()           { return fRecvHeaderBuffer; }
         UInt32      GetResponseLen()        { return fHeaderLen; }
-        Bool16      IsTransactionInProgress() { return fTransactionStarted; }
-        Bool16      IsVerbose()             { return fVerbose; }
+        Bool16      IsTransactionInProgress() { return fState != kInitial; }
+        Bool16      IsVerbose()             { return fVerboseLevel >= 1; }
         
         // If available, returns the SSRC associated with the track in the PLAY response.
         // Returns 0 if SSRC is not available.
@@ -328,6 +353,8 @@ class RTSPClient
         void        ParseInterleaveSubHeader(StrPtrLen* inSubHeader);
         void        ParseRTPInfoHeader(StrPtrLen* inHeader);
         void        ParseRTPMetaInfoHeader(StrPtrLen* inHeader);
+		//Use a inTrackID of kUInt32_Max to turn the Rate-Adaptation header off
+		void		Attach3GPPHeaders(StringFormatter &fmt, UInt32 inTrackID = kUInt32_Max);
 
         // Call this to receive an RTSP response from the server.
         // Returns EAGAIN until a complete response has been received.
@@ -339,7 +366,7 @@ class RTSPClient
         Authenticator   *fAuthenticator; // only one will be supported
 
         ClientSocket*   fSocket;
-        Bool16          fVerbose;
+        UInt32          fVerboseLevel;
 
         // Information we need to send the request
         StrPtrLen   fURL;
@@ -354,7 +381,7 @@ class RTSPClient
         StrPtrLen   fSessionID;
         UInt16      fServerPort;
         UInt32      fContentLength;
-        StrPtrLen   fRTPInfoHeader;
+        //StrPtrLen   fRTPInfoHeader;
         
         // Special purpose SETUP params
         char*           fSetupHeaders;
@@ -368,15 +395,16 @@ class RTSPClient
         ChannelMapElem* fChannelTrackMap;
         UInt8           fNumChannelElements;
         
-        // For storing SSRCs
+        //Maps between trackID and SSRC number
         struct SSRCMapElem
         {
             UInt32 fTrackID;
             UInt32 fSSRC;
+			SSRCMapElem(UInt32 trackID = kUInt32_Max, UInt32 inSSRC = 0)
+			: fTrackID(trackID), fSSRC(inSSRC)
+			{}
         };
-        SSRCMapElem*    fSSRCMap;
-        UInt32          fNumSSRCElements;
-        UInt32          fSSRCMapSize;
+		SVector<SSRCMapElem> fSSRCMap;
 
         // For storing FieldID arrays
         struct FieldIDArrayElem
@@ -399,21 +427,18 @@ class RTSPClient
         char        fSendBuffer[kReqBufSize + 1];   // for sending requests
         char        fRecvHeaderBuffer[kReqBufSize + 1];// for receiving response headers
         char*       fRecvContentBuffer;             // for receiving response body
-        UInt32      fSendBufferLen;
+
         // Tracking the state of our receives
         UInt32      fContentRecvLen;
         UInt32      fHeaderRecvLen;
         UInt32      fHeaderLen;
-        UInt32      fSetupTrackID;
+        UInt32      fSetupTrackID;					//is valid during a Setup Transaction
         
-        // States
-        Bool16      fTransactionStarted;
-        Bool16      fReceiveInProgress;
-        Bool16      fReceivedResponse;
-        Bool16      fConnected;
-        Bool16      fHaveTransactionBuffer;
-        UInt32      fEventMask;
-        UInt32      fResponseCount;
+        enum { kInitial, kRequestSending, kResponseReceiving, kHeaderReceived };
+        UInt32      fState;
+
+        //UInt32      fEventMask;
+        Bool16      fAuthAttempted;
         UInt32      fTransportMode;
 
         //
@@ -425,11 +450,15 @@ class RTSPClient
         char*       fUserAgent;
 static  char*       sControlID;
         char*       fControlID;
-                
-#if DEBUG
-        Bool16      fIsFirstPacket;
-#endif
-        
+
+        //These values are for the wireless links only -- not end-to-end
+		//For the following values; use 0 for undefined.
+        UInt32 fGuarenteedBitRate;				//kbps
+        UInt32 fMaxBitRate;						//kbps
+        UInt32 fMaxTransferDelay;				//milliseconds
+		UInt32 fBandwidth;						//bps
+		UInt32 fBufferSpace;					//bytes
+		UInt32 fDelayTime;						//milliseconds
         
         struct InterleavedParams
         {

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -201,12 +201,12 @@ void QTAtom_hinf::DumpAtom(void)
     DEBUG_PRINT(("QTAtom_hinf::DumpAtom - ..Total Repeat Packet bytes: %"_64BITARG_"u\n", this->GetRepeatBytes()));
     DEBUG_PRINT(("QTAtom_hinf::DumpAtom - ..Total Immediate Bytes: %"_64BITARG_"u\n", this->GetTotalImmediateBytes()));
 
-    DEBUG_PRINT(("QTAtom_hinf::DumpAtom - ..Minimum Transmission Time: %lu\n", this->GetMinTransTime()));
-    DEBUG_PRINT(("QTAtom_hinf::DumpAtom - ..Maximum Transmission Time: %lu\n", this->GetMaxTransTime()));
-    DEBUG_PRINT(("QTAtom_hinf::DumpAtom - ..Maximum Packet Size bytes: %lu\n", this->GetMaxPacketSizeBytes()));
-    DEBUG_PRINT(("QTAtom_hinf::DumpAtom - ..Maximum Maximum Packet Duration: %lu\n", this->GetMaxPacketDuration()));
+    DEBUG_PRINT(("QTAtom_hinf::DumpAtom - ..Minimum Transmission Time: %"_U32BITARG_"\n", this->GetMinTransTime()));
+    DEBUG_PRINT(("QTAtom_hinf::DumpAtom - ..Maximum Transmission Time: %"_U32BITARG_"\n", this->GetMaxTransTime()));
+    DEBUG_PRINT(("QTAtom_hinf::DumpAtom - ..Maximum Packet Size bytes: %"_U32BITARG_"\n", this->GetMaxPacketSizeBytes()));
+    DEBUG_PRINT(("QTAtom_hinf::DumpAtom - ..Maximum Maximum Packet Duration: %"_U32BITARG_"\n", this->GetMaxPacketDuration()));
     
-    DEBUG_PRINT(("QTAtom_hinf::DumpAtom - ..Payload ID: %lu\n", this->GetPayLoadID()));
+    DEBUG_PRINT(("QTAtom_hinf::DumpAtom - ..Payload ID: %"_U32BITARG_"\n", this->GetPayLoadID()));
     DEBUG_PRINT(("QTAtom_hinf::DumpAtom - ..Payload string: %s\n", this->GetPayLoadStr()));
 
 }

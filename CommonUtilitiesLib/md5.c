@@ -2,9 +2,9 @@
  * Copyright (c) 2003 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -78,8 +78,8 @@ documentation and/or software.
 static void MD5Transform (UInt32 state[4], unsigned char block[64]);
 static void Encode (unsigned char *output, UInt32 *input, unsigned int len);
 static void Decode (UInt32 *output, unsigned char *input, unsigned int len);
-static void MD5_memcpy (UInt8 * output, UInt8 * input, unsigned int len);
-static void MD5_memset (UInt8 * output, int value, unsigned int len);
+static void MD5_memcpy (UInt8 * output, UInt8 * input, size_t len);
+static void MD5_memset (UInt8 * output, int value, size_t len);
 
 static unsigned char PADDING[64] = {
   0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -160,7 +160,7 @@ void MD5_Update (MD5_CTX *context, unsigned char *input, unsigned int inputLen)
 */
   if (inputLen >= partLen) {
  MD5_memcpy
-   ((UInt8 *)&context->buffer[index], (UInt8 *)input, partLen);
+   ((UInt8 *)&context->buffer[index], (UInt8 *)input, (size_t) partLen);
  MD5Transform (context->state, context->buffer);
 
  for (i = partLen; i + 63 < inputLen; i += 64)
@@ -174,7 +174,7 @@ void MD5_Update (MD5_CTX *context, unsigned char *input, unsigned int inputLen)
   /* Buffer remaining input */
   MD5_memcpy
  ((UInt8 *)&context->buffer[index], (UInt8 *)&input[i],
-  inputLen-i);
+   (size_t) (inputLen-i) );
 }
 
 /* MD5 finalization. Ends an MD5 message-digest operation, writing the
@@ -325,7 +325,7 @@ static void Decode (UInt32 *output, unsigned char *input, unsigned int len)
 /* Note: Replace "for loop" with standard memcpy if possible.
  */
 
-static void MD5_memcpy (UInt8 * output, UInt8 * input, unsigned int len)
+static void MD5_memcpy (UInt8 * output, UInt8 * input, size_t len)
 {
 /*  unsigned int i;
 
@@ -337,7 +337,7 @@ static void MD5_memcpy (UInt8 * output, UInt8 * input, unsigned int len)
 
 /* Note: Replace "for loop" with standard memset if possible.
  */
-static void MD5_memset (UInt8 * output, int value, unsigned int len)
+static void MD5_memset (UInt8 * output, int value, size_t len)
 {
 /*  unsigned int i;
 

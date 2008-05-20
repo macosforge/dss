@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -42,10 +42,16 @@
 class QTSSModuleUtils
 {
     public:
+        // compatibiltiy features for certain players
+        
         enum    {  
                     kRequiresRTPInfoSeqAndTime  = 0, 
                     kAdjustBandwidth            = 1,
-                    kDisablePauseAdjustedRTPTime= 2 
+                    kDisablePauseAdjustedRTPTime= 2,
+                    kDelayRTPStreamsUntilAfterRTSPResponse = 3,
+                    kDisable3gppRateAdaptation =4,
+                    kAdjust3gppTargetTime = 5,
+                    kDisableThinning =6,
                 };
     
       
@@ -74,6 +80,7 @@ class QTSSModuleUtils
                                     char* inArg2 = NULL);
                                     
         static void   LogErrorStr( QTSS_ErrorVerbosity inVerbosity, char* inMessage);
+        static void   LogPrefErrorStr( QTSS_ErrorVerbosity inVerbosity, char*  preference, char* inMessage);
      
         // This function constructs a C-string of the full path to the file being requested.
         // You may opt to append an optional suffix, or pass in NULL. You are responsible
@@ -200,11 +207,13 @@ class QTSSModuleUtils
         //  Result is a bitmap of flags
         //
         static QTSS_ActionFlags GetRequestActions(QTSS_RTSPRequestObject theRTSPRequest);
-
+ 
         static char* GetLocalPath_Copy(QTSS_RTSPRequestObject theRTSPRequest);
         static char* GetMoviesRootDir_Copy(QTSS_RTSPRequestObject theRTSPRequest);
         static QTSS_UserProfileObject GetUserProfileObject(QTSS_RTSPRequestObject theRTSPRequest);
-        
+        static QTSS_AttrRights GetRights(QTSS_UserProfileObject theUserProfileObject);
+        static char* GetExtendedRights(QTSS_UserProfileObject theUserProfileObject, UInt32 index);
+       
         static char*  GetUserName_Copy(QTSS_UserProfileObject inUserProfile);
         static char** GetGroupsArray_Copy(QTSS_UserProfileObject inUserProfile, UInt32 *outNumGroupsPtr);
         static Bool16 UserInGroup(QTSS_UserProfileObject inUserProfile, char* inGroupName, UInt32 inGroupNameLen);
@@ -222,6 +231,9 @@ class QTSSModuleUtils
 
         static Bool16 HavePlayerProfile(QTSS_PrefsObject inPrefObjectToCheck, QTSS_StandardRTSP_Params* inParams, UInt32 feature);
         
+        static QTSS_Error AuthorizeRequest(QTSS_RTSPRequestObject theRTSPRequest, Bool16* allowed, Bool16*haveUser,Bool16 *authContinue);
+        
+         
     private:
     
         //

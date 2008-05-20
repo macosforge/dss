@@ -1,8 +1,7 @@
-{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf410
-{\fonttbl\f0\froman\fcharset77 Times-Bold;\f1\froman\fcharset77 Times-Roman;\f2\fswiss\fcharset77 Helvetica;
-\f3\froman\fcharset77 Times-Italic;}
+{\rtf1\ansi\ansicpg1252\cocoartf949\cocoasubrtf270
+{\fonttbl\f0\froman\fcharset0 Times-Roman;\f1\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
-\vieww18380\viewh17680\viewkind0
+\vieww21200\viewh17740\viewkind0
 \pard\ql\qnatural
 
 \f0\b\fs36 \cf0 About Darwin Streaming Server \
@@ -12,37 +11,76 @@
 \fs24 \cf0 Contents\
 \pard\ql\qnatural
 
-\f1\b0\fs28 \cf0 \
+\b0\fs28 \cf0 \
 Welcome to Darwin Streaming Server, Apple's open source version of the QuickTime Streaming Server technology allowing you to send streaming media across the Internet using the industry standard RTP and RTSP protocols. Based on the same code base as QuickTime Streaming Server, Darwin Streaming Server provides a high level of customizability and runs on a variety of platforms allowing you to manipulate the code to fit your needs. \
 \
 \pard\ql\qnatural
 
-\f0\b\fs24 \cf0 What's New with Darwin Streaming Server 5.5.5\
+\b\fs24 \cf0 What's New with Darwin Streaming Server 6.0.3\
+\pard\ql\qnatural
+
+\b0\fs28 \cf0 - DSS now builds and runs 64-bit on MacOS X\
+\pard\pardeftab720\ql\qnatural
+\cf0 - Updates for example modules:\
+\'a0\'a0- The example Authorization module has been updated.\
+\'a0\'a0 \'a0Source code is available in:\'a0APIModules/QTSSDemoAuthorizationModule.bproj\
+\'a0\'a0- The example Spam Defense module has been updated.\
+\'a0\'a0 \'a0Source code is available in:\'a0APIModules/QTSSSpamDefenseModule.bproj\
+\'a0\'a0- An example RTSP redirect module has been included\
+\'a0\'a0 \'a0Source code is available in:\'a0APIModules/QTSSDemoRedirectModule.bproj\
+\'a0\'a0Example modules are\'a0installed into:\
+\'a0\'a0 \'a0(MacOS X): /Library/QuickTimeStreamingServer/Modules.disabled\
+\'a0\'a0 \'a0(other Unix):\'a0/usr/local/sbin/StreamingServerModules\
+- OS X based user account support is added using Apple Open Directory services and includes LDAP and Active Directory user account authentication and authorization \
+- Separate thread pools are used for RTSP processing and RTP processing\
+- Performance is improved on OS X systems with 4 and 8 cores over previous releases.\
+- Supports hinted files greater than 4GB in size.\
+- The posted pre-built MacOS package runs on MacOS X 10.5 or later only\
+- No build support yet for non-Mac OS X systems (open source submissions are needed to build on other platforms)\
+- No longer posting pre-built install binaries for non-Mac OS X systems.\
+  Version 5.5.5 for Linux and Windows can be downloaded from  http://developer.apple.com/opensource/server/streaming/index.html\
 \
+\pard\ql\qnatural
+\cf0 This release contains open source submissions for the following issues:
+\b\fs24 \
+
+\b0\fs28 - Fixed compilation problem on Solaris 10u3 (Stefan Parvu)\
+- Fixed access log c-bytes value (Amir Wolf)\
+- Fixed access log CPU utilization value\
+- Fixed compilation problem on FC6 linux PPC (Matthew McGillis)\
+- Fix to allow streaming of files with bad hint track references, allows compatibility with some popular encoders (Fredrik Widlund)\
+- Fix StreamingProxy compilation problems for some non-MacOSX platforms\
+- Added a HowTo for uninstalling DSS on a MacOS X system\
+- Misc. fixes for Debian linux (Ben Humpert)\
+- Fixed problem with video sync frame detection for MacOS X on Intel (Lorenzo Vicisano)\
+\pard\pardeftab720\ql\qnatural
+\cf0 \
+\pard\ql\qnatural
+\cf0 Please use http://dss.macosforge.org/ to submit your own Darwin Streaming Server modifications.\
 \
 \pard\ql\qnatural
 
-\f1\b0\fs28 \cf0 Darwin Streaming Server 5.5.5 is a new release containing open source submissions for the following issues:\
+\b\fs24 \cf0 What's New with Darwin Streaming Server 5.5.5b\
+\
+\pard\ql\qnatural
+
+\b0\fs28 \cf0 Darwin Streaming Server 5.5.5b is a beta release containing open source submissions for the following issues:\
 - Compilation problems using gcc 4 (Andreas Thienemann)\
 - Support for SDPs created by VLC and Mpeg4IP (David Moore)\
 - Fix date display in DSS Web Admin (Maksym Veremeyenko)\
 - Better support for streaming through NAT (Denis Ahrens)\
 - Better support for running DSS on a multi-homed system (Denis Ahrens)\
 - Relaying problems with VLC (Alessandro Falaschi, http://labtel.ing.uniroma1.it/opencdn/darwinp.html)\
-- A security fix for possible stack and heap overflow attacks in the StreamingProxy (CVE-2007-0748, CVE-2007-0749)\
-- A fix for sync sample searching on OS X.\
-- A fix for an infinite loop when the server fails to bind to streaming ports.\
-- An enhancement allowing RTSP requests to contain the hh:mm:ss format for the npt value (Fredrik Widlund)\
 \
 Please use http://www.opensource.apple.com/projects/modifications.html to submit your own Darwin Streaming Server modifications.\
 \
 \pard\ql\qnatural
 
-\f0\b\fs24 \cf0 What's New with Darwin Streaming Server 5.5.4\
+\b\fs24 \cf0 What's New with Darwin Streaming Server 5.5.4\
 \
 \pard\ql\qnatural
 
-\f1\b0\fs28 \cf0 Darwin Streaming Server 5.5.4 includes the following enhancements to 5.5.3:\
+\b0\fs28 \cf0 Darwin Streaming Server 5.5.4 includes the following enhancements to 5.5.3:\
 \
 - A fix to the unsigned character handling in the string parser resolves the following compiler generated issues:\
 --   Failure to stream to non-english QuickTime Players\
@@ -51,10 +89,10 @@ Please use http://www.opensource.apple.com/projects/modifications.html to submit
 \
 \pard\ql\qnatural
 
-\f0\b\fs24 \cf0 What's New with Darwin Streaming Server 5.5.3\
+\b\fs24 \cf0 What's New with Darwin Streaming Server 5.5.3\
 \pard\ql\qnatural
 
-\f1\b0\fs28 \cf0 \
+\b0\fs28 \cf0 \
 Darwin Streaming Server 5.5.3 includes the following enhancements to 5.5.1:\
 \
 - A security fix for DSS to prevent a crash when receiving an invalid RTSP request.\
@@ -64,10 +102,10 @@ Darwin Streaming Server 5.5.3 includes the following enhancements to 5.5.1:\
 Darwin Streaming Server 5.5.1 includes the following enhancements to 5.5:\
 \pard\ql\qnatural
 
-\f0\b\fs24 \cf0 \
+\b\fs24 \cf0 \
 \pard\ql\qnatural
 
-\f1\b0\fs28 \cf0 - A security fix for DSS Web Admin on Windows\
+\b0\fs28 \cf0 - A security fix for DSS Web Admin on Windows\
 \
 Darwin Streaming Server 5.5 includes the following enhancements to 5.0.1.1:\
 \
@@ -97,11 +135,11 @@ For more information about the Darwin Streaming Server project and to obtain the
 \
 \pard\ql\qnatural
 
-\f0\b\fs24 \cf0 System Requirements\
+\b\fs24 \cf0 System Requirements\
 \
 \pard\ql\qnatural
 
-\f1\b0\fs28 \cf0 Darwin Streaming Server is currently available on the following platforms:\
+\b0\fs28 \cf0 Darwin Streaming Server is currently available on the following platforms:\
 \
 \pard\li720\fi-720\ql\qnatural
 \cf0 *Mac OS X (version 10.2.8 or later)\
@@ -114,13 +152,13 @@ Darwin Streaming Server is compatible with QuickTime 4 or later client software.
 \
 \pard\ql\qnatural
 
-\f0\b\fs24 \cf0 Installing Darwin Streaming Server (
-\f1\b0\fs28 Mac OS X
-\f0\b\fs24 )\
+\b\fs24 \cf0 Installing Darwin Streaming Server (
+\b0\fs28 Mac OS X
+\b\fs24 )\
 \
 \pard\ql\qnatural
 
-\f1\b0\fs28 \cf0 To install Darwin Streaming Server 5.5 software, follow these \
+\b0\fs28 \cf0 To install Darwin Streaming Server 5.5 software, follow these \
 steps:\
 \
 \pard\li90\fi-90\ql\qnatural
@@ -139,14 +177,14 @@ steps:\
 \
 \pard\li360\fi-360\ql\qnatural
 
-\f0\b\fs24 \cf0 Set Up (
-\f1\b0\fs28 Mac OS X
-\f0\b\fs24 )\
+\b\fs24 \cf0 Set Up (
+\b0\fs28 Mac OS X
+\b\fs24 )\
 \pard\ql\qnatural
 \cf0 \
 \pard\ql\qnatural
 
-\f1\b0\fs28 \cf0     After creating an administrator user name and password,  you can connect to the Darwin Streaming Server from your web browser.\
+\b0\fs28 \cf0     After creating an administrator user name and password,  you can connect to the Darwin Streaming Server from your web browser.\
 \pard\li270\fi-270\ql\qnatural
 \cf0    \
    Enter the URL for your Darwin Streaming Server:\
@@ -160,11 +198,11 @@ Replace "myserver.com" with the name of your Darwin Streaming Server computer. \
 \
 \pard\ql\qnatural
 
-\f0\b\fs24 \cf0 Installing Darwin Streaming Server (Linux, Solaris)\
+\b\fs24 \cf0 Installing Darwin Streaming Server (Linux, Solaris)\
 \
 \pard\ql\qnatural
 
-\f1\b0\fs28 \cf0     To install Darwin Streaming Server 5.5 software, follow these steps on the server computer:\
+\b0\fs28 \cf0     To install Darwin Streaming Server 5.5 software, follow these steps on the server computer:\
 \
     Stop any Darwin Streaming Server related processes.\
 \
@@ -205,16 +243,16 @@ Replace "myserver.com" with the name of your Darwin Streaming Server computer. \
 \cf0 \
 \pard\li360\fi-360\ql\qnatural
 
-\f0\b\fs24 \cf0 Set Up (Linux, Solaris)\
+\b\fs24 \cf0 Set Up (Linux, Solaris)\
 \pard\li360\fi-360\ql\qnatural
 
-\f1\b0\fs28 \cf0 	During the install, you will be asked to create a user name and password for administering the server.  You must complete this step to administer the server from a remote system using a web browser.\
+\b0\fs28 \cf0 	During the install, you will be asked to create a user name and password for administering the server.  You must complete this step to administer the server from a remote system using a web browser.\
 \pard\ql\qnatural
 
-\f0\b\fs24 \cf0 \
+\b\fs24 \cf0 \
 \pard\ql\qnatural
 
-\f1\b0\fs28 \cf0     After creating an administrator user name and password,  you can connect to the Darwin Streaming Server from your web browser.\
+\b0\fs28 \cf0     After creating an administrator user name and password,  you can connect to the Darwin Streaming Server from your web browser.\
 \pard\li270\fi-270\ql\qnatural
 \cf0 \
    Enter the URL for your Darwin Streaming Server:\
@@ -228,17 +266,17 @@ Replace "myserver.com" with the name of your Darwin Streaming Server computer. \
 \
 \pard\ql\qnatural
 
-\f0\b\fs24 \cf0 Installing Darwin Streaming Server (Windows 2000/2003 Server)
-\f1\b0\fs28 \
+\b\fs24 \cf0 Installing Darwin Streaming Server (Windows 2000/2003 Server)
+\b0\fs28 \
 
-\f0\b\fs24 \
+\b\fs24 \
 \pard\ql\qnatural
 
-\f1\b0\fs28 \cf0 The Streaming Admin requires 
-\f2\fs24 ActivePerl 5.8 
-\f1\fs28 (or later) to be running on the server machine. You must install a 
-\f2\fs24 Perl 
-\f1\fs28 interpreter in order to use the web-based administration software. \
+\b0\fs28 \cf0 The Streaming Admin requires 
+\f1\fs24 ActivePerl 5.8 
+\f0\fs28 (or later) to be running on the server machine. You must install a 
+\f1\fs24 Perl 
+\f0\fs28 interpreter in order to use the web-based administration software. \
 \
 \
 To install Darwin Streaming Server software, follow these steps on the server computer:\
@@ -248,7 +286,7 @@ Stop any Darwin Streaming Server related processes.\
 When the Server package is unzipped, a folder with Darwin Streaming Server and associated files will be created. Inside this folder is an Install script, named "Install.bat". Double-click this file to install the server and its components on the server machine. The installer also starts up the Streaming Server Admin, so keep the command prompt window open.\
 \pard\ql\qnatural
 
-\fs24 \cf0 \'ca\
+\fs24 \cf0 \'a0\
 \pard\ql\qnatural
 
 \fs28 \cf0 The Install script will create the following directory:\
@@ -261,51 +299,51 @@ Inside this directory you will find:\
 \
 \pard\li540\ql\qnatural
 \cf0 DarwinStreamingServer.exe
-\f3\i  - Server executable\
+\i  - Server executable\
 
-\f1\i0 PlaylistBroadcaster.exe 
-\f3\i - PlaylistBroadcaster executable\
+\i0 PlaylistBroadcaster.exe 
+\i - PlaylistBroadcaster executable\
 
-\f1\i0 MP3Broadcaster.exe \'d0 
-\f3\i MP3 Broadcaster executable
-\f1\i0 \
+\i0 MP3Broadcaster.exe \'96 
+\i MP3 Broadcaster executable
+\i0 \
 qtpasswd.exe 
-\f3\i - Command-line utility for generating password files for access control\
+\i - Command-line utility for generating password files for access control\
 
-\f1\i0 StreamingLoadTool.exe
-\f3\i  - RTSP simulated client stress tool
-\f1\i0 \
+\i0 StreamingLoadTool.exe
+\i  - RTSP simulated client stress tool
+\i0 \
 streamingadminserver.pl 
-\f3\i - Admin Server that is used for administering the Streaming Server\
+\i - Admin Server that is used for administering the Streaming Server\
 
-\f1\i0 streamingserver.xml
-\f3\i - Default server configuration file\
+\i0 streamingserver.xml
+\i - Default server configuration file\
 
-\f1\i0 relayconfig.xml-Sample
-\f3\i  - Sample relay configuration file\
+\i0 relayconfig.xml-Sample
+\i  - Sample relay configuration file\
 
-\f1\i0 QTSSModules\\ 
-\f3\i - Folder containing QTSS API modules\
+\i0 QTSSModules\\ 
+\i - Folder containing QTSS API modules\
 
-\f1\i0 Movies\\ 
-\f3\i - Media folder\
+\i0 Movies\\ 
+\i - Media folder\
 
-\f1\i0 Playlists\\ - 
-\f3\i Folder containing Playlist configuration
-\f1\i0 \
+\i0 Playlists\\ - 
+\i Folder containing Playlist configuration
+\i0 \
 Logs\\ 
-\f3\i - Folder containing access and error logs\
+\i - Folder containing access and error logs\
 
-\f1\i0 AdminHtml\\ 
-\f3\i - Folder containing the CGIs and the HTMl files required by the Admin Server\
+\i0 AdminHtml\\ 
+\i - Folder containing the CGIs and the HTMl files required by the Admin Server\
 
-\f1\i0 Documentation\\
-\f3\i  - Documentation folder\
+\i0 Documentation\\
+\i  - Documentation folder\
 \pard\ql\qnatural
 \cf0 \
 \pard\ql\qnatural
 
-\f1\i0 \cf0 The Install script also installs Darwin Streaming Server as a service in the Service Manager. It is possible to start, stop, and check server status from the Service control panel.\
+\i0 \cf0 The Install script also installs Darwin Streaming Server as a service in the Service Manager. It is possible to start, stop, and check server status from the Service control panel.\
 \pard\li360\fi-360\ql\qnatural
 \cf0 \
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
@@ -314,13 +352,13 @@ Logs\\
 The Admin Server can be launched from the command prompt by typing:\
 \
 C:\\> 
-\f3\i perlpath
-\f1\i0  "C:\\Program Files\\Darwin Streaming Server\\streamingadminserver.pl"\
+\i perlpath
+\i0  "C:\\Program Files\\Darwin Streaming Server\\streamingadminserver.pl"\
 \
 \pard\li360\fi-360\ql\qnatural
 \cf0 where 
-\f3\i perlpath
-\f1\i0  is the path to the Perl interpreter on your machine.\
+\i perlpath
+\i0  is the path to the Perl interpreter on your machine.\
 \
 \
     If you are installing for the first time,  you will be asked to create a user name and password for administering the server.  You must complete this step to administer the server from a remote system using a web browser.\
@@ -328,12 +366,12 @@ C:\\>
 \
 \pard\li360\fi-360\ql\qnatural
 
-\f0\b\fs24 \cf0 Set Up (Windows 2000/2003 Server)\
+\b\fs24 \cf0 Set Up (Windows 2000/2003 Server)\
 \pard\ql\qnatural
 \cf0 \
 \pard\ql\qnatural
 
-\f1\b0\fs28 \cf0     After creating an administrator user name and password,  you can connect to the Darwin Streaming Server from your web browser.\
+\b0\fs28 \cf0     After creating an administrator user name and password,  you can connect to the Darwin Streaming Server from your web browser.\
 \pard\li270\fi-270\ql\qnatural
 \cf0 \
    Enter the URL for your Darwin Streaming Server:\
@@ -350,57 +388,57 @@ Replace "myserver.com" with the name of your Darwin Streaming Server computer. \
 \
 \pard\ql\qnatural
 
-\f0\b\fs24 \cf0 Troubleshooting
-\f1\b0 \
+\b\fs24 \cf0 Troubleshooting
+\b0 \
 \
 \
 \pard\ql\qnatural
 
-\f0\b\fs28 \cf0 * File Locations
+\b\fs28 \cf0 * File Locations
 \fs24 \
 \pard\li1080\ql\qnatural
 
-\f1\b0 \cf0 \
+\b0 \cf0 \
 \
 \pard\ql\qnatural
 
 \fs28 \cf0 \ul \ulc0 Darwin Streaming Server (Mac OS X)\ulnone \
 /usr/sbin/QuickTimeStreamingServer 
-\f3\i - Streaming Server app
-\f1\i0 \
+\i - Streaming Server app
+\i0 \
 /usr/sbin/streamingadminserver.pl 
-\f3\i - QTSS Web Admin server
-\f1\i0 \
+\i - QTSS Web Admin server
+\i0 \
 /Library/QuickTimeStreaming/Modules/ 
-\f3\i - QTSS plug-ins
-\f1\i0 \
+\i - QTSS plug-ins
+\i0 \
 /usr/bin/PlaylistBroadcaster 
-\f3\i - The PlaylistBroadcaster
-\f1\i0 \
+\i - The PlaylistBroadcaster
+\i0 \
 /usr//bin/MP3Broadcaster 
-\f3\i - The MP3Broadcaster
-\f1\i0 \
+\i - The MP3Broadcaster
+\i0 \
 /usr/bin/qtpasswd 
-\f3\i - Generates password files for access control\
+\i - Generates password files for access control\
 
-\f1\i0 /usr//bin/StreamingLoadTool 
-\f3\i - RTSP simulated client stress tool
-\f1\i0 \
+\i0 /usr//bin/StreamingLoadTool 
+\i - RTSP simulated client stress tool
+\i0 \
 /Library/QuickTimeStreaming/Config/ 
-\f3\i - QTSS config files
-\f1\i0 \
+\i - QTSS config files
+\i0 \
 /Library/QuickTimeStreaming/Movies/ 
-\f3\i - Media files
-\f1\i0 \
+\i - Media files
+\i0 \
 /Library/QuickTimeStreaming/Docs/  
-\f3\i - readme.html & user manual.pdf files
-\f1\i0 \
+\i - readme.html & user manual.pdf files
+\i0 \
 /Library/QuickTimeStreaming/logs/ 
-\f3\i - Logs\
+\i - Logs\
 
-\f1\i0 /Library/QuickTimeStreaming/playlists 
-\f3\i - Web Admin Playlist files
-\f1\i0 \
+\i0 /Library/QuickTimeStreaming/playlists 
+\i - Web Admin Playlist files
+\i0 \
 \pard\li1080\ql\qnatural
 
 \fs24 \cf0 \
@@ -408,46 +446,46 @@ Replace "myserver.com" with the name of your Darwin Streaming Server computer. \
 
 \fs28 \cf0 \ul Darwin Streaming Server (Unix)\ulnone \
 /usr/local/sbin/DarwinStreamingServer 
-\f3\i - Streaming Server app
-\f1\i0 \
+\i - Streaming Server app
+\i0 \
 /usr/local/sbin/streamingadminserver.pl 
-\f3\i - QTSS Web Admin server
-\f1\i0 \
+\i - QTSS Web Admin server
+\i0 \
 /usr/local/sbin/StreamingServerModules/ 
-\f3\i - QTSS plug-ins
-\f1\i0 \
+\i - QTSS plug-ins
+\i0 \
 /usr/local/bin/PlaylistBroadcaster 
-\f3\i - The PlaylistBroadcaster
-\f1\i0 \
+\i - The PlaylistBroadcaster
+\i0 \
 /usr/local/bin/MP3Broadcaster 
-\f3\i - The MP3Broadcaster
-\f1\i0 \
+\i - The MP3Broadcaster
+\i0 \
 /usr/local/bin/qtpasswd 
-\f3\i - Generates password files for access control\
+\i - Generates password files for access control\
 
-\f1\i0 /usr/local/bin/StreamingLoadTool 
-\f3\i - RTSP simulated client stress tool
-\f1\i0 \
+\i0 /usr/local/bin/StreamingLoadTool 
+\i - RTSP simulated client stress tool
+\i0 \
 /etc/streaming/ 
-\f3\i - QTSS config files
-\f1\i0 \
+\i - QTSS config files
+\i0 \
 /usr/local/movies/ 
-\f3\i - Media files
-\f1\i0 \
+\i - Media files
+\i0 \
 /var/streaming/  
-\f3\i - readme.html & user manual.pdf files
-\f1\i0 \
+\i - readme.html & user manual.pdf files
+\i0 \
 /var/streaming/logs 
-\f3\i - Logs\
+\i - Logs\
 
-\f1\i0 /var/streaming/playlists 
-\f3\i - Web Admin Playlist files
-\f1\i0 \
+\i0 /var/streaming/playlists 
+\i - Web Admin Playlist files
+\i0 \
 \
 \ul Darwin Streaming Server (Windows)
-\f0\b \ulnone \
+\b \ulnone \
 
-\f1\b0 C:\\Program Files\\Darwin Streaming Server\\\
+\b0 C:\\Program Files\\Darwin Streaming Server\\\
 C:\\Program Files\\Darwin Streaming Server\\Movies\
 C:\\Program Files\\Darwin Streaming Server\\Playlists\
 C:\\Program Files\\Darwin Streaming Server\\Logs\
@@ -458,26 +496,26 @@ C:\\Program Files\\Darwin Streaming Server\\AdminHtml
 \fs28 \
 \pard\ql\qnatural
 
-\f0\b\fs24 \cf0 \
+\b\fs24 \cf0 \
 Public Mailing Lists\
 \
 \pard\ql\qnatural
 
-\f1\b0\fs28 \cf0 Through the Apple public mailing lists you can share experiences, questions, and comments with others who use the software. Apple employees may monitor the list, but Apple does not guarantee that questions sent to this list will be answered. For more information about joining the mailing lists, see the Apple mailing lists Web site at www.lists.apple.com.\
+\b0\fs28 \cf0 Through the Apple public mailing lists you can share experiences, questions, and comments with others who use the software. Apple employees may monitor the list, but Apple does not guarantee that questions sent to this list will be answered. For more information about joining the mailing lists, see the Apple mailing lists Web site at www.lists.apple.com.\
 \pard\ql\qnatural
 
-\f0\b\fs24 \cf0 \
+\b\fs24 \cf0 \
 \pard\ql\qnatural
 
-\f1\b0\fs28 \cf0 For Darwin Streaming Server administration, join the Streaming Server mailing list, \'d2streaming-server-users\'d3. \
+\b0\fs28 \cf0 For Darwin Streaming Server administration, join the Streaming Server mailing list, \'93streaming-server-users\'94. \
 \
-If you are interested in plug-in API or Open Source development, join the Streaming Server developer public mailing list, \'d2streaming-server-developers\'d3. \
+If you are interested in plug-in API or Open Source development, join the Streaming Server developer public mailing list, \'93streaming-server-developers\'94. \
 \
 The Darwin Streaming Server release is not supported by Apple Computer.\
 \
 \
 \pard\ql\qnatural
 
-\fs24 \cf0 \'a9 2003 Apple Computer, Inc. All rights reserved. Apple, the Apple logo, Mac, Macintosh, PowerBook, Power Macintosh, and QuickTime are trademarks of Apple Computer, Inc., registered in the United States and other countries.  eMac, iBook,  iMac, Power Mac and Xserve are trademarks of Apple Computer, Inc. All other product names are trademarks or registered trademarks of their respective holders.\
+\fs24 \cf0 \'a9 2008 Apple Computer, Inc. All rights reserved. Apple, the Apple logo, Mac, Macintosh, PowerBook, Power Macintosh, and QuickTime are trademarks of Apple Computer, Inc., registered in the United States and other countries.  eMac, iBook,  iMac, Power Mac and Xserve are trademarks of Apple Computer, Inc. All other product names are trademarks or registered trademarks of their respective holders.\
 \
 }

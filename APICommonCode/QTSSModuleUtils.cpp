@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -182,6 +182,20 @@ void QTSSModuleUtils::LogErrorStr( QTSS_ErrorVerbosity inVerbosity, char* inMess
 {  	
 	if (inMessage == NULL) return;  
 	(void)QTSS_Write(sErrorLog, inMessage, ::strlen(inMessage), NULL, inVerbosity);
+}
+
+
+void QTSSModuleUtils::LogPrefErrorStr( QTSS_ErrorVerbosity inVerbosity, char*  preference, char* inMessage)
+{  	
+	if (inMessage == NULL || preference == NULL) 
+	{  Assert(0);
+	   return;  
+	}
+	char buffer[1024];
+	
+	qtss_snprintf(buffer,sizeof(buffer), "Server preference %s %s",  preference, inMessage);
+   
+	(void)QTSS_Write(sErrorLog, buffer, ::strlen(buffer), NULL, inVerbosity);
 }
 
                         
@@ -389,7 +403,7 @@ QTSS_Error  QTSSModuleUtils::SendErrorResponse( QTSS_RTSPRequestObject inRequest
         
         
         char buff[32];
-        qtss_sprintf(buff,"%lu",theErrorMsgFormatter.GetBytesWritten());
+        qtss_sprintf(buff,"%"_U32BITARG_"",theErrorMsgFormatter.GetBytesWritten());
         (void)QTSS_AppendRTSPHeader(inRequest, qtssContentLengthHeader, buff, ::strlen(buff));
     }
     
@@ -426,7 +440,7 @@ QTSS_Error	QTSSModuleUtils::SendErrorResponseWithMessage( QTSS_RTSPRequestObject
 		theErrorMessage.Set(inErrorMessagePtr->Ptr, inErrorMessagePtr->Len);
 		
         char buff[32];
-        qtss_sprintf(buff,"%lu",inErrorMessagePtr->Len);
+        qtss_sprintf(buff,"%"_U32BITARG_"",inErrorMessagePtr->Len);
         (void)QTSS_AppendRTSPHeader(inRequest, qtssContentLengthHeader, buff, ::strlen(buff));
     }
     
@@ -480,7 +494,7 @@ QTSS_Error	QTSSModuleUtils::SendHTTPErrorResponse( QTSS_RTSPRequestObject inRequ
     (void) QTSS_GetValue(sServer, qtssSvrRTSPServerHeader, 0,  (void*)serverHeaderBuffer,&len);
     serverHeaderBuffer[len] = 0; // terminate.
  
-    qtss_snprintf(messageLineBuffer,maxMessageBufferChars, "HTTP/1.1 %lu %s",realCode, errorMsg);
+    qtss_snprintf(messageLineBuffer,maxMessageBufferChars, "HTTP/1.1 %"_U32BITARG_" %s",realCode, errorMsg);
     theErrorMessage.Put(messageLineBuffer,::strlen(messageLineBuffer));
     theErrorMessage.PutEOL();
 
@@ -515,7 +529,7 @@ QTSS_Error	QTSSModuleUtils::SendHTTPErrorResponse( QTSS_RTSPRequestObject inRequ
         theErrorMessage.Put(bodyHeaderType.Ptr,bodyHeaderType.Len);
         theErrorMessage.PutEOL();
 
-        qtss_snprintf(messageLineBuffer,maxMessageBufferChars, "Content-Length: %lu", bodyMessage.GetBytesWritten());
+        qtss_snprintf(messageLineBuffer,maxMessageBufferChars, "Content-Length: %"_U32BITARG_"", bodyMessage.GetBytesWritten());
         theErrorMessage.Put(messageLineBuffer,::strlen(messageLineBuffer));        
         theErrorMessage.PutEOL();
     }
@@ -548,7 +562,7 @@ void    QTSSModuleUtils::SendDescribeResponse(QTSS_RTSPRequestObject inRequest,
 {
     //write content size header
     char buf[32];
-    qtss_sprintf(buf, "%ld", inTotalLength);
+    qtss_sprintf(buf, "%"_S32BITARG_"", inTotalLength);
     (void)QTSS_AppendRTSPHeader(inRequest, qtssContentLengthHeader, &buf[0], ::strlen(&buf[0]));
 
     (void)QTSS_SendStandardRTSPResponse(inRequest, inSession, 0);
@@ -955,7 +969,12 @@ Bool16 QTSSModuleUtils::FindStringInAttributeList(QTSS_Object inObject, QTSS_Att
         tempString.Delete();
         (void) QTSS_GetValueAsString(inObject, listID, index, &tempString.Ptr);
         tempString.Set(tempString.Ptr);
-
+		if (tempString.Ptr == NULL)
+			return false;
+			
+        if (tempString.Equal(StrPtrLen("*",1)))
+            return true;
+        
         if (inStrPtr->FindString(tempString.Ptr))
             return true;
             
@@ -990,10 +1009,61 @@ Bool16 QTSSModuleUtils::HavePlayerProfile(QTSS_PrefsObject inPrefObjectToCheck, 
             return QTSSModuleUtils::FindStringInAttributeList(inPrefObjectToCheck,  qtssPrefsPlayersReqNoPauseTimeAdjust, &userAgentStr);
         }
         break;
+        
+        case QTSSModuleUtils::kDelayRTPStreamsUntilAfterRTSPResponse:
+        {
+            return QTSSModuleUtils::FindStringInAttributeList(inPrefObjectToCheck,  qtssPrefsPlayersReqRTPStartTimeAdjust, &userAgentStr);
+        }
+        break;
+        
+        case QTSSModuleUtils::kDisable3gppRateAdaptation:
+        {
+            return QTSSModuleUtils::FindStringInAttributeList(inPrefObjectToCheck,  qtssPrefsPlayersReqDisable3gppRateAdapt, &userAgentStr);
+        }
+        break;
+		
+        
+        case QTSSModuleUtils::kAdjust3gppTargetTime:
+        {
+            return QTSSModuleUtils::FindStringInAttributeList(inPrefObjectToCheck,  qtssPrefsPlayersReq3GPPTargetTime, &userAgentStr);
+        }
+        break;
+        
+        case QTSSModuleUtils::kDisableThinning:
+        {
+            return QTSSModuleUtils::FindStringInAttributeList(inPrefObjectToCheck,  qtssPrefsPlayersReqDisableThinning, &userAgentStr);
+        }
+        break;
+        
     }
     
     return false;
 }
+
+
+QTSS_Error QTSSModuleUtils::AuthorizeRequest(QTSS_RTSPRequestObject theRTSPRequest, Bool16* allowed, Bool16*foundUser, Bool16 *authContinue)
+{
+    QTSS_Error theErr = QTSS_NoErr;
+    //printf("QTSSModuleUtils::AuthorizeRequest allowed=%d foundUser=%d authContinue=%d\n", *allowed, *foundUser, *authContinue);
+    
+    if (NULL != allowed)
+        theErr = QTSS_SetValue(theRTSPRequest,qtssRTSPReqUserAllowed, 0, allowed, sizeof(Bool16));
+    if (QTSS_NoErr != theErr)
+        return theErr;
+    
+    if (NULL != foundUser)
+        theErr = QTSS_SetValue(theRTSPRequest,qtssRTSPReqUserFound, 0, foundUser, sizeof(Bool16));
+    if (QTSS_NoErr != theErr)
+        return theErr;  
+    
+    if (NULL != authContinue)
+        theErr = QTSS_SetValue(theRTSPRequest,qtssRTSPReqAuthHandled, 0, authContinue, sizeof(Bool16));
+        
+    return theErr;
+}
+
+
+
 
 
 IPComponentStr IPComponentStr::sLocalIPCompStr("127.0.0.*");

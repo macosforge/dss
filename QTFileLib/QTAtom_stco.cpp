@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -95,7 +95,7 @@ Bool16 QTAtom_stco::Initialize(void)
 
     //
     // Validate the size of the sample table.
-    if( (unsigned long)(fNumEntries * fOffSetSize) != (fTOCEntry.AtomDataLength - 8) )
+    if( (UInt32)(fNumEntries * fOffSetSize) != (fTOCEntry.AtomDataLength - 8) )
         return false;
 
     //
@@ -124,7 +124,7 @@ Bool16 QTAtom_stco::Initialize(void)
 void QTAtom_stco::DumpAtom(void)
 {
     DEBUG_PRINT(("QTAtom_stco::DumpAtom - Dumping atom.\n"));
-    DEBUG_PRINT(("QTAtom_stco::DumpAtom - ..Number of chunk offset entries: %ld\n", fNumEntries));
+    DEBUG_PRINT(("QTAtom_stco::DumpAtom - ..Number of chunk offset entries: %"_S32BITARG_"\n", fNumEntries));
 }
 
 void QTAtom_stco::DumpTable(void)
@@ -142,8 +142,8 @@ void QTAtom_stco::DumpTable(void)
     for( UInt32 CurEntry = 1; CurEntry <= fNumEntries; CurEntry++ )
     {
         if (ChunkOffset(CurEntry, &offset))
-            qtss_printf("  %10lu: %"_64BITARG_"u\n", CurEntry, offset);
+            qtss_printf("  %10"_U32BITARG_": %"_64BITARG_"u\n", CurEntry, offset);
         else
-            qtss_printf("  %10lu: QTAtom_stco::DumpTable ChunkOffset error\n", CurEntry);
+            qtss_printf("  %10"_U32BITARG_": QTAtom_stco::DumpTable ChunkOffset error\n", CurEntry);
     }
 }

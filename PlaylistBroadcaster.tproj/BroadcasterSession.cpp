@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -96,7 +96,7 @@ BroadcasterSession::BroadcasterSession( UInt32 inAddr, UInt16 inPort, char* inUR
     StrPtrLen theURL(inURL);
     fSDPParser.Parse(sdpSPLPtr->Ptr, sdpSPLPtr->Len);
     if (fBurst && deepDebug)
-        printf("Burst Mode enabled: broadcast will be delayed for %lu seconds before starting\n", fBurstTime);
+        printf("Burst Mode enabled: broadcast will be delayed for %"_U32BITARG_" seconds before starting\n", fBurstTime);
         
 #if BROADCAST_SESSION_DEBUG
 
@@ -189,7 +189,7 @@ char*   BroadcasterSession::GetNextPacket(UInt32 *packetLen, UInt8 *channel)
     char* thePacketData = NULL;
     *packetLen = 0;
     *channel = 0;
-    //qtss_printf("BroadcasterSession::GetNextPacket Q len=%lu\n",fPacketQueue.GetLength());
+    //qtss_printf("BroadcasterSession::GetNextPacket Q len=%"_U32BITARG_"\n",fPacketQueue.GetLength());
     OSQueueElem *thePacketQElemPtr = fPacketQueue.GetHead();
     if(thePacketQElemPtr != NULL)
     {   
@@ -278,7 +278,7 @@ OS_Error BroadcasterSession::SendWaitingPackets()
        
         if (sFirstTime > OS::Milliseconds())
         {
-            // qtss_printf("BroadcasterSession::GetNextPacket NOT sending packets Q len=%lu\n",fPacketQueue.GetLength());
+            // qtss_printf("BroadcasterSession::GetNextPacket NOT sending packets Q len=%"_U32BITARG_"\n",fPacketQueue.GetLength());
             return QTSS_NoErr;
         }
     }
@@ -305,7 +305,7 @@ OS_Error BroadcasterSession::SendWaitingPackets()
         {
             if (theErr == EAGAIN || theErr == EINPROGRESS)
             {   // keep the packet around and try again
-                //qtss_printf("BroadcasterSession::SendWaitingPackets- Broadcasting SendInterleavedWrite err=%ld Request Write Event\n",theErr);
+                //qtss_printf("BroadcasterSession::SendWaitingPackets- Broadcasting SendInterleavedWrite err=%"_S32BITARG_" Request Write Event\n",theErr);
                 break;      
             }
             // some bad error bail.
@@ -318,7 +318,7 @@ OS_Error BroadcasterSession::SendWaitingPackets()
         // we sent the packet and may or may not have another packet to send
             
         fTimeoutTask.RefreshTimeout();
-        //qtss_printf("send channel=%u len=%lu\n",(UInt16)fChannel,fPacketLen);
+        //qtss_printf("send channel=%u len=%"_U32BITARG_"\n",(UInt16)fChannel,fPacketLen);
     }
     
     return theErr;              
@@ -419,7 +419,7 @@ SInt64 BroadcasterSession::Run()
                 theErr = fRTSPClient->SendAnnounce(theSDP);
                 
 #if BROADCAST_SESSION_DEBUG
-                qtss_printf("BroadcasterSession::Run Sending ANNOUNCE. Result = %lu. Response code = %lu\n", theErr, fRTSPClient->GetStatus());
+                qtss_printf("BroadcasterSession::Run Sending ANNOUNCE. Result = %"_U32BITARG_". Response code = %"_U32BITARG_"\n", theErr, fRTSPClient->GetStatus());
 #endif                                  
                 if (theErr == OS_NoErr)
                 {
@@ -452,7 +452,7 @@ SInt64 BroadcasterSession::Run()
                 {
                     if ( (fRTSPClient->GetStatus() == 0) && ( (theErr == EAGAIN) || (theErr== EINPROGRESS)) )
                     {
-                        qtss_printf("BroadcasterSession::Run Sending ANNOUNCE. Result = %lu. Response code = %lu\n", theErr, fRTSPClient->GetStatus());
+                        qtss_printf("BroadcasterSession::Run Sending ANNOUNCE. Result = %"_U32BITARG_". Response code = %"_U32BITARG_"\n", theErr, fRTSPClient->GetStatus());
                     }
                 }
 #endif                                  
@@ -473,7 +473,7 @@ SInt64 BroadcasterSession::Run()
                 {   
                     theErr = fRTSPClient->SendTCPSetup(fSDPParser.GetStreamInfo(fNumSetups)->fTrackID,fNumSetups * 2, (fNumSetups * 2) +1);                 
 #if BROADCAST_SESSION_DEBUG
-                    qtss_printf("Sending SETUP #%lu. Result = %lu. Response code = %lu\n", fNumSetups, theErr, fRTSPClient->GetStatus());
+                    qtss_printf("Sending SETUP #%"_U32BITARG_". Result = %"_U32BITARG_". Response code = %"_U32BITARG_"\n", fNumSetups, theErr, fRTSPClient->GetStatus());
                     if (theErr == EAGAIN || theErr == EINPROGRESS)
                     {   
                         if  (theErr == EAGAIN)
@@ -520,7 +520,7 @@ SInt64 BroadcasterSession::Run()
                 theErr = fRTSPClient->SendReceive(fStartPlayTimeInSec);
                 
 #if BROADCAST_SESSION_DEBUG
-                qtss_printf("BroadcasterSession::fRTSPClient->SendReceive. Result = %lu. Response code = %lu\n", theErr, fRTSPClient->GetStatus());
+                qtss_printf("BroadcasterSession::fRTSPClient->SendReceive. Result = %"_U32BITARG_". Response code = %"_U32BITARG_"\n", theErr, fRTSPClient->GetStatus());
                 if  (theErr == EAGAIN)
                     qtss_printf("BroadcasterSession::SendReceive EAGAIN\n");
                 if  (theErr == EINPROGRESS)
@@ -584,7 +584,7 @@ SInt64 BroadcasterSession::Run()
                 if (theErr != OS_NoErr)
                 {   
                     // we've encountered some fatal error, bail.
-                    //qtss_printf("kBroadcasting FATAL ERROR err=%ld\n",theErr);
+                    //qtss_printf("kBroadcasting FATAL ERROR err=%"_S32BITARG_"\n",theErr);
                     sBroadcastingConnections--;
                     break;
                 }
@@ -625,7 +625,7 @@ SInt64 BroadcasterSession::Run()
                 if (theErr != OS_NoErr)
                 {   
                     // we've encountered some fatal error, bail.
-                    //qtss_printf("FATAL ERROR err=%ld\n",theErr);
+                    //qtss_printf("FATAL ERROR err=%"_S32BITARG_"\n",theErr);
                     sBroadcastingConnections--;
                     break;
                 }
@@ -655,7 +655,7 @@ SInt64 BroadcasterSession::Run()
                 sActiveConnections--;
                 
 #if BROADCAST_SESSION_DEBUG
-                qtss_printf("Sending TEARDOWN. Result = %lu. Response code = %lu\n", theErr, fRTSPClient->GetStatus());
+                qtss_printf("Sending TEARDOWN. Result = %"_U32BITARG_". Response code = %"_U32BITARG_"\n", theErr, fRTSPClient->GetStatus());
 #endif              
                 // Once the TEARDOWN is complete, we are done, so mark ourselves as dead, and wait
                 // for the owner of this object to delete us
@@ -684,7 +684,7 @@ SInt64 BroadcasterSession::Run()
     {   
         //
 #if BROADCAST_SESSION_DEBUG
-        qtss_printf("BroadCasterSession::RUN FATAL ERROR err=%ld\n",theErr);
+        qtss_printf("BroadCasterSession::RUN FATAL ERROR err=%"_S32BITARG_"\n",theErr);
 #endif              
         // We encountered some fatal error with the socket. Record this as a connection failure
         if (fState == kSendingTeardown)
@@ -704,7 +704,7 @@ SInt64 BroadcasterSession::Run()
 
 #if BROADCAST_SESSION_DEBUG
     if (fState == kDone)
-        qtss_printf("Client connection complete. Death reason = %lu RTSPClientStatus=%ld\n", fDeathReason,fRTSPClient->GetStatus());
+        qtss_printf("Client connection complete. Death reason = %"_U32BITARG_" RTSPClientStatus=%"_S32BITARG_"\n", fDeathReason,fRTSPClient->GetStatus());
 #endif              
     
     return 0;
@@ -766,7 +766,7 @@ void    BroadcasterSession::SetupUDPSockets()
         }
     }                       
 #if BROADCAST_SESSION_DEBUG
-    qtss_printf("Opened UDP sockets for %lu streams\n", fSDPParser.GetNumStreams());
+    qtss_printf("Opened UDP sockets for %"_U32BITARG_" streams\n", fSDPParser.GetNumStreams());
 #endif              
 }
 
@@ -916,7 +916,7 @@ void    BroadcasterSession::ProcessMediaPacket( char* inPacket, UInt32 inLength,
                 fStats[x].fWrapSeqNum += (UInt16) halfSeqNumMap;
 
 #if BROADCAST_SESSION_DEBUG
-                qtss_printf("Got %lu packets for trackID %lu. %lu packets lost, %lu packets out of order\n", fStats[x].fNumPacketsReceived, inTrackID, fStats[x].fNumLostPackets, fStats[x].fNumOutOfOrderPackets);
+                qtss_printf("Got %"_U32BITARG_" packets for trackID %"_U32BITARG_". %"_U32BITARG_" packets lost, %"_U32BITARG_" packets out of order\n", fStats[x].fNumPacketsReceived, inTrackID, fStats[x].fNumLostPackets, fStats[x].fNumOutOfOrderPackets);
 #endif              
             }
             

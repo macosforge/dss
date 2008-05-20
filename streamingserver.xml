@@ -340,6 +340,9 @@
 	<!-- These options allow you to enable/disable recording of SDP files for debugging.  -->
     <PREF NAME="record_movie_file_sdp" TYPE="Bool16">false</PREF>
     <PREF NAME="enable_movie_file_sdp" TYPE="Bool16">false</PREF>
+
+    <!-- If this is true, the server will allow streaming of files that have invalid hint track references -->
+    <PREF NAME="allow_invalid_hint_track_refs" TYPE="Bool16">false</PREF>
 </MODULE>
 
 <MODULE NAME="QTSSMP3StreamingModule">

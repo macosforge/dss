@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -370,7 +370,8 @@ void set_socket_reuse_address(int skt)
 /**********************************************/
 void set_socket_max_buf(int skt)
 {
-    int i = 1, len;
+    int i = 1;
+    unsigned int len;
     len = sizeof(i);
     getsockopt(skt, SOL_SOCKET, SO_SNDBUF, (char*)&i, &len);
     /*fprintf(stderr, "sndbuf for socket %d was %d\n", skt, i);*/
@@ -462,7 +463,7 @@ int get_interface_addr(int skt)
 {
     int err = 0;
     struct sockaddr_in  localAddr;
-    int len = sizeof(localAddr);
+    unsigned int len = sizeof(localAddr);
     memset(&localAddr, 0, sizeof(localAddr));
     
     err = getsockname(skt, (struct sockaddr*)&localAddr, &len);
@@ -473,11 +474,12 @@ int get_interface_addr(int skt)
 int recv_udp(int socket, char *buf, int amt, int *fromip, int *fromport)
 {
     struct sockaddr_in  sin;
-    int ret, len;
+    int ret;
+	unsigned int len;
 
     len = sizeof(sin);
     memset(&sin, 0, sizeof(sin));
-    ret = recvfrom(socket, buf, amt, 0, (struct sockaddr*)&sin, &len);
+    ret = recvfrom(socket, buf, (size_t) amt, 0, (struct sockaddr*)&sin, &len);
     if (ret != -1) {
         if (fromip)
             *fromip = ntohl(sin.sin_addr.s_addr);
@@ -496,19 +498,19 @@ int send_udp(int skt, char *buf, int amt, int address, int port)
     sin.sin_family = AF_INET;
     sin.sin_port = htons(port);
     sin.sin_addr.s_addr = htonl(address);
-    return sendto(skt, buf, amt, 0, (struct sockaddr*)&sin, sizeof(sin));
+    return sendto(skt, buf, (size_t) amt, 0, (struct sockaddr*)&sin, sizeof(sin));
 }
 
 /**********************************************/
 int recv_tcp(int socket, char *buf, int amt)
 {
-    return read(socket, buf, amt);
+    return read(socket, buf, (size_t) amt);
 }
 
 /**********************************************/
 int send_tcp(int socket, char *buf, int amt)
 {
-    return write(socket, buf, amt);
+    return write(socket, buf, (size_t) amt);
 }
 
 /**********************************************/

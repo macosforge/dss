@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -46,6 +46,9 @@
 #include "QTSSModule.h"
 
 #include <errno.h>
+
+#define __QTSSCALLBACKS_DEBUG__ 0
+#define debug_printf if (__QTSSCALLBACKS_DEBUG__) qtss_printf
 
 
 void*   QTSSCallbacks::QTSS_New(FourCharCode /*inMemoryIdentifier*/, UInt32 inSize)
@@ -810,11 +813,48 @@ QTSS_Error  QTSSCallbacks::QTSS_Authenticate(const char* inAuthUserName, const c
             
     QTSS_Error theErr = QTSS_RequestFailed;
     
-    // There is only one module that is registered for the RTSP Authentication role
-    if (QTSServerInterface::GetNumModulesInRole(QTSSModule::kRTSPAthnRole) > 0)
+    UInt32 x = 0;
+    UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kRTSPAthnRole);
+    QTSSModule* theModulePtr = NULL;
+    Bool16 allowedDefault = QTSServerInterface::GetServer()->GetPrefs()->GetAllowGuestDefault();
+    Bool16 allowed = allowedDefault; //server pref?
+    Bool16 hasUser = false; 
+    Bool16 handled = false;
+    
+    
+    // Call all the modules that are registered for the RTSP Authorize Role 
+    for ( ; x < numModules; x++)
     {
-        theErr = QTSServerInterface::GetModule(QTSSModule::kRTSPAthnRole, 0)->CallDispatch(QTSS_RTSPAuthenticate_Role, &theAuthenticationParams);
+        request->SetAllowed(allowedDefault);  
+        request->SetHasUser(false);
+        request->SetAuthHandled(false);
+    
+        debug_printf(" QTSSCallbacks::QTSS_Authenticate calling module module = %lu numModules=%lu\n", x,numModules);
+        theModulePtr = QTSServerInterface::GetModule(QTSSModule::kRTSPAthnRole, x);
+        theErr =  QTSS_NoErr;
+        if (theModulePtr)
+        {    
+            theErr = theModulePtr->CallDispatch(QTSS_RTSPAuthenticate_Role, &theAuthenticationParams);
+            debug_printf(" QTSSCallbacks::QTSS_Authorize calling module module = %lu numModules=%lu ModuleError=%ld\n", x,numModules, theErr);
+        }
+        else
+        {   
+            debug_printf(" QTSSCallbacks::QTSS_Authorize calling module module = %lu is NULL! numModules=%lu\n", x,numModules);
+            continue;
+        }
+        allowed = request->GetAllowed();
+        hasUser = request->GetHasUser();
+        handled = request->GetAuthHandled();
+        debug_printf("QTSSCallbacks::QTSS_Authenticate allowedDefault =%d allowed= %d hasUser = %d handled=%d \n",allowedDefault, allowed,hasUser, handled);
+      
+                  
+        if (hasUser || handled ) //See RTSPSession.cpp::Run state=kAuthenticatingRequest
+        {   
+            debug_printf(" QTSSCallbacks::QTSS_Authenticate skipping other modules fCurrentModule = %lu numModules=%lu\n", x,numModules);
+            break;
+        }
     }
+
     
     // Reset the curTask to what it was before this role started
     if (theState != NULL)
@@ -846,22 +886,60 @@ QTSS_Error	QTSSCallbacks::QTSS_Authorize(QTSS_RTSPRequestObject inAuthRequestObj
 
     QTSS_Error theErr = QTSS_RequestFailed;
     UInt32 x = 0;
-    *outAuthUserAllowed = true;
+    UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kRTSPAuthRole);
+    QTSSModule* theModulePtr = NULL;
+    Bool16 		allowedDefault =  QTSServerInterface::GetServer()->GetPrefs()->GetAllowGuestDefault();
+    *outAuthUserAllowed = allowedDefault;
+    Bool16      allowed = allowedDefault; //server pref?
+    Bool16      hasUser = false; 
+    Bool16      handled = false;
+    
     
     // Call all the modules that are registered for the RTSP Authorize Role 
-    for ( ; x < QTSServerInterface::GetNumModulesInRole(QTSSModule::kRTSPAuthRole); x++)
-    {
-        theErr = QTSServerInterface::GetModule(QTSSModule::kRTSPAuthRole, x)->CallDispatch(QTSS_RTSPAuthorize_Role, &theParams);
     
-        // If any module sets allowed to false, exit the loop as authentication has been denied
-        *outAuthUserAllowed = request->GetAllowed();    
-        if(false == *outAuthUserAllowed)
+    for ( ; x < numModules; x++)
+    {
+        request->SetAllowed(true);  
+        request->SetHasUser(false);
+        request->SetAuthHandled(false);
+    
+        debug_printf(" QTSSCallbacks::QTSS_Authorize calling module module = %lu numModules=%lu\n", x,numModules);
+        theModulePtr = QTSServerInterface::GetModule(QTSSModule::kRTSPAuthRole, x);
+        theErr =  QTSS_NoErr;
+        if (theModulePtr)
+        {       
+            if (__QTSSCALLBACKS_DEBUG__)
+                theModulePtr->GetValue(qtssModName)->PrintStr("QTSSModule::CallDispatch ENTER module=", "\n");
+           
+            theErr = theModulePtr->CallDispatch(QTSS_RTSPAuthorize_Role, &theParams);
+            debug_printf(" QTSSCallbacks::QTSS_Authorize calling module module = %lu numModules=%lu ModuleError=%ld\n", x,numModules, theErr);
+        }
+        else
+        {    debug_printf(" QTSSCallbacks::QTSS_Authorize calling module module = %lu is NULL! numModules=%lu\n", x,numModules);
+             continue;
+        }
+
+        allowed = request->GetAllowed();
+        hasUser = request->GetHasUser();
+        handled = request->GetAuthHandled();
+        debug_printf("QTSSCallbacks::QTSS_Authorize allowedDefault =%d allowed= %d hasUser = %d handled=%d \n",allowedDefault, allowed,hasUser, handled);
+    
+        *outAuthUserAllowed = allowed;    
+        //notes:
+        //if (allowed && !handled)  break; //old module               
+        //if (!allowed && handled) /new module handled the request but not authorized keep trying
+        //if (allowed && handled) //new module allowed but keep trying in case someone denies.
+            
+        if (!allowed && !handled)  //old module break on !allowed
+        {   
+            debug_printf("RTSPSession.cpp::Run(kAuthorizingRequest)  skipping other modules fCurrentModule = %lu numModules=%lu\n", x,numModules);
             break;
+        }
     }
     
     // outAuthRealm is set to the realm that is given by the module that has denied authentication
     StrPtrLen* realm = request->GetValue(qtssRTSPReqURLRealm);
-	*outAuthRealm = realm->GetAsCString();
+    *outAuthRealm = realm->GetAsCString();
     
     return theErr;
 }

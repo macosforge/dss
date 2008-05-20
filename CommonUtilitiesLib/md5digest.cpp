@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -247,7 +247,7 @@ void CalcRequestDigest( StrPtrLen* hA1,
 static unsigned char itoa64[] = /* 0 ... 63 => ascii - 64 */
 "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-void to64(register char *s, register long v, register int n)
+void to64(register char *s, register SInt32 v, register int n)
 {
     while (--n >= 0) {
     *s++ = itoa64[v & 0x3f];
@@ -275,7 +275,7 @@ void MD5Encode(char *pw, char *salt, char *result, int nbytes)
   unsigned char final[kHashLen];
   int sl, pl, i;
   MD5_CTX ctx, ctx1;
-  unsigned long l;
+  UInt32 l;
  
   /*
    * Refine the salt first.  It's possible we were given an already-hashed

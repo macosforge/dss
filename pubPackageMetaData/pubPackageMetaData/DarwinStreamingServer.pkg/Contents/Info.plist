@@ -7,11 +7,11 @@
 	<key>CFBundleName</key>
 	<string>DarwinStreamingServer</string>
 	<key>CFBundleShortVersionString</key>
-	<string>5.5.5</string>
+	<string>6.0.3</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.apple.darwinstreamingserver</string>
 	<key>IFMajorVersion</key>
-	<integer>555</integer>
+	<integer>603</integer>
 	<key>IFMinorVersion</key>
 	<integer>1</integer>
 	<key>IFPkgFlagAllowBackRev</key>

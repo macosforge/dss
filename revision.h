@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2005 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -26,12 +26,16 @@
  
 */
 
-// use no http/rtsp tspecial chars in kVersionString and kBuildString defines
-#define kVersionString "5.5.5"
-#define kBuildString "489.16"
+// Use no http/rtsp tspecial chars in kVersionString and kBuildString defines
+// tspecials =  ()<>@,;:\/"[]?=
+
+#define kVersionString "6.0.3"
+#define kBuildString "526.3"
 
 // Use kCommentString for seed or other release info 
 // Do not use '(' or ')' in the kCommentString
 // form = token1/info; token2/info;
 // example "Release/public seed 1; Event/Big Event; state/half-baked"
-#define kCommentString "Release/Darwin; state/beta; " 
+
+#define kCommentString "Release/Darwin Streaming Server; State/Development; " 
+

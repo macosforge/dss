@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -25,7 +25,7 @@
  
 #include "GetWord.h"
 
-char* GetWord( char* toWordPtr, char* fromStrPtr, long limit )
+char* GetWord( char* toWordPtr, char* fromStrPtr, SInt32 limit )
 {
     // get a word from a string
     // copy result into toWordPtr, return one past end of the 
@@ -48,7 +48,7 @@ char* GetWord( char* toWordPtr, char* fromStrPtr, long limit )
     return (char *) fromStrPtr;
 }
 
-char * GetQuotedWord( char* toWordPtr, char* fromStrPtr, long limit )
+char * GetQuotedWord( char* toWordPtr, char* fromStrPtr, SInt32 limit )
 {
     // get a quote encoded word from a string
     // make include white space

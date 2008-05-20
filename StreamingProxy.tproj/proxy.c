@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -1107,7 +1107,7 @@ void service_session(rtsp_session *s)
             if (s->amtInClientInBuffer == 0 || ! has_two_crlfs(s->cinbuf))
                 break;
             memset(temp, 0, sizeof(temp));
-            
+
 #if __MacOSX__
             strlcpy(temp, s->cinbuf, sizeof(temp));
 #else
@@ -1137,7 +1137,7 @@ void service_session(rtsp_session *s)
 #endif
                     s->state = stWaitingForIPAddress;
                 }
-                else {   
+                else {  
                     ErrorStringS("Couldn't make sense of client command [%s]\n", temp);
                     s->state = stError;
                 }
@@ -1583,7 +1583,7 @@ void service_session(rtsp_session *s)
                     
                     assert( num + s->amtInClientOutBuffer + 2 <= RTSP_SESSION_BUF_SIZE );
                         
-                    memcpy(s->coutbuf + s->amtInClientOutBuffer, p, num);
+                    memcpy(s->coutbuf + s->amtInClientOutBuffer, p, (size_t) num);
                     s->amtInClientOutBuffer += num;
                     s->coutbuf[s->amtInClientOutBuffer++] = '\r';
                     s->coutbuf[s->amtInClientOutBuffer++] = '\n';
@@ -1654,7 +1654,7 @@ void service_session(rtsp_session *s)
                         
                         assert( num + s->amtInClientOutBuffer <= RTSP_SESSION_BUF_SIZE );
     
-                        memcpy(s->coutbuf + s->amtInClientOutBuffer, lineBuff, num);
+                        memcpy(s->coutbuf + s->amtInClientOutBuffer, lineBuff,  (size_t)num);
                         s->amtInClientOutBuffer += num;
                         
                         nextBuffPos = get_line_str( lineBuff, nextBuffPos, MAX_LINE_BUFF );
@@ -1667,7 +1667,7 @@ void service_session(rtsp_session *s)
                 {
                     assert( s->contentLength + s->amtInClientOutBuffer <= RTSP_SESSION_BUF_SIZE );
                         
-                    memcpy(&s->coutbuf[s->amtInClientOutBuffer], pBuf, s->contentLength);
+                    memcpy(&s->coutbuf[s->amtInClientOutBuffer], pBuf, (size_t) s->contentLength);
                     s->amtInClientOutBuffer += s->contentLength;
                 }
             }
@@ -1817,7 +1817,7 @@ void read_config() {
                 int     ip, range;
 
                 num = pmatch[1].rm_eo - pmatch[1].rm_so;
-                memcpy(temp, line + pmatch[1].rm_so, num);
+                memcpy(temp, line + pmatch[1].rm_so, (size_t) num);
                 temp[num] = '\0';
                 range = atoi(line + pmatch[2].rm_so);
                 //name_to_ip_num(temp, &ip, false);
@@ -1836,7 +1836,7 @@ void read_config() {
                 int port = atoi(line + pmatch[2].rm_so);
 
                     if(pmatch[1].rm_so==-1)
-                  bindaddr.s_addr=htonl(ANY_ADDRESS);
+                  bindaddr.s_addr= (in_addr_t) htonl(ANY_ADDRESS);
                 else
                   {
                     *(line+pmatch[1].rm_eo)='\0';
@@ -1849,7 +1849,7 @@ void read_config() {
                             printf("listen: failed to parse IP address %s\n",line+pmatch[1].rm_so);
               }
 
-                add_rtsp_port_listener(ntohl(bindaddr.s_addr),port);
+                add_rtsp_port_listener( (int) ntohl(bindaddr.s_addr),port);
             }
             else if (regexec(&regexpPortRange, line, 3, pmatch, 0) == 0) {
                 int minPort, maxPort;
@@ -1864,7 +1864,7 @@ void read_config() {
             }
             else if (regexec(&regexpRTPAddr,line,3,pmatch,0)==0) {
                 num = pmatch[1].rm_eo - pmatch[1].rm_so;
-                memcpy(temp, line + pmatch[1].rm_so, num);
+                memcpy(temp, line + pmatch[1].rm_so, (size_t) num);
                 temp[num] = '\0';
                 name_to_ip_num(temp, &gProxyIP, false);
                 if (gProxyIP == -1) {
@@ -1976,7 +1976,7 @@ void send_rtsp_error(int skt, int refusal)
     }
     
     ErrorStringS("RTSP error: %s", refusal_string);
-    send_tcp(skt, refusal_string, strlen(refusal_string));
+    send_tcp(skt, refusal_string, (int) strlen(refusal_string));
 }
 
 /**********************************************/

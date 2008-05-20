@@ -1,9 +1,9 @@
  /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -73,7 +73,7 @@ public:
     inline SInt16 GetHeader();
     UInt8* GetPacketBuffer() { return fReceiverPacketBuffer; }
     
-    Bool16 IsValidPacket();
+    //Bool16 IsValidPacket();
     
     virtual void Dump();
 
@@ -136,7 +136,7 @@ public:
     RTCPReceiverPacket() : RTCPPacket(), fRTCPReceiverReportArray(NULL) {}
 
     //Call this before any accessor method. Returns true if successful, false otherwise
-    Bool16 ParseReceiverReport(UInt8* inPacketBuffer, UInt32 inPacketLength);
+    virtual Bool16 ParseReport(UInt8* inPacketBuffer, UInt32 inPacketLength);
 
     inline UInt32 GetReportSourceID(int inReportNum);
      UInt8 GetFractionLostPackets(int inReportNum);
@@ -150,7 +150,7 @@ public:
     UInt32 GetCumulativeTotalLostPackets();
     UInt32 GetCumulativeJitter();
 
-    Bool16 IsValidPacket();
+    //Bool16 IsValidPacket();
     
     virtual void Dump(); //Override
     
@@ -176,8 +176,34 @@ protected:
         kLastSenderReportOffset = 16,
         kLastSenderReportDelayOffset = 20
     };
-
 };
+
+class RTCPSenderReportPacket : public RTCPReceiverPacket
+{
+public:
+	Bool16 ParseReport(UInt8* inPacketBuffer, UInt32 inPacketLength);
+	SInt64 GetNTPTimeStamp()
+	{
+		UInt32* fieldPtr = (UInt32*)&fReceiverPacketBuffer[kSRPacketNTPTimeStampMSW];
+		SInt64 timestamp = ntohl(*fieldPtr);
+		fieldPtr = (UInt32*)&fReceiverPacketBuffer[kSRPacketNTPTimeStampLSW];
+		return (timestamp << 32) | ntohl(*fieldPtr);
+	}
+	UInt32 GetRTPTimeStamp()
+	{
+		UInt32* fieldPtr = (UInt32*)&fReceiverPacketBuffer[kSRPacketRTPTimeStamp];
+		return ntohl(*fieldPtr);
+	}
+protected:
+    enum
+    {
+        kRTCPSRPacketSenderInfoInBytes = 20,
+		kSRPacketNTPTimeStampMSW = 8,
+		kSRPacketNTPTimeStampLSW = 12,
+		kSRPacketRTPTimeStamp = 16
+    };
+};
+
 
 /**************  RTCPPacket  inlines **************/
 inline int RTCPPacket::GetVersion()
@@ -210,12 +236,16 @@ inline UInt8 RTCPPacket::GetPacketType()
 
 inline UInt16 RTCPPacket::GetPacketLength()
 {
-    return (UInt16) ( ntohl(*(UInt32*)&fReceiverPacketBuffer[kPacketLengthOffset]) & kPacketLengthMask);
+    UInt32* fieldPtr = (UInt32*)&fReceiverPacketBuffer[kPacketLengthOffset];
+    UInt32 field = ntohl(*fieldPtr);
+    return (UInt16) (field & kPacketLengthMask);
 }
 
 inline UInt32 RTCPPacket::GetPacketSSRC()
 {
-    return (UInt32) ntohl(*(UInt32*)&fReceiverPacketBuffer[kPacketSourceIDOffset]) ;
+    UInt32* fieldPtr = (UInt32*)&fReceiverPacketBuffer[kPacketSourceIDOffset];
+    UInt32 field = ntohl(*fieldPtr);
+    return field;
 }
 
 inline SInt16 RTCPPacket::GetHeader(){ return (SInt16) ntohs(*(SInt16*)&fReceiverPacketBuffer[0]) ;}

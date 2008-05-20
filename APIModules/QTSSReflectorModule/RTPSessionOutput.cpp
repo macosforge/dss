@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -44,6 +44,8 @@
 #endif
 
 // ATTRIBUTES
+static QTSS_AttributeID     sStreamPacketCountAttr          = qtssIllegalAttrID;
+
 
 static QTSS_AttributeID     sNextSeqNumAttr             = qtssIllegalAttrID;
 static QTSS_AttributeID     sSeqNumOffsetAttr           = qtssIllegalAttrID;
@@ -65,7 +67,6 @@ static QTSS_AttributeID     sBaseArrivalTimeStampAttr       = qtssIllegalAttrID;
 static QTSS_AttributeID     sStreamSSRCAttr                 = qtssIllegalAttrID;
 
 static QTSS_AttributeID     sStreamByteCountAttr            = qtssIllegalAttrID;
-static QTSS_AttributeID     sStreamPacketCountAttr          = qtssIllegalAttrID;
 
 static QTSS_AttributeID     sLastRTPTimeStampAttr           = qtssIllegalAttrID;
 
@@ -191,8 +192,25 @@ Bool16 RTPSessionOutput::IsPlaying()
     if (theLen == 0 || theState == NULL || *theState != qtssPlayingState)
        return false;
 
+
     return true;
 }
+
+void RTPSessionOutput::InitializeStreams()
+{ 
+        
+    UInt32                  theLen = 0;
+    QTSS_RTPStreamObject*   theStreamPtr = NULL;
+    UInt32                  packetCountInitValue = 0;
+    
+    for (SInt16 z = 0; QTSS_GetValuePtr(fClientSession, qtssCliSesStreamObjects, z, (void**)&theStreamPtr, &theLen) == QTSS_NoErr; z++)
+    {
+        (void) QTSS_SetValue(*theStreamPtr, sStreamPacketCountAttr, 0, &packetCountInitValue, sizeof(UInt32));
+    }
+
+}
+
+
 
 Bool16 RTPSessionOutput::IsUDP()
 { 
@@ -230,10 +248,15 @@ Bool16 RTPSessionOutput::IsUDP()
 }
 
 
-
 Bool16  RTPSessionOutput::FilterPacket(QTSS_RTPStreamObject *theStreamPtr, StrPtrLen* inPacket)
 { 
-    if (fPreFilter == false)
+    
+    UInt32* packetCountPtr = NULL;
+    UInt32 theLen = 0;
+    
+    //see if we started sending and if so then just keep sending (reset on a play)
+    QTSS_Error writeErr = QTSS_GetValuePtr(*theStreamPtr, sStreamPacketCountAttr, 0,(void**) &packetCountPtr,&theLen);        
+    if (writeErr == QTSS_NoErr && theLen > 0 && *packetCountPtr > 0)
         return false;
 
     Assert(theStreamPtr);
@@ -241,14 +264,19 @@ Bool16  RTPSessionOutput::FilterPacket(QTSS_RTPStreamObject *theStreamPtr, StrPt
     
     UInt16 seqnum = this->GetPacketSeqNumber(inPacket);
     UInt16 firstSeqNum = 0;            
-    UInt32 theLen = sizeof(firstSeqNum); 
-        
+    theLen = sizeof(firstSeqNum); 
+
     if (    QTSS_NoErr != QTSS_GetValue(*theStreamPtr, qtssRTPStrFirstSeqNumber, 0, &firstSeqNum, &theLen)  )
-        return true;
+         return true;
 
     if ( seqnum < firstSeqNum ) 
+    {   
+        //printf("RTPSessionOutput::FilterPacket don't send packet = %u < first=%lu\n", seqnum, firstSeqNum);
         return true;
-        
+    }
+     
+    //printf("RTPSessionOutput::FilterPacket found first packet = %u \n", firstSeqNum);
+
     fPreFilter = false;    
     return fPreFilter;
 }
@@ -365,7 +393,7 @@ QTSS_Error  RTPSessionOutput::TrackRTCPBaseTime(QTSS_RTPStreamObject *theStreamP
             (void) QTSS_SetValue(*theStreamPtr, qtssRTPStrFirstTimestamp, 0, &baseTimeStamp, sizeof(baseTimeStamp));   
             
             fMustSynch = false;
-            //printf("fBaseArrivalTime =%qd baseTimeStamp %lu streamStartTime=%qd diff =%qd\n", fBaseArrivalTime, baseTimeStamp, firstStreamArrivalTime, arrivalTimeDiffMSecs);
+            //printf("fBaseArrivalTime =%qd baseTimeStamp %"_U32BITARG_" streamStartTime=%qd diff =%qd\n", fBaseArrivalTime, baseTimeStamp, firstStreamArrivalTime, arrivalTimeDiffMSecs);
         }
     }
 
@@ -411,7 +439,7 @@ QTSS_Error  RTPSessionOutput::RewriteRTCP(QTSS_RTPStreamObject *theStreamPtr, St
 
     Float64 rtpTimeFromStart = (Float64) packetOffset / (Float64) 1000.0;
     UInt32 rtpTimeFromStartInScale =  (UInt32) (Float64) ((Float64) streamTimeScale * rtpTimeFromStart);
-    //printf("rtptime offset time =%f in scale =%lu\n", rtpTimeFromStart, rtpTimeFromStartInScale );
+    //printf("rtptime offset time =%f in scale =%"_U32BITARG_"\n", rtpTimeFromStart, rtpTimeFromStartInScale );
 
     theReport += 2; // point to the rtp time stamp of "now" synched and scaled in stream time
     *theReport = htonl(baseTimeStamp + rtpTimeFromStartInScale); 
@@ -478,13 +506,10 @@ QTSS_Error  RTPSessionOutput::TrackRTPPackets(QTSS_RTPStreamObject *theStreamPtr
         Assert(writeErr == QTSS_NoErr);
 
         UInt32 initValue = 0;
-        writeErr = QTSS_SetValue(*theStreamPtr, sStreamPacketCountAttr, 0, &initValue, sizeof(UInt32));
-        Assert(writeErr == QTSS_NoErr);
-
         writeErr = QTSS_SetValue(*theStreamPtr, sStreamByteCountAttr, 0, &initValue, sizeof(UInt32));
         Assert(writeErr == QTSS_NoErr);
         
-        //printf("first rtp on stream stream=%lu ssrc=%lu rtpTime=%lu arrivalTimeMSecPtr=%qd currentTime=%qd\n",(UInt32) theStreamPtr, theSSRC, rtpTime, *arrivalTimeMSecPtr, *currentTimePtr);
+        //printf("first rtp on stream stream=%"_U32BITARG_" ssrc=%"_U32BITARG_" rtpTime=%"_U32BITARG_" arrivalTimeMSecPtr=%qd currentTime=%qd\n",(UInt32) theStreamPtr, theSSRC, rtpTime, *arrivalTimeMSecPtr, *currentTimePtr);
         
     }
     else
@@ -492,11 +517,7 @@ QTSS_Error  RTPSessionOutput::TrackRTPPackets(QTSS_RTPStreamObject *theStreamPtr
         UInt32* packetCountPtr = NULL;
         UInt32* byteCountPtr = NULL;
         UInt32 theLen = 0;
-        
-        writeErr = QTSS_GetValuePtr(*theStreamPtr, sStreamPacketCountAttr, 0,(void**) &packetCountPtr,&theLen);
-        if (writeErr == QTSS_NoErr && theLen > 0)
-            *packetCountPtr += 1;
-        
+                
         writeErr = QTSS_GetValuePtr(*theStreamPtr, sStreamByteCountAttr, 0, (void**) &byteCountPtr,&theLen);
         if (writeErr == QTSS_NoErr && theLen > 0)
             *byteCountPtr += inPacketStrPtr->Len - 12;// 12 header bytes
@@ -515,7 +536,7 @@ QTSS_Error  RTPSessionOutput::TrackRTPPackets(QTSS_RTPStreamObject *theStreamPtr
            (void) QTSS_RemoveValue(*theStreamPtr,sStreamByteCountAttr,0);
            fMustSynch = true;
            
-           //printf("found different ssrc =%lu packetssrc=%lu\n",*theSSRCPtr, packetContainer.GetSSRC(packetContainer.fIsRTCP));
+           //printf("found different ssrc =%"_U32BITARG_" packetssrc=%"_U32BITARG_"\n",*theSSRCPtr, packetContainer.GetSSRC(packetContainer.fIsRTCP));
            
         }
         
@@ -541,7 +562,7 @@ QTSS_Error  RTPSessionOutput::TrackPackets(QTSS_RTPStreamObject *theStreamPtr, S
 }
 
 
-QTSS_Error  RTPSessionOutput::WritePacket(StrPtrLen* inPacket, void* inStreamCookie, UInt32 inFlags, SInt64 packetLatenessInMSec, SInt64* timeToSendThisPacketAgain, UInt64* packetIDPtr, SInt64* arrivalTimeMSecPtr)
+QTSS_Error  RTPSessionOutput::WritePacket(StrPtrLen* inPacket, void* inStreamCookie, UInt32 inFlags, SInt64 packetLatenessInMSec, SInt64* timeToSendThisPacketAgain, UInt64* packetIDPtr, SInt64* arrivalTimeMSecPtr, Bool16 firstPacket)
 {
     QTSS_RTPSessionState*   theState = NULL;
     UInt32                  theLen = 0;
@@ -554,8 +575,10 @@ QTSS_Error  RTPSessionOutput::WritePacket(StrPtrLen* inPacket, void* inStreamCoo
  
 	(void)QTSS_GetValuePtr(fClientSession, qtssCliSesState, 0, (void**)&theState, &theLen);
     if (theLen == 0 || theState == NULL || *theState != qtssPlayingState)
-       return QTSS_WouldBlock;
-            
+    {   //qtss_printf("QTSS_WouldBlock *theState=%d qtssPlayingState=%d\n", *theState , qtssPlayingState);
+        return QTSS_WouldBlock;
+    }
+    
     //make sure all RTP streams with this ID see this packet
     QTSS_RTPStreamObject *theStreamPtr = NULL;
                                   
@@ -563,14 +586,16 @@ QTSS_Error  RTPSessionOutput::WritePacket(StrPtrLen* inPacket, void* inStreamCoo
     {
         if (this->PacketMatchesStream(inStreamCookie, theStreamPtr))
         { 
-            if ( this->FilterPacket(theStreamPtr, inPacket) )
+            if (  (inFlags & qtssWriteFlagsIsRTP) && this->FilterPacket(theStreamPtr, inPacket) )
                 return  QTSS_NoErr; // keep looking at packets
                 
             if (this->PacketAlreadySent(theStreamPtr,inFlags, packetIDPtr)) 
                 return QTSS_NoErr; // keep looking at packets
                 
             if (!this->PacketReadyToSend(theStreamPtr,&currentTime, inFlags, packetIDPtr, timeToSendThisPacketAgain)) 
+            {   //qtss_printf("QTSS_WouldBlock\n");
                 return QTSS_WouldBlock; // stop not ready to send packets now
+            }
                                           
     
        // TrackPackets below is for re-writing the rtcps we don't use it right now-- shouldn't need to    
@@ -578,18 +603,28 @@ QTSS_Error  RTPSessionOutput::WritePacket(StrPtrLen* inPacket, void* inStreamCoo
 
             QTSS_PacketStruct thePacket;
             thePacket.packetData = inPacket->Ptr;
-            thePacket.packetTransmitTime = (currentTime - packetLatenessInMSec) + (fBufferDelayMSecs - (currentTime - *arrivalTimeMSecPtr)); // add buffer time where oldest buffered packet as now == 0 and newest is entire buffer time in the future.
+            SInt64 delayMSecs = fBufferDelayMSecs - (currentTime - *arrivalTimeMSecPtr);
+            thePacket.packetTransmitTime = (currentTime - packetLatenessInMSec);
+            if (fBufferDelayMSecs > 0 ) 
+                thePacket.packetTransmitTime += delayMSecs; // add buffer time where oldest buffered packet as now == 0 and newest is entire buffer time in the future.
+ 
             writeErr = QTSS_Write(*theStreamPtr, &thePacket, inPacket->Len, NULL, inFlags | qtssWriteFlagsWriteBurstBegin); 
             if (writeErr == QTSS_WouldBlock)
             {  
+                 //qtss_printf("QTSS_Write == QTSS_WouldBlock\n");
                 //
                 // We are flow controlled. See if we know when flow control will be lifted and report that
                 *timeToSendThisPacketAgain = thePacket.suggestedWakeupTime;
+                 
+                if (firstPacket)
+                {   fBufferDelayMSecs = (currentTime - *arrivalTimeMSecPtr);
+                    //qtss_printf("firstPacket fBufferDelayMSecs =%lu \n", fBufferDelayMSecs);
+                } 
             }
             else
             {   
                 fLastIntervalMilliSec = currentTime - fLastPacketTransmitTime;
-                if (fLastIntervalMilliSec > 1000) //reset interval maybe first packet or it has been blocked for awhile
+                if (fLastIntervalMilliSec > 100) //reset interval maybe first packet or it has been blocked for awhile
                     fLastIntervalMilliSec = 5;
                 fLastPacketTransmitTime = currentTime;
 
@@ -600,10 +635,22 @@ QTSS_Error  RTPSessionOutput::WritePacket(StrPtrLen* inPacket, void* inStreamCoo
                 else if (inFlags & qtssWriteFlagsIsRTCP)
                 {
                     (void) QTSS_SetValue (*theStreamPtr, sLastRTCPPacketIDAttr, 0, packetIDPtr, sizeof(UInt64));                            
-                    (void) QTSS_SetValue (*theStreamPtr, sLastRTCPTransmitAttr, 0, &currentTime, sizeof(UInt64));                            
+                    (void) QTSS_SetValue (*theStreamPtr, sLastRTCPTransmitAttr, 0, &currentTime, sizeof(UInt64));
                 }
-               
-            }
+                       
+                       
+                       
+               { // increment packet counts
+                    UInt32* packetCountPtr = NULL;
+                    UInt32 theLen = 0;
+                    
+                    (void) QTSS_GetValuePtr(*theStreamPtr, sStreamPacketCountAttr, 0,(void**) &packetCountPtr,&theLen);
+                    if (theLen > 0)
+                    {   *packetCountPtr += 1;
+                        //printf("SET sStreamPacketCountAttr =%lu\n", *packetCountPtr);
+                    }
+               }
+           }
         }
 
         if ( writeErr != QTSS_NoErr )
@@ -683,16 +730,16 @@ Bool16 RTPSessionOutput::PacketShouldBeThinned(QTSS_RTPStreamObject inStream, St
     if (*curQualityLevel > 0 && ((*lastChangeTime + 30000) < timeNow) ) // 30 seconds between reductions
     {   *curQualityLevel -= 1; // reduce quality value.  If we quality doesn't change then we may have hit some steady state which we can't get out of without thinning or increasing the quality
         *lastChangeTime =timeNow; 
-        //qtss_printf("RTPSessionOutput set quality to %lu\n",*curQualityLevel);
+        //qtss_printf("RTPSessionOutput set quality to %"_U32BITARG_"\n",*curQualityLevel);
     }
 
     //Check to see if we need to drop to audio only
     if ((*curQualityLevel >= ReflectorSession::kAudioOnlyQuality) &&
         (*nextSeqNum == 0))
     {
-//#if REFLECTOR_THINNING_DEBUGGING || RTP_SESSION_DEBUGGING
+#if REFLECTOR_THINNING_DEBUGGING || RTP_SESSION_DEBUGGING
         qtss_printf(" *** Reflector Dropping to audio only *** \n");
-//#endif
+#endif
         //All we need to do in this case is mark the sequence number of the first dropped packet
         (void)QTSS_SetValue(inStream, sNextSeqNumAttr, 0, &curSeqNum, sizeof(UInt16));  
          *lastChangeTime =timeNow;  

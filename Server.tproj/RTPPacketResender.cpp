@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -204,8 +204,8 @@ UInt32 RTPPacketResender::SpillGuts(UInt32 inBytesSentThisInterval)
         //fStreamCumDuration += fInfoDisplayTimer.DurationInMilliseconds();
         fInfoDisplayTimer.Reset();
 
-        //this->logprintf( "\n[%li] info for track %li, cur bytes %li, cur kbit/s %li\n", /*(long)fStreamCumDuration,*/ fTrackID, (long)inBytesSentThisInterval, (long)kiloBitperSecond);
-        this->logprintf( "\nx info for track %li, cur bytes %li, cur kbit/s %li\n", /*(long)fStreamCumDuration,*/ fTrackID, (long)inBytesSentThisInterval, (long)kiloBitperSecond);
+        //this->logprintf( "\n[%li] info for track %li, cur bytes %li, cur kbit/s %li\n", /*(SInt32)fStreamCumDuration,*/ fTrackID, (SInt32)inBytesSentThisInterval, (SInt32)kiloBitperSecond);
+        this->logprintf( "\nx info for track %li, cur bytes %li, cur kbit/s %li\n", /*(SInt32)fStreamCumDuration,*/ fTrackID, (SInt32)inBytesSentThisInterval, (SInt32)kiloBitperSecond);
         this->logprintf( "stream is %s, bytes pending ack %li, cwnd %li, ssth %li, wind %li \n", isFlowed, fBandwidthTracker->BytesInList(), fBandwidthTracker->CongestionWindow(), fBandwidthTracker->SlowStartThreshold(), fBandwidthTracker->ClientWindowSize() );
         this->logprintf( "stats- resends:  %li, expired:  %li, dupe acks: %li, sent: %li\n", fNumResends, fNumExpired, fNumAcksForMissingPackets, fNumSent );
         this->logprintf( "delays- cur:  %li, srtt: %li , dev: %li, rto: %li, bw: %li\n\n", fCurrentPacketDelay, fBandwidthTracker->RunningAverageMSecs(), fBandwidthTracker->RunningMeanDevationMSecs(), fBandwidthTracker->CurRetransmitTimeout(), fBandwidthTracker->GetCurrentBandwidthInBps());
@@ -245,7 +245,7 @@ RTPResenderEntry*   RTPPacketResender::GetEmptyEntry(UInt16 inSeqNum, UInt32 inP
         ::memcpy(tempArray,fPacketArray,sizeof(RTPResenderEntry) * fPacketsInList);
         delete [] fPacketArray;
         fPacketArray = tempArray;
-        //qtss_printf("NewArray size=%ld packetsInList=%ld\n",fPacketArraySize, fPacketsInList);
+        //qtss_printf("NewArray size=%"_S32BITARG_" packetsInList=%"_S32BITARG_"\n",fPacketArraySize, fPacketsInList);
     }
 
     if (fPacketsInList <  fPacketArraySize) // have an open spot
@@ -265,7 +265,7 @@ RTPResenderEntry*   RTPPacketResender::GetEmptyEntry(UInt16 inSeqNum, UInt32 inP
         else
             fLastUsed = 0;
             
-        //qtss_printf("array is full = %lu reusing index=%lu\n",fPacketsInList,fLastUsed); 
+        //qtss_printf("array is full = %"_U32BITARG_" reusing index=%"_U32BITARG_"\n",fPacketsInList,fLastUsed); 
         theEntry = &fPacketArray[fLastUsed];
         RemovePacket(fLastUsed, false); // delete packet in place don't fill we will use the spot
     }
@@ -348,7 +348,7 @@ void RTPPacketResender::AddPacket( void * inRTPPacket, UInt32 packetSize, SInt32
     else
     {
 #if RTP_PACKET_RESENDER_DEBUGGING   
-        this->logprintf( "packet too old to add: seq# %li, age limit %li, cur late %li, track id %li\n", (long)ntohs( *((UInt16*)(((char*)inRTPPacket)+2)) ), (long)ageLimit, fCurrentPacketDelay, fTrackID );
+        this->logprintf( "packet too old to add: seq# %li, age limit %li, cur late %li, track id %li\n", (SInt32)ntohs( *((UInt16*)(((char*)inRTPPacket)+2)) ), (SInt32)ageLimit, fCurrentPacketDelay, fTrackID );
 #endif
         fNumExpired++;
     }
@@ -379,7 +379,7 @@ void RTPPacketResender::AckPacket( UInt16 inSeqNum, SInt64& inCurTimeInMsec )
         */
 #if RTP_PACKET_RESENDER_DEBUGGING   
         this->logprintf( "acked packet not found: %li, track id %li, OS::MSecs %li\n"
-        , (long)inSeqNum, fTrackID, (long)OS::Milliseconds()
+        , (SInt32)inSeqNum, fTrackID, (SInt32)OS::Milliseconds()
          );
 #endif
         fNumAcksForMissingPackets++;
@@ -407,7 +407,7 @@ void RTPPacketResender::AckPacket( UInt16 inSeqNum, SInt64& inCurTimeInMsec )
 #if RTP_PACKET_RESENDER_DEBUGGING
         Assert(inSeqNum == theEntry->fSeqNum);
         this->logprintf( "Ack for packet: %li, track id %li, OS::MSecs %qd\n"
-        , (long)inSeqNum, fTrackID, OS::Milliseconds()
+        , (SInt32)inSeqNum, fTrackID, OS::Milliseconds()
          );
 #endif      
         fBandwidthTracker->EmptyWindow(theEntry->fPacketSize);
@@ -425,8 +425,8 @@ void RTPPacketResender::AckPacket( UInt16 inSeqNum, SInt64& inCurTimeInMsec )
         {
     #if RTP_PACKET_RESENDER_DEBUGGING
             this->logprintf( "re-tx'd packet acked.  ack num : %li, pack seq #: %li, num resends %li, track id %li, size %li, OS::MSecs %qd\n" \
-            , (long)inSeqNum, (long)ntohs( *((UInt16*)(((char*)theEntry->fPacketData)+2)) ), (long)theEntry->fNumResends
-            , (long)fTrackID, theEntry->fPacketSize, OS::Milliseconds() );
+            , (SInt32)inSeqNum, (SInt32)ntohs( *((UInt16*)(((char*)theEntry->fPacketData)+2)) ), (SInt32)theEntry->fNumResends
+            , (SInt32)fTrackID, theEntry->fPacketSize, OS::Milliseconds() );
     #endif
         }
         this->RemovePacket(foundIndex);
@@ -508,8 +508,8 @@ void RTPPacketResender::ResendDueEntries()
                 version &= 0x84;    // grab most sig 2 bits
                 version = version >> 6; // shift by 6 bits
                 this->logprintf( "expired:  seq number %li, track id %li (port: %li), vers # %li, pack seq # %li, size: %li, OS::Msecs: %qd\n", \
-                                    (long)ntohs( *((UInt16*)(((char*)theEntry->fPacketData)+2)) ), fTrackID,  (long) ntohs(fDestPort), \
-                                    (long)version, (long)ntohs( *((UInt16*)(((char*)theEntry->fPacketData)+2))), theEntry->fPacketSize, OS::Milliseconds() );
+                                    (SInt32)ntohs( *((UInt16*)(((char*)theEntry->fPacketData)+2)) ), fTrackID,  (SInt32) ntohs(fDestPort), \
+                                    (SInt32)version, (SInt32)ntohs( *((UInt16*)(((char*)theEntry->fPacketData)+2))), theEntry->fPacketSize, OS::Milliseconds() );
     #endif
                 //
                 // This packet is expired
@@ -527,15 +527,15 @@ void RTPPacketResender::ResendDueEntries()
 
             theEntry->fNumResends++;
     #if RTP_PACKET_RESENDER_DEBUGGING   
-            this->logprintf( "re-sent: %li RTO %li, track id %li (port %li), size: %li, OS::Ms %qd\n", (long)ntohs( *((UInt16*)(((char*)theEntry->fPacketData)+2)) ),  curTime - theEntry->fAddedTime, \
-                    fTrackID, (long) ntohs(fDestPort) \
+            this->logprintf( "re-sent: %li RTO %li, track id %li (port %li), size: %li, OS::Ms %qd\n", (SInt32)ntohs( *((UInt16*)(((char*)theEntry->fPacketData)+2)) ),  curTime - theEntry->fAddedTime, \
+                    fTrackID, (SInt32) ntohs(fDestPort) \
                     , theEntry->fPacketSize, OS::Milliseconds());
     #endif      
 
             fNumResends++;
             
             numResends ++;
-            //qtss_printf("resend loop numResends=%ld packet theEntry->fNumResends=%ld stream fNumResends=\n",numResends,theEntry->fNumResends++, fNumResends);
+            //qtss_printf("resend loop numResends=%"_S32BITARG_" packet theEntry->fNumResends=%"_S32BITARG_" stream fNumResends=\n",numResends,theEntry->fNumResends++, fNumResends);
                         
             // ok -- lets try this.. add 1.5x of the INITIAL duration since the last send to the rto estimator
             // since we won't get an ack on this packet

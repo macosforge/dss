@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -67,7 +67,7 @@ short GetLocalIPAddressString(char *returnStr, short maxSize)
         //Unix Network Programming, section 16.6
         
         //Use the SIOCGIFCONF ioctl call to iterate through the network interfaces
-        static const unsigned long kMaxAddrBufferSize = 2048;
+        static const UInt32 kMaxAddrBufferSize = 2048;
         
         char* ifReqIter = NULL;
         struct ifconf ifc;

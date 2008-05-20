@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -148,6 +148,7 @@ public:
     inline  UInt64      GetTotalRTPPackets(void) { return fHintInfoAtom ? fHintInfoAtom->GetTotalRTPPackets() : 0; }
 
     inline  UInt32      GetFirstRTPTimestamp(void) { return fFirstRTPTimestamp; }
+    inline  void        SetAllowInvalidHintRefs(Bool16 inAllowInvalidHintRefs) { fAllowInvalidHintRefs = inAllowInvalidHintRefs; }
     
     //
     // Sample functions
@@ -227,6 +228,8 @@ protected:
     UInt16              fSequenceNumberRandomOffset;    
     Bool16              fHintTrackInitialized;
     SInt16              fHintType;
+    Float64  			fFirstTransmitTime;
+    Bool16              fAllowInvalidHintRefs;
     //
     // Used by GetPacket for RTP-Meta-Info payload stuff
     void                WriteMetaInfoField( RTPMetaInfoPacket::FieldIndex inFieldIndex,

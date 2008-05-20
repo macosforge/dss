@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -37,7 +37,7 @@ extern "C" {
 #include <sys/uio.h>
 #endif
 
-#define QTSS_API_VERSION                0x00040000
+#define QTSS_API_VERSION                0x00050000
 #define QTSS_MAX_MODULE_NAME_LENGTH     64
 #define QTSS_MAX_SESSION_ID_LENGTH      32
 #define QTSS_MAX_ATTRIBUTE_NAME_SIZE    64
@@ -89,8 +89,8 @@ typedef UInt32 QTSS_AddStreamFlags;
 // QTSS_PlayFlags used in the QTSS_Play Callback function.
 enum 
 {
-    qtssPlayFlagsSendRTCP           = 0x00000001,   // have the server generate RTCP Sender Reports 
-    qtssPlayFlagsAppendServerInfo   = 0x00000002    // have the server append the server info APP packet to your RTCP Sender Reports
+    qtssPlayFlagsSendRTCP           = 0x00000010,   // have the server generate RTCP Sender Reports 
+    qtssPlayFlagsAppendServerInfo   = 0x00000020    // have the server append the server info APP packet to your RTCP Sender Reports
 };
 typedef UInt32 QTSS_PlayFlags;
 
@@ -118,7 +118,10 @@ enum
 {
     qtssActionFlagsNoFlags      = 0x00000000,
     qtssActionFlagsRead         = 0x00000001,
-    qtssActionFlagsWrite        = 0x00000002    
+    qtssActionFlagsWrite        = 0x00000002,
+    qtssActionFlagsAdmin        = 0x00000004,
+    qtssActionFlagsExtended     = 0x40000000,
+    qtssActionQTSSExtended      = 0x80000000,
 };
 typedef UInt32 QTSS_ActionFlags;
 
@@ -200,7 +203,8 @@ enum
 {
     qtssRTPTransportTypeUDP         = 0,
     qtssRTPTransportTypeReliableUDP = 1,
-    qtssRTPTransportTypeTCP         = 2
+    qtssRTPTransportTypeTCP         = 2,
+    qtssRTPTransportType3GPPUDP     = 3
 };
 typedef UInt32 QTSS_RTPTransportType;
 
@@ -261,7 +265,12 @@ enum
     qtssModulePrefsObjectType       = FOUR_CHARS_TO_INT('m', 'o', 'd', 'p'), //modp
     qtssAttrInfoObjectType          = FOUR_CHARS_TO_INT('a', 't', 't', 'r'), //attr
     qtssUserProfileObjectType       = FOUR_CHARS_TO_INT('u', 's', 'p', 'o'), //uspo
-    qtssConnectedUserObjectType     = FOUR_CHARS_TO_INT('c', 'u', 's', 'r')  //cusr
+    qtssConnectedUserObjectType     = FOUR_CHARS_TO_INT('c', 'u', 's', 'r'), //cusr
+    qtss3GPPStreamObjectType        = FOUR_CHARS_TO_INT('3', 's', 't', 'r'), //3str
+    qtss3GPPClientSessionObjectType = FOUR_CHARS_TO_INT('3', 's', 'e', 's'), //3ses
+    qtss3GPPRTSPObjectType          = FOUR_CHARS_TO_INT('3', 'r', 't', 's'), //3rts
+    qtss3GPPRequestObjectType       = FOUR_CHARS_TO_INT('3', 'r', 'e', 'q')  //3req
+    
 };
 typedef UInt32 QTSS_ObjectType;
 
@@ -363,11 +372,22 @@ enum
     qtssAttrModeWrite               = 2,
     qtssAttrModePreempSafe          = 4,
     qtssAttrModeInstanceAttrAllowed = 8,
-	qtssAttrModeCacheable			= 16,
+    qtssAttrModeCacheable           = 16,
     qtssAttrModeDelete              = 32
 };
 typedef UInt32 QTSS_AttrPermission;
 
+
+enum
+{
+    qtssAttrRightNone           = 0,    
+    qtssAttrRightRead           = 1 << 0,
+    qtssAttrRightWrite          = 1 << 1,
+    qtssAttrRightAdmin          = 1 << 2,
+    qtssAttrRightExtended       = 1 << 30, // Set this flag in the qtssUserRights when defining a new right. The right is a string i.e. "myauthmodule.myright" store the string in the QTSS_UserProfileObject attribute qtssUserExtendedRights
+    qtssAttrRightQTSSExtended   = 1 << 31  // This flag is reserved for future use by the server. Additional rights are stored in qtssUserQTSSExtendedRights.
+};
+typedef UInt32 QTSS_AttrRights; // see QTSS_UserProfileObject
 
 
 /**********************************/
@@ -429,11 +449,23 @@ enum
     qtssRTPStrSvrRTPPort            = 36,   //read      //UInt16            // Port the server is sending RTP packets from for this stream
     qtssRTPStrClientRTPPort         = 37,   //read      //UInt16            // Port the server is sending RTP packets to for this stream
     qtssRTPStrNetworkMode           = 38,   //read      //QTSS_RTPNetworkMode // unicast or multicast
-
-    qtssRTPStrNumParams             = 39
+    qtssRTPStr3gppObject            = 39,   //read      //QTSS_3GPPStreamObject // QTSS_ObjectType qtss3GPPStreamObjectType  3gpp data for the stream object
+    qtssRTPStrThinningDisabled      = 40,   //read      //Bool16            //Stream thinning is disabled on this stream.
+    qtssRTPStrNumParams             = 41
 
 };
 typedef UInt32 QTSS_RTPStreamAttributes;
+
+enum 
+{
+    //All text names are identical to the enumerated type names
+    qtss3GPPStreamEnabled               = 0,
+    qtss3GPPStreamRateAdaptBufferBytes  = 1,
+    qtss3GPPStreamRateAdaptTimeMilli    = 2,
+    qtss3GPPStreamNumParams             = 3
+};
+typedef UInt32 QTSS_RTPStream3GPPAttributes; //QTSS_3GPPStreamObject
+
 
 enum
 {
@@ -475,17 +507,34 @@ enum
     qtssCliSesPacketLossPercent     = 27,   //read      //Float32   //Current percent loss as a fraction. .5 = 50%. This is not an average.
     qtssCliSesTimeConnectedInMsec   = 28,   //read      //SInt64    //Time in milliseconds that this client has been connected.
     qtssCliSesCounterID             = 29,   //read      //UInt32    //A unique, non-repeating ID for this session.
-    qtssCliSesRTSPSessionID         = 30,   //read      //char array    //The RTSP session ID that refers to this client session
+    qtssCliSesRTSPSessionID         = 30,   //read      //char array//The RTSP session ID that refers to this client session
     qtssCliSesFramesSkipped         = 31,   //r/w       //UInt32    //Modules can set this to be the number of frames skipped for this client
-	qtssCliSesTimeoutMsec			= 32,	//r/w		//UInt32	// client session timeout in milliseconds refreshed by RefreshTimeout API call or any rtcp or rtp packet on the session.
-	qtssCliSesOverBufferEnabled     = 33,   //read      //Bool16    // client overbuffers using dynamic rate streams
+    qtssCliSesTimeoutMsec            = 32,    //r/w        //UInt32    // client session timeout in milliseconds refreshed by RefreshTimeout API call or any rtcp or rtp packet on the session.
+    qtssCliSesOverBufferEnabled     = 33,   //read      //Bool16    // client overbuffers using dynamic rate streams
     qtssCliSesRTCPPacketsRecv       = 34,   //read      //UInt32    //Number of RTCP packets received so far on this session.
     qtssCliSesRTCPBytesRecv         = 35,   //read      //UInt32    //Number of RTCP bytes received so far on this session.
     qtssCliSesStartedThinning       = 36,   //read      //Bool16    // At least one of the streams in the session is thinned
-    qtssCliSesNumParams             = 37
+    qtssCliSes3GPPObject            = 37,   //read      //QTSS_3GPPClientSessionObject //QTSS_ObjectType qtss3GPPClientSessionObjectType
+    qtssCliSessLastRTSPBandwidth    = 38,   //read      //UInt32    // The last RTSP Bandwidth header value received from the client.
+    qtssCliSessIs3GPPSession        = 39,   //read      //Bool16    // Client is using 3gpp RTSP headers
+    qtssCliSesNumParams             = 40
     
 };
 typedef UInt32 QTSS_ClientSessionAttributes;
+
+//QTSS_3GPPClientSessionObject //class RTPSession3GPP
+enum 
+{
+    //All text names are identical to the enumerated type names
+    qtss3GPPCliSesEnabled                           = 0, //read      //Bool16       //initialized to preference setting
+    qtss3GPPCliSesLinkCharGuaranteedBitRate         = 1, //read      //UInt32       //The Received Link Characteristic rate. default = 0
+    qtss3GPPCliSesLinkCharMaxBitRate                = 2, //read      //UInt32       //The Received Link Characteristic max. default = 0
+    qtss3GPPCliSesLinkCharMaxTransferDelayMilliSec  = 3, //read      //UInt32       //The Received Link Characteristic transfer delay. default = 0
+    qtss3GPPCliSesLinkCharURL                       = 4, //read      //char array   //The Received Link Characteristic URL.
+ 
+    qtss3GPPCliSesNumParams                         = 5
+};
+typedef UInt32 QTSS_ClientSession3GPPAttributes;
 
 enum
 {
@@ -499,7 +548,7 @@ enum
     qtssRTSPSesRemoteAddr   = 4,        //read      //UInt32        //IP address of client.
     qtssRTSPSesRemoteAddrStr= 5,        //read      //char array            //IP address addr of client, in dotted-decimal format.
     qtssRTSPSesEventCntxt   = 6,        //read      //QTSS_EventContextRef //An event context for the RTSP connection to the client. This should primarily be used to wait for EV_WR events if flow-controlled when responding to a client. 
-    qtssRTSPSesType         = 7,        //read      //QTSS_RTSPSessionType //Is this a normal RTSP session, or is it a HTTP tunnelled RTSP session?
+    qtssRTSPSesType         = 7,        //read      //QTSS_RTSPSession //Is this a normal RTSP session, or is it a HTTP tunnelled RTSP session?
     qtssRTSPSesStreamRef    = 8,        //read      //QTSS_RTSPSessionStream    // A QTSS_StreamRef used for sending data to the RTSP client.
 
     qtssRTSPSesLastUserName         = 9,//read      //char array        // Private
@@ -509,9 +558,22 @@ enum
     qtssRTSPSesLocalPort    = 12,       //read      //UInt16        // This is the local port for the connection
     qtssRTSPSesRemotePort   = 13,       //read      //UInt16        // This is the client port for the connection
     
-    qtssRTSPSesNumParams    = 14
+    qtssRTSPSes3GPPObject  = 14,        //read  //QTSS_3GPPRTSPSessionObject //QTSS_ObjectType qtss3GPPRTSPObjectType 3gpp data and state info
+
+    qtssRTSPSesLastDigestChallenge = 15,//read      //char array        // Private
+    qtssRTSPSesNumParams    = 16
 };
 typedef UInt32 QTSS_RTSPSessionAttributes;
+
+//QTSS_3GPPRTSPSessionObject //class RTSPSession3GPP
+enum 
+{
+    //All text names are identical to the enumerated type names
+    qtss3GPPRTSPSesEnabled           = 0,
+    qtss3GPPRTSPSessNumParams        = 1
+};
+typedef UInt32 QTSS_3GPPRTSPSessionAttributes;
+
 
 enum 
 {
@@ -526,7 +588,7 @@ enum
     //Available in every method that receives the QTSS_RTSPRequestObject except for the QTSS_FilterMethod
     
     qtssRTSPReqMethodStr            = 1,    //read      //char array        //RTSP Method of this request.
-    qtssRTSPReqFilePath             = 2,    //r/w		//char array        //Not pre-emptive safe!! //URI for this request, converted to a local file system path.
+    qtssRTSPReqFilePath             = 2,    //r/w        //char array        //Not pre-emptive safe!! //URI for this request, converted to a local file system path.
     qtssRTSPReqURI                  = 3,    //read      //char array        //URI for this request
     qtssRTSPReqFilePathTrunc        = 4,    //read      //char array        //Not pre-emptive safe!! //Same as qtssRTSPReqFilePath, without the last element of the path
     qtssRTSPReqFileName             = 5,    //read      //char array        //Not pre-emptive safe!! //Everything after the last path separator in the file system path
@@ -544,7 +606,7 @@ enum
 
     qtssRTSPReqUserName             = 17,   //read      //char array//decoded Authentication information when provided by the RTSP request. See RTSPSessLastUserName.
     qtssRTSPReqUserPassword         = 18,   //read      //char array //decoded Authentication information when provided by the RTSP request. See RTSPSessLastUserPassword.
-    qtssRTSPReqUserAllowed          = 19,   //r/w       //Bool16    //Default is true, set to false if request is denied. Missing or bad movie files should allow the server to handle the situation and return true.
+    qtssRTSPReqUserAllowed          = 19,   //r/w       //Bool16    //Default is server pref based, set to false if request is denied. Missing or bad movie files should allow the server to handle the situation and return true.
     qtssRTSPReqURLRealm             = 20,   //r/w       //char array //The authorization entity for the client to display "Please enter password for -realm- at server name. The default realm is "Streaming Server".
     qtssRTSPReqLocalPath            = 21,   //read      //char array //Not pre-emptive safe!! //The full local path to the file. This Attribute is first set after the Routing Role has run and before any other role is called. 
     
@@ -570,11 +632,27 @@ enum
     qtssRTSPReqSkipAuthorization    = 35,   //r/w       //Bool16            // Set by a module that wants the particular request to be
                                                                             // allowed by all authorization modules
     qtssRTSPReqNetworkMode          = 36,   //read      //QTSS_RTPNetworkMode // unicast or multicast
-	qtssRTSPReqDynamicRateState     = 37,   //read      //SInt32            // -1 not in request, 0 off, 1 on
-	qtssRTSPReqNumParams 			= 38
+    qtssRTSPReqDynamicRateState     = 37,   //read      //SInt32            // -1 not in request, 0 off, 1 on
+    qtssRTSPReq3GPPRequestObject    = 38,   //read      //QTSS_3GPPRequestObject //QTSS_ObjectType qtss3GPPRequestObject
+    qtssRTSPReqBandwidthBits        = 39,   //read      //UInt32            //  Value of the Bandwdith header. Default is 0.
+    qtssRTSPReqUserFound            = 40,   //r/w       //Bool16    //Default is false, set to true if the user is found in the authenticate role and the module wants to take ownership of authenticating the user.
+    qtssRTSPReqAuthHandled          = 41,   //r/w       //Bool16    //Default is false, set to true in the authorize role to take ownerhsip of authorizing the request. 
+    qtssRTSPReqDigestChallenge      = 42,   //read      //char array //Challenge used by the server for Digest authentication
+    qtssRTSPReqDigestResponse       = 43,   //read      //char array //Digest response used by the server for Digest authentication
+    qtssRTSPReqNumParams            = 44
     
 };
 typedef UInt32 QTSS_RTSPRequestAttributes;
+
+enum 
+{
+    //All text names are identical to the enumerated type names
+    qtss3GPPRequestEnabled              = 0, //r/w       //Bool16           
+    qtss3GPPRequestRateAdaptationStreamData = 1, //read      //char array    //the rate adaptation url and parameters per stream
+    qtss3GPPRequestNumParams             = 2
+};
+typedef UInt32 QTSS_RTSPRequest3GPPAttributes;
+
 
 enum
 {
@@ -633,8 +711,9 @@ enum
     qtssSvrServerBuild              = 38,   //read      //char array //build of the server
     qtssSvrServerPlatform           = 39,   //read      //char array //Platform (OS) of the server
     qtssSvrRTSPServerComment        = 40,   //read      //char array //RTSP comment for the server header    
-    qtssSvrNumThinned               = 41,    //r/w      //SInt32    //Number of thinned sessions
-    qtssSvrNumParams                = 42
+    qtssSvrNumThinned               = 41,   //read      //SInt32    //Number of thinned sessions
+    qtssSvrNumThreads               = 42,   //read     //UInt32    //Number of task threads // see also qtssPrefsRunNumThreads
+    qtssSvrNumParams                = 43
 };
 typedef UInt32 QTSS_ServerAttributes;
 
@@ -723,18 +802,36 @@ enum
 
     qtssPrefsEnablePacketHeaderPrintfs      = 60,   // "enable_packet_header_printfs" //Bool16 // RTP and RTCP printfs of outgoing packets.
     qtssPrefsPacketHeaderPrintfOptions      = 61,   // "packet_header_printf_options" //char //set of printfs to print. Form is [text option] [;]  default is "rtp;rr;sr;". This means rtp packets, rtcp sender reports, and rtcp receiver reports.
-	qtssPrefsOverbufferRate					= 62,	// "overbuffer_rate"	//Float32
-	qtssPrefsMediumWindowSizeInK			= 63,	// "medium_window_size" // UInt32	//default size that will be used for medium bitrate movies
-	qtssPrefsWindowSizeMaxThreshold			= 64,	//"window_size_threshold"  // UInt32	//bitrate at which we switch from medium to large window size
+    qtssPrefsOverbufferRate                 = 62,    // "overbuffer_rate"    //Float32
+    qtssPrefsMediumWindowSizeInK            = 63,    // "medium_window_size" // UInt32    //default size that will be used for medium bitrate movies
+    qtssPrefsWindowSizeMaxThreshold         = 64,    //"window_size_threshold"  // UInt32    //bitrate at which we switch from medium to large window size
     qtssPrefsEnableRTSPServerInfo           = 65,   //"RTSP_server_info" //Boo1l6 // Adds server info to the RTSP responses.
-    qtssPrefsRunNumThreads                  = 66,   //"run_num_threads" //UInt32 // if value is non-zero, will  create that many threads; otherwise a thread will be created for each processor
-	qtssPrefsPidFile						= 67,	//"pid_file" //Char Array //path to pid file
+    qtssPrefsRunNumThreads                  = 66,   //"run_num_threads" //UInt32 // if value is non-zero, will  create that many task threads; otherwise a thread will be created for each processor
+    qtssPrefsPidFile                        = 67,    //"pid_file" //Char Array //path to pid file
     qtssPrefsCloseLogsOnWrite               = 68,   // "force_logs_close_on_write" //Bool16 // force log files to close after each write.
     qtssPrefsDisableThinning                = 69,   // "disable_thinning" //Bool16 // Usually used for performance testing. Turn off stream thinning from packet loss or stream lateness.
     qtssPrefsPlayersReqRTPHeader            = 70,   // "player_requires_rtp_header_info" //Char array //name of player to match against the player's user agent header
     qtssPrefsPlayersReqBandAdjust           = 71,   // "player_requires_bandwidth_adjustment //Char array //name of player to match against the player's user agent header
     qtssPrefsPlayersReqNoPauseTimeAdjust    = 72,   // "player_requires_no_pause_time_adjustment //Char array //name of player to match against the player's user agent header
-    qtssPrefsNumParams                      = 73
+    qtssPrefsEnable3gppProtocol             = 73,   // "enable_3gpp_protocol //Bool16 //enable or disable 3gpp release 6 protocol support featues
+    qtssPrefsEnable3gppProtocolRateAdapt    = 74,   // "enable_3gpp_protocol_rate_adaptation //Bool16 //enable or disable 3gpp release 6 rate adaptation featues
+    qtssPrefs3gppRateAdaptReportFrequency   = 75,   // "3gpp_protocol_rate_adaptation_report_frequency //UInt16 //requested rate adaptation rtcp report frequency
+    qtssPrefsDefaultStreamQuality           = 76,   // "default_stream_quality //UInt16 //0 is all day and best quality. Higher values are worse maximum depends on the media and the media module
+    qtssPrefsPlayersReqRTPStartTimeAdjust   = 77,   // "player_requires_rtp_start_time_adjust" //Char Array //name of players to match against the player's user agent header
+    qtssPrefsEnable3gppDebugPrintfs         = 78,   // "enable_3gpp_debug_printfs" //Boo1l6 // 3gpp rate adaptation state and debugging printfs.
+    qtssPrefsEnableUDPMonitor               = 79,   // "enable_udp_monitor_stream" //Boo1l6 // reflect all udp streams to the monitor ports, use an sdp to view
+    qtssPrefsUDPMonitorAudioPort            = 80,   // "udp_monitor_video_port" //UInt16 // localhost destination port of reflected stream
+    qtssPrefsUDPMonitorVideoPort            = 81,   // "udp_monitor_audio_port" //UInt16 // localhost destination port of reflected stream
+    qtssPrefsUDPMonitorDestIPAddr           = 82,   // "udp_monitor_dest_ip"    //char array    //IP address the server should send RTP monitor reflected streams. 
+    qtssPrefsUDPMonitorSourceIPAddr         = 83,   // "udp_monitor_src_ip"    //char array    //client IP address the server monitor should reflect. *.*.*.* means all client addresses.
+    qtssPrefsEnableAllowGuestDefault        = 84,   // "enable_allow_guest_authorize_default" //Boo1l6 // server hint to access modules to allow guest access as the default (can be overriden in a qtaccess file or other means)
+    qtssPrefsNumRTSPThreads                 = 85,   // "run_num_rtsp_threads" //UInt32 // if value is non-zero, the server will  create that many task threads; otherwise a single thread will be created.
+	qtssPrefsPlayersReqDisable3gppRateAdapt = 86,	// "player_requires_disable_3gpp_rate_adapt" //Char array //name of players to match against the player's user agent header
+    qtssPrefsPlayersReq3GPPTargetTime 		= 87,   // "player_requires_3gpp_target_time" //Char array //name of player to set the target time for
+    qtssPrefs3GPPTargetTime  				= 88,   // "3gpp_target_time_milliseconds" //UInt32 // milliseconds set as the target time.
+    qtssPrefsPlayersReqDisableThinning 		= 89,   // "player_requires_disable_thinning" //Char array //name of player to set the target time for
+	
+    qtssPrefsNumParams                      = 90
 };
 
 typedef UInt32 QTSS_PrefsAttributes;
@@ -819,7 +916,7 @@ enum
     qtssModVersion              = 2,    //r/w       //not preemptive-safe   //UInt32            //Version of the module. UInt32 format should be 0xMM.m.v.bbbb M=major version m=minor version v=very minor version b=build #
     qtssModRoles                = 3,    //read      //preemptive-safe       //QTSS_Role         //List of all the roles this module has registered for.
     qtssModPrefs                = 4,    //read      //preemptive-safe       //QTSS_ModulePrefsObject //An object containing as attributes the preferences for this module
-        qtssModAttributes           = 5,    //read      //preemptive-safe       //QTSS_Object
+    qtssModAttributes           = 5,    //read      //preemptive-safe       //QTSS_Object
             
     qtssModNumParams            = 6
 };
@@ -846,13 +943,14 @@ enum
     
     // All of these parameters are preemptive-safe.
     
-    qtssUserName        = 0,    //read  //char array
-    qtssUserPassword    = 1,    //r/w   //char array
-    qtssUserGroups      = 2,    //r/w   //char array -  multi-valued attribute, all values should be C strings padded with \0s to 
-                                        //              make them all of the same length 
-    qtssUserRealm       = 3,    //r/w   //char array -  the authentication realm for username
-    
-    qtssUserNumParams   = 4
+    qtssUserName                = 0, //read  //char array
+    qtssUserPassword            = 1, //r/w   //char array
+    qtssUserGroups              = 2, //r/w   //char array -  multi-valued attribute, all values should be C strings padded with \0s to                                         //              make them all of the same length 
+    qtssUserRealm               = 3, //r/w   //char array -  the authentication realm for username
+    qtssUserRights              = 4, //r/w   //QTSS_AttrRights - rights granted this user
+    qtssUserExtendedRights      = 5, //r/w   //qtssAttrDataTypeCharArray - a list of strings with extended rights granted to the user.
+    qtssUserQTSSExtendedRights  = 6, //r/w   //qtssAttrDataTypeCharArray - a private list of strings with extended rights granted to the user and reserved by QTSS/Apple.
+    qtssUserNumParams           = 7,
 };
 typedef UInt32 QTSS_UserProfileObjectAttributes;
 
@@ -957,6 +1055,11 @@ typedef QTSS_Object             QTSS_ModulePrefsObject;
 typedef QTSS_Object             QTSS_AttrInfoObject;
 typedef QTSS_Object             QTSS_UserProfileObject;
 typedef QTSS_Object             QTSS_ConnectedUserObject;
+
+typedef QTSS_Object             QTSS_3GPPStreamObject;
+typedef QTSS_Object             QTSS_3GPPClientSessionObject;
+typedef QTSS_Object             QTSS_3GPPRTSPSessionObject;
+typedef QTSS_Object             QTSS_3GPPRequestObject;
 
 typedef QTSS_StreamRef          QTSS_ErrorLogStream;
 typedef QTSS_StreamRef          QTSS_FileStream;
@@ -1225,7 +1328,7 @@ QTSS_Error QTSS_UnlockObject(QTSS_Object inObject);
 //  QTSS_CreateObjectType
 //
 //  Creates a new object type.  Attributes can be added to this object type and then it can
-//  be passed into QTSS_AddObjectValue.
+//  be passed into QTSS_CreateObjectValue.
 //
 //  This may only be called from the QTSS_Register role.
 //
@@ -1894,7 +1997,7 @@ QTSS_Error  QTSS_Authenticate(  const char* inAuthUserName,
 //  
 //  Returns:            QTSS_NoErr
 //                      QTSS_BadArgument
-QTSS_Error	QTSS_Authorize(QTSS_RTSPRequestObject inAuthRequestObject, char** outAuthRealm, Bool16* outAuthUserAllowed);
+QTSS_Error    QTSS_Authorize(QTSS_RTSPRequestObject inAuthRequestObject, char** outAuthRealm, Bool16* outAuthUserAllowed);
 
 
 void        QTSS_LockStdLib();

@@ -1,3 +1,27 @@
+#
+# @APPLE_LICENSE_HEADER_START@
+#
+#
+# Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+#
+# This file contains Original Code and/or Modifications of Original Code
+# as defined in and that are subject to the Apple Public Source License
+# Version 2.0 (the 'License'). You may not use this file except in
+# compliance with the License. Please obtain a copy of the License at
+# http://www.opensource.apple.com/apsl/ and read it before using this
+# file.
+#
+# The Original Code and all software distributed under the License are
+# distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
+# EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
+# INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+# Please see the License for the specific language governing rights and
+# limitations under the License.
+#
+# @APPLE_LICENSE_HEADER_END@
+#
+
 %tagVals = (
 	"scriptTag" => '=if ($ENV{"LANGUAGE"} ne "ja") {"<script type=text/javascript language=Javascript>"} else {"<script type=text/javascript language=Javascript charset=Shift_JIS>"}',
 	"fontFaceCSS" => '=if ($ENV{"LANGUAGE"} ne "ja") {"Arial, Helvetica, Geneva, Swiss, sans-serif"} else {"ƒqƒ‰ƒMƒmŠpƒS Pro W3,MS PƒSƒVƒbƒN,Osaka"}',
@@ -72,6 +96,7 @@
 	"relaySourceMountPoint" => '=useDefaultIfBlank($query->{"relaySourceMountPoint"}, $relaySourceMountPoint)',
 	"relaySourceUsername" => '=useDefaultIfBlank($query->{"relaySourceUsername"}, $relaySourceUsername)',
 	"relaySourcePassword" => '=useDefaultIfBlank($query->{"relaySourcePassword"}, $relaySourcePassword)',
+	"relayIsNew" => '=$relayIsNew',
 	"jsstr" => '=$jsstr',
 	"validateErrorField" => '=$validateErrorField',
 	"validateErrorDesc" => '=$validateErrorDesc',
@@ -507,7 +532,7 @@ sub getRepeaterArray {
 						if ($testfn =~ /.mp3/) {
 							push(@qtssFileIcon, 'images/mp3_file.gif');
 						}
-						elsif (($testfn =~ /.mov/) or ($testfn =~ /.mpg/) or ($testfn =~ /.mp4/) or ($testfn =~ /.mpeg/) or ($testfn =~ /.avi/)) {
+						elsif (($testfn =~ /.mov/) or ($testfn =~ /.mpg/) or ($testfn =~ /.mp4/) or ($testfn =~ /.mpeg/) or ($testfn =~ /.avi/) or ($testfn =~ /.3gp/)) {
 							push(@qtssFileIcon, 'images/icon_movie.gif');
 						}
 						else {

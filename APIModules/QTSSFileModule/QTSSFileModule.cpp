@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -43,6 +43,7 @@
 #include "SDPSourceInfo.h"
 #include "StringFormatter.h"
 #include "QTSSModuleUtils.h"
+#include "QTSS3GPPModuleUtils.h"
 #include "ResizeableStringFormatter.h"
 #include "StringParser.h"
 #include "SDPUtils.h"
@@ -58,8 +59,10 @@ class FileSession
         FileSession() : fAdjustedPlayTime(0), fNextPacketLen(0), fLastQualityCheck(0),
                         fAllowNegativeTTs(false), fSpeed(1),
                         fStartTime(-1), fStopTime(-1), fStopTrackID(0), fStopPN(0),
-                        fLastRTPTime(0), fLastPauseTime(0),fTotalPauseTime(0), fPaused(false), fAdjustPauseTime(true)
-        {}
+                        fLastRTPTime(0), fLastPauseTime(0),fTotalPauseTime(0), fPaused(true), fAdjustPauseTime(true)
+        { 
+          fPacketStruct.packetData = NULL; fPacketStruct.packetTransmitTime = -1; fPacketStruct.suggestedWakeupTime=-1;
+        }
         
         ~FileSession() {}
         
@@ -147,9 +150,13 @@ static Bool16               sEnableMovieFileSDP = false;
 
 static Bool16               sPlayerCompatibility = true;
 static UInt32               sAdjustMediaBandwidthPercent = 50;
+static SInt64               sAdjustRTPStartTimeMilli = 500;
+
+static Bool16               sAllowInvalidHintRefs = false;
 
 // Server preference we respect
 static Bool16               sDisableThinning       = false;
+static UInt16               sDefaultStreamingQuality = 0;
 
 static const StrPtrLen              kCacheControlHeader("must-revalidate");
 static const QTSS_RTSPStatusCode    kNotModifiedStatus          = qtssRedirectNotModified;
@@ -361,6 +368,7 @@ QTSS_Error Initialize(QTSS_Initialize_Params* inParams)
 {
     QTRTPFile::Initialize();
     QTSSModuleUtils::Initialize(inParams->inMessages, inParams->inServer, inParams->inErrorLogStream);
+	QTSS3GPPModuleUtils::Initialize(inParams);
 
     sPrefs = QTSSModuleUtils::GetModulePrefsObject(inParams->inModule);
     sServerPrefs = inParams->inPrefs;
@@ -464,10 +472,10 @@ QTSS_Error RereadPrefs()
     sSharedBufferInc = 8;
     QTSSModuleUtils::GetIOAttribute(sPrefs, "num_shared_buffer_increase_per_session", qtssAttrDataTypeUInt32,&sSharedBufferInc, sizeof(sSharedBufferInc));
                             
-    sSharedBufferUnitKSize = 64;
+    sSharedBufferUnitKSize = 256;
     QTSSModuleUtils::GetIOAttribute(sPrefs, "shared_buffer_unit_k_size", qtssAttrDataTypeUInt32, &sSharedBufferUnitKSize, sizeof(sSharedBufferUnitKSize));
 
-    sPrivateBufferUnitKSize = 64;
+    sPrivateBufferUnitKSize = 256;
     QTSSModuleUtils::GetIOAttribute(sPrefs, "private_buffer_unit_k_size", qtssAttrDataTypeUInt32, &sPrivateBufferUnitKSize, sizeof(sPrivateBufferUnitKSize));
 
     sSharedBufferUnitSize = 1;
@@ -497,6 +505,12 @@ QTSS_Error RereadPrefs()
     sAdjustMediaBandwidthPercent = 50;
     QTSSModuleUtils::GetIOAttribute(sPrefs, "compatibility_adjust_sdp_media_bandwidth_percent", qtssAttrDataTypeUInt32, &sAdjustMediaBandwidthPercent, sizeof(sAdjustMediaBandwidthPercent));
 
+    sAdjustRTPStartTimeMilli = 500;
+    QTSSModuleUtils::GetIOAttribute(sPrefs, "compatibility_adjust_rtp_start_time_milli", qtssAttrDataTypeSInt64, &sAdjustRTPStartTimeMilli, sizeof(sAdjustRTPStartTimeMilli));
+
+    sAllowInvalidHintRefs = false;
+    QTSSModuleUtils::GetIOAttribute(sPrefs, "allow_invalid_hint_track_refs", qtssAttrDataTypeBool16, &sAllowInvalidHintRefs,  sizeof(sAllowInvalidHintRefs));
+
     if (sAdjustMediaBandwidthPercent > 100)
         sAdjustMediaBandwidthPercent = 100;
         
@@ -506,6 +520,11 @@ QTSS_Error RereadPrefs()
     UInt32 len = sizeof(sDisableThinning);
     (void) QTSS_GetValue(sServerPrefs, qtssPrefsDisableThinning, 0, (void*)&sDisableThinning, &len);
 
+    len = sizeof(sDefaultStreamingQuality);
+    (void) QTSS_GetValue(sServerPrefs, qtssPrefsDefaultStreamQuality, 0, (void*)&sDefaultStreamingQuality, &len);
+
+    QTSS3GPPModuleUtils::ReadPrefs();
+    
     BuildPrefBasedHeaders();
     
     return QTSS_NoErr;
@@ -600,8 +619,8 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params* inParamBlock)
     UInt32 theLen = sizeof(FileSession*);
     FileSession*    theFile = NULL;
     QTSS_Error      theErr = QTSS_NoErr;
-    Bool16          pathEndsWithMOV = false;
-    static StrPtrLen sMOVSuffix(".mov");
+    Bool16          pathEndsWithSDP = false;
+    static StrPtrLen sSDPSuffix(".sdp");
     SInt16 vectorIndex = 1;
     ResizeableStringFormatter theFullSDPBuffer(NULL,0);
     StrPtrLen bufferDelayStr;
@@ -616,10 +635,10 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params* inParamBlock)
     //first locate the target movie
     thePath.GetObject()[thePathLen - sSDPSuffix.Len] = '\0';//truncate the .sdp added in the GetFullPath call
     StrPtrLen   requestPath(thePath.GetObject(), ::strlen(thePath.GetObject()));
-    if (requestPath.Len > sMOVSuffix.Len )
-    {   StrPtrLen endOfPath(&requestPath.Ptr[requestPath.Len -  sMOVSuffix.Len], sMOVSuffix.Len);
-        if (endOfPath.Equal(sMOVSuffix)) // it is a .mov
-        {   pathEndsWithMOV = true;
+    if (requestPath.Len > sSDPSuffix.Len )
+    {   StrPtrLen endOfPath(&requestPath.Ptr[requestPath.Len -  sSDPSuffix.Len], sSDPSuffix.Len);
+        if (endOfPath.EqualIgnoreCase(sSDPSuffix)) // it is a .sdp
+        {   pathEndsWithSDP = true;
         }
     }
     
@@ -629,7 +648,12 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params* inParamBlock)
         // There is already a file for this session. This can happen if there are multiple DESCRIBES,
         // or a DESCRIBE has been issued with a Session ID, or some such thing.
         StrPtrLen   moviePath( theFile->fFile.GetMoviePath() );
-        
+                
+		// Stop playing because the new file isn't ready yet to send packets.
+		// Needs a Play request to get things going. SendPackets on the file is active if not paused.
+		(void)QTSS_Pause(inParamBlock->inClientSession);
+		(*theFile).fPaused = true;
+
         //
         // This describe is for a different file. Delete the old FileSession.
         if ( !requestPath.Equal( moviePath ) )
@@ -712,7 +736,7 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params* inParamBlock)
         }
         
         FILE* sdpFile = NULL;
-        if (sRecordMovieFileSDP && pathEndsWithMOV) // don't auto create sdp for a non .mov file because it would look like a broadcast
+        if (sRecordMovieFileSDP &&  !pathEndsWithSDP) // don't auto create sdp for an sdp file because it would look like a broadcast
         {   
             sdpFile = ::fopen(thePath.GetObject(),"r"); // see if there already is a .sdp for the movie
             if (sdpFile != NULL) // one already exists don't mess with it
@@ -845,7 +869,7 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params* inParamBlock)
         if (!rawSDPContainer.IsSDPBufferValid())
         {    return QTSSModuleUtils::SendErrorResponseWithMessage(inParamBlock->inRTSPRequest, qtssUnsupportedMediaType, &sSDPNotValidMessage);
         }
-		
+
 // ------------ reorder the sdp headers to make them proper.
         Float32 adjustMediaBandwidthPercent = 1.0;
         Bool16 adjustMediaBandwidth = false;
@@ -854,11 +878,29 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params* inParamBlock)
 		    		    
 		if (adjustMediaBandwidth)
 		    adjustMediaBandwidthPercent = (Float32) sAdjustMediaBandwidthPercent / 100.0;
-		    
-		SDPLineSorter sortedSDP(&rawSDPContainer,adjustMediaBandwidthPercent);
+        
+        ResizeableStringFormatter buffer;
+        SDPContainer* insertMediaLines = QTSS3GPPModuleUtils::Get3GPPSDPFeatureListCopy(buffer);
+		SDPLineSorter sortedSDP(&rawSDPContainer,adjustMediaBandwidthPercent,insertMediaLines);
+		delete insertMediaLines;
 		StrPtrLen *theSessionHeadersPtr = sortedSDP.GetSessionHeaders();
 		StrPtrLen *theMediaHeadersPtr = sortedSDP.GetMediaHeaders();
-		
+	
+//3GPP-BAD // add the bitrate adaptation string to the SDPLineSorter
+	//sortedSDP should have a getmedialine[n]
+	// findstring in line
+	// getline and insert line to media
+	/*
+	5.3.3.5 The bit-rate adaptation support attribute, Ò3GPP-Adaptation-SupportÓ 
+To signal the support of bit-rate adaptation, a media level only SDP attribute is defined in ABNF [53]: 
+sdp-Adaptation-line  = "a" "=" "3GPP-Adaptation-Support" ":" report-frequency CRLF 
+report-frequency  = NonZeroDIGIT [ DIGIT ] 
+NonZeroDIGIT = %x31-39 ;1-9 
+A server implementing rate adaptation shall signal the "3GPP-Adaptation-Support" attribute in its SDP. 
+
+*/
+
+	
 // ----------- write out the sdp
 
 		totalSDPLength += ::WriteSDPHeader(sdpFile, theSDPVec, &vectorIndex, theSessionHeadersPtr);
@@ -898,6 +940,7 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params* inParamBlock)
 QTSS_Error CreateQTRTPFile(QTSS_StandardRTSP_Params* inParamBlock, char* inPath, FileSession** outFile)
 {   
     *outFile = NEW FileSession();
+    (*outFile)->fFile.SetAllowInvalidHintRefs(sAllowInvalidHintRefs);
     QTRTPFile::ErrorCode theErr = (*outFile)->fFile.Initialize(inPath);
     if (theErr != QTRTPFile::errNoError)
     {
@@ -928,7 +971,7 @@ QTSS_Error CreateQTRTPFile(QTSS_StandardRTSP_Params* inParamBlock, char* inPath,
 
         AssertV(0, theErr);
     }
-    
+	
     return QTSS_NoErr;
 }
 
@@ -1054,8 +1097,7 @@ QTSS_Error DoSetup(QTSS_StandardRTSP_Params* inParamBlock)
     Assert(theErr == QTSS_NoErr);
     
     // Set the number of quality levels. Allow up to 6
-    static UInt32 sNumQualityLevels = 5;
-    
+    static UInt32 sNumQualityLevels = 6;  
     theErr = QTSS_SetValue(newStream, qtssRTPStrNumQualityLevels, 0, &sNumQualityLevels, sizeof(sNumQualityLevels));
     Assert(theErr == QTSS_NoErr);
     
@@ -1162,6 +1204,8 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params* inParamBlock)
     if (theErr != QTSS_NoErr)
         return theErr;
     
+    //make sure to clear the next packet the server would have sent!
+    (*theFile)->fPacketStruct.packetData = NULL;
 
     // Set the default quality before playing.
     QTRTPFile::RTPTrackListEntry* thePacketTrack;
@@ -1170,7 +1214,8 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params* inParamBlock)
          SourceInfo::StreamInfo* theStreamInfo = (*theFile)->fSDPSource.GetStreamInfo(x);
          if (!(*theFile)->fFile.FindTrackEntry(theStreamInfo->fTrackID,&thePacketTrack))
             break;
-         (*theFile)->fFile.SetTrackQualityLevel(thePacketTrack, QTRTPFile::kAllPackets);
+         //(*theFile)->fFile.SetTrackQualityLevel(thePacketTrack, QTRTPFile::kAllPackets);
+         (*theFile)->fFile.SetTrackQualityLevel(thePacketTrack, sDefaultStreamingQuality);
     }
 
 
@@ -1209,7 +1254,6 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params* inParamBlock)
              (*theFile)->fStartTime = currentTime;
         }    
 
-                               
         Float32* theMaxBackupTime = NULL;
         theErr = QTSS_GetValuePtr(inParamBlock->inRTSPRequest, qtssRTSPReqPrebufferMaxTime, 0, (void**)&theMaxBackupTime, &theLen);
         Assert(theMaxBackupTime != NULL);
@@ -1283,7 +1327,6 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params* inParamBlock)
     UInt32 bitsPerSecond =  (*theFile)->fFile.GetBytesPerSecond() * 8;
     (void)QTSS_SetValue(inParamBlock->inClientSession, qtssCliSesMovieAverageBitRate, 0, &bitsPerSecond, sizeof(bitsPerSecond));
 
-    (**theFile).fPaused = false;
     Bool16 adjustPauseTime = kAddPauseTimeToRTPTime; //keep rtp time stamps monotonically increasing
     if ( true == QTSSModuleUtils::HavePlayerProfile( sServerPrefs, inParamBlock,QTSSModuleUtils::kDisablePauseAdjustedRTPTime) )
     	adjustPauseTime = kDontAddPauseTimeToRTPTime;
@@ -1350,19 +1393,6 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params* inParamBlock)
     // we don't care if it doesn't set (i.e. this is a meta info session)
      (void)  (*theFile)->fFile.SetDropRepeatPackets(allTracksReliable);// if alltracks are reliable then drop repeat packets.
         
-    //Tell the server to start playing this movie. We do want it to send RTCP SRs, but
-    //we DON'T want it to write the RTP header
-    theErr = QTSS_Play(inParamBlock->inClientSession, inParamBlock->inRTSPRequest, qtssPlayFlagsSendRTCP);
-    if (theErr != QTSS_NoErr)
-        return theErr;
-
-    SInt64* thePlayTime = 0;
-    theErr = QTSS_GetValuePtr(inParamBlock->inClientSession, qtssCliSesPlayTimeInMsec, 0, (void**)&thePlayTime, &theLen);
-    Assert(theErr == QTSS_NoErr);
-    Assert(thePlayTime != NULL);
-    Assert(theLen == sizeof(SInt64));
-    (*theFile)->fAdjustedPlayTime = *thePlayTime - ((SInt64)((*theFile)->fStartTime * 1000));
-    
     //
     // This module supports the Speed header if the client wants the stream faster than normal.
     Float32 theSpeed = 1;
@@ -1426,13 +1456,33 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params* inParamBlock)
     }
     (void)QTSS_SendStandardRTSPResponse(inParamBlock->inRTSPRequest, inParamBlock->inClientSession, qtssPlayRespWriteTrackInfo);
 
+    SInt64 adjustRTPStreamStartTimeMilli = 0;
+    if (sPlayerCompatibility && QTSSModuleUtils::HavePlayerProfile(sServerPrefs, inParamBlock,QTSSModuleUtils::kDelayRTPStreamsUntilAfterRTSPResponse))
+        adjustRTPStreamStartTimeMilli = sAdjustRTPStartTimeMilli;
+
+   //Tell the server to start playing this movie. We do want it to send RTCP SRs, but
+    //we DON'T want it to write the RTP header
+    (*theFile)->fPaused = false;
+    theErr = QTSS_Play(inParamBlock->inClientSession, inParamBlock->inRTSPRequest, qtssPlayFlagsSendRTCP);
+    if (theErr != QTSS_NoErr)
+       return theErr;
+
+    // Set the adjusted play time. SendPackets can get called between QTSS_Play and
+    // setting fAdjustedPlayTime below. 
+    SInt64* thePlayTime = NULL;
+    theErr = QTSS_GetValuePtr(inParamBlock->inClientSession, qtssCliSesPlayTimeInMsec, 0, (void**)&thePlayTime, &theLen);
+    Assert(theErr == QTSS_NoErr);
+    Assert(thePlayTime != NULL);
+    Assert(theLen == sizeof(SInt64));
+    if (thePlayTime != NULL)
+        (*theFile)->fAdjustedPlayTime = adjustRTPStreamStartTimeMilli + *thePlayTime - ((SInt64)((*theFile)->fStartTime * 1000) );
+ 
     return QTSS_NoErr;
 }
 
 QTSS_Error SendPackets(QTSS_RTPSendPackets_Params* inParams)
 {
     static const UInt32 kQualityCheckIntervalInMsec = 250;  // v331=v107
-
     FileSession** theFile = NULL;
     UInt32 theLen = 0;
     QTSS_Error theErr = QTSS_GetValuePtr(inParams->inClientSession, sFileSessionAttr, 0, (void**)&theFile, &theLen);
@@ -1441,12 +1491,31 @@ QTSS_Error SendPackets(QTSS_RTPSendPackets_Params* inParams)
     bool isBeginningOfWriteBurst = true;
     QTSS_Object theStream = NULL;
 
+
+    if ( theFile == NULL || (*theFile)->fStartTime == -1 || (*theFile)->fPaused == true ) //something is wrong
+    {
+        Assert( theFile != NULL );
+        Assert( (*theFile)->fStartTime != -1 );
+        Assert( (*theFile)->fPaused != true );
+
+        inParams->outNextPacketTime = qtssDontCallSendPacketsAgain;    
+        return QTSS_NoErr;
+    }
+    
+    if ( (*theFile)->fAdjustedPlayTime == 0 ) // this is system milliseconds
+    {
+        Assert( (*theFile)->fAdjustedPlayTime != 0 );
+        inParams->outNextPacketTime = kQualityCheckIntervalInMsec;    
+        return QTSS_NoErr;
+    }
+    
+    
     QTRTPFile::RTPTrackListEntry* theLastPacketTrack = (*theFile)->fFile.GetLastPacketTrack();
     
     while (true)
     {   
         if ((*theFile)->fPacketStruct.packetData == NULL)
-        {
+        { 
             Float64 theTransmitTime = (*theFile)->fFile.GetNextPacket((char**)&(*theFile)->fPacketStruct.packetData, &(*theFile)->fNextPacketLen);
             if ( QTRTPFile::errNoError != (*theFile)->fFile.Error() )
             {
@@ -1534,14 +1603,13 @@ QTSS_Error SendPackets(QTSS_RTPSendPackets_Params* inParams)
 				if (theStream == NULL)
 					return 0;
 
-
                 // Get the current quality level in the stream, and this stream's TrackID.
                 UInt32* theQualityLevel = 0;
                 theErr = QTSS_GetValuePtr(theStream, qtssRTPStrQualityLevel, 0, (void**)&theQualityLevel, &theLen);
                 Assert(theErr == QTSS_NoErr);
                 Assert(theQualityLevel != NULL);
                 Assert(theLen == sizeof(UInt32));
-        
+
                 (*theFile)->fFile.SetTrackQualityLevel(theLastPacketTrack, *theQualityLevel);
             }
         }

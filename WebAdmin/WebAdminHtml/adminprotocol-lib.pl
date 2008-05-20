@@ -4,7 +4,8 @@
 #
 # @APPLE_LICENSE_HEADER_START@
 #
-# Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
+#
+# Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
 #
 # This file contains Original Code and/or Modifications of Original Code
 # as defined in and that are subject to the Apple Public Source License
@@ -329,7 +330,12 @@ sub HasValue {
 # sub SetAttribute (data, messageHash, authheader, server, port, fullpath, value, [type])
 # Sends an admin protocol set command and returns the error value
 sub SetAttribute {
-	my $uri = "/modules".$_[5]."?command=set+value="."\"$_[6]\"";
+	# get the value
+	$valueStr = $_[6];
+	# encode value as percent-escaped string
+	$valueStr =~ s/([^A-Za-z0-9])/sprintf("%%%02X", ord($1))/seg;
+	
+	my $uri = "/modules".$_[5]."?command=set+value="."\"$valueStr\"";
 	my $code = 400;
 	if($_[7]) {
 		$uri .= "+type=$_[7]";

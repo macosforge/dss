@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -54,7 +54,7 @@
 #include "QTTrack.h"
 #include "QTHintTrack.h"
 #include "OSMemory.h"
-#if __MacOSX__
+#if MMAP_TABLES
 #include <sys/mman.h>
 #endif
 
@@ -141,7 +141,7 @@ QTFile::~QTFile(void)
 #if DSS_USE_API_CALLBACKS
     (void)QTSS_CloseFileObject(fMovieFD);
 #endif
-#if __MacOSX__
+#if MMAP_TABLES
     ::close(fFile);
 #endif
 }
@@ -174,7 +174,7 @@ QTFile::ErrorCode QTFile::Open(const char * MoviePath)
     fMoviePath = NEW char[strlen(MoviePath) + 1];
     ::strcpy(fMoviePath, MoviePath);
 
-#if __MacOSX__
+#if MMAP_TABLES
     fFile = open(fMoviePath, O_RDONLY);
 #endif
 
@@ -302,6 +302,11 @@ QTFile::ErrorCode QTFile::Open(const char * MoviePath)
     return errNoError;
 }
 
+char *QTFile::GetModDateStr()
+{
+    return fModDateBuffer.GetDateBuffer();
+}
+
 void QTFile::AllocateBuffers(UInt32 inUnitSizeInK, UInt32 inBufferInc, UInt32 inBufferSizeUnits, UInt32 inMaxBitRateBuffSizeInBlocks, UInt32 inBitrate)
 {
 
@@ -369,7 +374,7 @@ Bool16 QTFile::FindTOCEntry(const char * AtomPath, AtomTOCEntry **TOCEntry, Atom
         //
         // Is this a root search or a rooted search?
         if( *pCurAtomType == ':' ) {
-            DEEP_DEBUG_PRINT(("QTFile::FindTOCEntry - ..Rooting search at [%03lu].\n", LastFoundTOCEntry->TOCID));
+            DEEP_DEBUG_PRINT(("QTFile::FindTOCEntry - ..Rooting search at [%03"_U32BITARG_"].\n", LastFoundTOCEntry->TOCID));
 
             RootTOCID = LastFoundTOCEntry->TOCID;
             pCurAtomType++;
@@ -385,7 +390,7 @@ Bool16 QTFile::FindTOCEntry(const char * AtomPath, AtomTOCEntry **TOCEntry, Atom
             Atom = Atom->NextAtom;
 
             if( Atom != NULL ) {
-                DEEP_DEBUG_PRINT(("QTFile::FindTOCEntry - ..Starting search at [%03lu] '%c%c%c%c'.  Search path is \"%s\"\n",
+                DEEP_DEBUG_PRINT(("QTFile::FindTOCEntry - ..Starting search at [%03"_U32BITARG_"] '%c%c%c%c'.  Search path is \"%s\"\n",
                     Atom->TOCID,
                     (char)((Atom->AtomType & 0xff000000) >> 24),
                     (char)((Atom->AtomType & 0x00ff0000) >> 16),
@@ -403,7 +408,7 @@ Bool16 QTFile::FindTOCEntry(const char * AtomPath, AtomTOCEntry **TOCEntry, Atom
     //
     // Recurse through our table of contents until we find this path.
     while( Atom != NULL ) { // already initialized by the above
-        DEEP_DEBUG_PRINT(("QTFile::FindTOCEntry - ..Comparing against [%03lu] '%c%c%c%c'\n",
+        DEEP_DEBUG_PRINT(("QTFile::FindTOCEntry - ..Comparing against [%03"_U32BITARG_" '%c%c%c%c'\n",
             Atom->TOCID,
             (char)((Atom->AtomType & 0xff000000) >> 24),
             (char)((Atom->AtomType & 0x00ff0000) >> 16),
@@ -599,12 +604,12 @@ Bool16 QTFile::Read(UInt64 Offset, char * const Buffer, UInt32 Length, QTFile_Fi
     // General vars
     OSMutexLocker   ReadMutex(fReadMutex);
     Bool16 rv = false;
+    UInt32 gotlen = 0;
 
     if( FCB )
         rv = FCB->Read(&fMovieFD,Offset,Buffer,Length);
     else
     {
-        UInt32 gotlen;
 #if DSS_USE_API_CALLBACKS
         QTSS_Error theErr = QTSS_Seek(fMovieFD, Offset);
         if (theErr == QTSS_NoErr)
@@ -634,7 +639,7 @@ Bool16 QTFile::GenerateAtomTOC(void)
     UInt64          BigAtomLength;
 
     UInt64          CurPos;
-    unsigned long   CurAtomHeaderSize;
+    UInt32		    CurAtomHeaderSize;
 
     AtomTOCEntry    *NewTOCEntry = NULL,
                     *CurParent = NULL, *LastTOCEntry = NULL;
@@ -741,7 +746,7 @@ Bool16 QTFile::GenerateAtomTOC(void)
 
         if (0 == BigAtomLength)
         {
-            DEEP_DEBUG_PRINT(("QTFile::GenerateAtomTOC - Bail atom is bad. type= '%c%c%c%c'; pos=%"_64BITARG_"u; length=%"_64BITARG_"u; header=%lu.\n",
+            DEEP_DEBUG_PRINT(("QTFile::GenerateAtomTOC - Bail atom is bad. type= '%c%c%c%c'; pos=%"_64BITARG_"u; length=%"_64BITARG_"u; header=%"_U32BITARG_".\n",
             (char)((AtomType & 0xff000000) >> 24),
             (char)((AtomType & 0x00ff0000) >> 16),
             (char)((AtomType & 0x0000ff00) >> 8),
@@ -752,7 +757,7 @@ Bool16 QTFile::GenerateAtomTOC(void)
         }
 
         if (hasBigAtom)
-        {    DEEP_DEBUG_PRINT(("QTFile::GenerateAtomTOC - Found 64 bit atom '%c%c%c%c'; pos=%"_64BITARG_"u; length=%"_64BITARG_"u; header=%lu.\n",
+        {    DEEP_DEBUG_PRINT(("QTFile::GenerateAtomTOC - Found 64 bit atom '%c%c%c%c'; pos=%"_64BITARG_"u; length=%"_64BITARG_"u; header=%"_U32BITARG_".\n",
             (char)((AtomType & 0xff000000) >> 24),
             (char)((AtomType & 0x00ff0000) >> 16),
             (char)((AtomType & 0x0000ff00) >> 8),
@@ -760,7 +765,7 @@ Bool16 QTFile::GenerateAtomTOC(void)
             CurPos - CurAtomHeaderSize, BigAtomLength, CurAtomHeaderSize));
         }
         else
-        {    DEEP_DEBUG_PRINT(("QTFile::GenerateAtomTOC - Found 32 bit atom '%c%c%c%c'; pos=%"_64BITARG_"u; length=%"_64BITARG_"u; header=%lu.\n",
+        {    DEEP_DEBUG_PRINT(("QTFile::GenerateAtomTOC - Found 32 bit atom '%c%c%c%c'; pos=%"_64BITARG_"u; length=%"_64BITARG_"u; header=%"_U32BITARG_".\n",
             (char)((AtomType & 0xff000000) >> 24),
             (char)((AtomType & 0x00ff0000) >> 16),
             (char)((AtomType & 0x0000ff00) >> 8),
@@ -905,7 +910,7 @@ lbl_SkipAtom:
 
 char *QTFile::MapFileToMem(UInt64 offset, UInt32 length)
 {
-#if __MacOSX__
+#if MMAP_TABLES
     char*  mappedMem = (char *) mmap( NULL,
                             (size_t) length,
                             PROT_READ,
@@ -926,7 +931,7 @@ char *QTFile::MapFileToMem(UInt64 offset, UInt32 length)
 
 int QTFile::UnmapMem(char* memPtr, UInt32 length)
 {
-#if __MacOSX__
+#if MMAP_TABLES
     return munmap( (caddr_t) memPtr, (size_t) length);
 #else
     return 0;
@@ -949,7 +954,7 @@ void QTFile::DumpAtomTOC(void)
     {
     
         // Print out this atom.     
-        DEBUG_PRINT(("%s[%03lu] AtomType=%c%c%c%c; AtomDataPos=%"_64BITARG_"u; AtomDataLength=%"_64BITARG_"u\n",
+        DEBUG_PRINT(("%s[%03"_U32BITARG_"] AtomType=%c%c%c%c; AtomDataPos=%"_64BITARG_"u; AtomDataLength=%"_64BITARG_"u\n",
         Indent,
         Atom->TOCID,
         (char)((Atom->AtomType & 0xff000000) >> 24),

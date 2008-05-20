@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -146,8 +146,8 @@ Bool16 QTFile_FileControlBlock::Read(FILE_SOURCE *dflt, UInt64 inPosition, void*
         )
     {
         //if ( !fCacheEnabled) qtss_printf("QTFile_FileControlBlock::Read  cache not enabled\n");
-        //if ( inLength > fDataBufferSize) qtss_printf("QTFile_FileControlBlock::Read  read too big for cache len=%lu max%lu\n",inLength,fDataBufferSize);
-        //if ( inPosition < fDataBufferPosStart) qtss_printf("QTFile_FileControlBlock::Read  backing up skipping cache missed by =%lu bytes\n", fDataBufferPosStart - inPosition);
+        //if ( inLength > fDataBufferSize) qtss_printf("QTFile_FileControlBlock::Read  read too big for cache len=%"_U32BITARG_" max%"_U32BITARG_"\n",inLength,fDataBufferSize);
+        //if ( inPosition < fDataBufferPosStart) qtss_printf("QTFile_FileControlBlock::Read  backing up skipping cache missed by =%"_U32BITARG_" bytes\n", fDataBufferPosStart - inPosition);
         result = this->ReadInternal(dataFD, inPosition, inBuffer, inLength);
         goto done;
     }
@@ -305,7 +305,7 @@ void QTFile_FileControlBlock::AdjustDataBufferBitRate(UInt32 inUnitSizeInK, UInt
     
     newDataBufferSize = newDataBufferSizeInUnits * kBlockByteSize;
     
-    //qtss_printf("QTFile_FileControlBlock::AdjustDataBuffer private buffers NewDataBufferSizeInUnits =%lu NewDataBufferSize = %lu\n",newDataBufferSizeInUnits,newDataBufferSize);
+    //qtss_printf("QTFile_FileControlBlock::AdjustDataBuffer private buffers NewDataBufferSizeInUnits =%"_U32BITARG_" NewDataBufferSize = %"_U32BITARG_"\n",newDataBufferSizeInUnits,newDataBufferSize);
 
     // Free the old buffer.
     delete[] fDataBufferPool;

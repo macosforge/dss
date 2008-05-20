@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -67,7 +67,10 @@ class OS
                             
 		static SInt64	TimeMilli_To_Fixed64Secs(SInt64 inMilliseconds); //new CISCO provided implementation
         //disable: calculates integer value only                { return (SInt64) ( (Float64) inMilliseconds / 1000) * ((SInt64) 1 << 32 ) ; }
+		static SInt64	Fixed64Secs_To_TimeMilli(SInt64 inFixed64Secs)
+						{ UInt64 value = (UInt64) inFixed64Secs; return (value >> 32) * 1000 + (((value % ((UInt64) 1 << 32)) * 1000) >> 32); }
 		
+		//This converts the local time (from OS::Milliseconds) to NTP time.
 		static SInt64	TimeMilli_To_1900Fixed64Secs(SInt64 inMilliseconds)
 						{ return TimeMilli_To_Fixed64Secs(sMsecSince1900) + TimeMilli_To_Fixed64Secs(inMilliseconds); }
 

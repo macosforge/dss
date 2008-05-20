@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -73,6 +73,8 @@ void usage();
 void usage()
 {
     const char *usage_name = PLATFORM_SERVER_BIN_NAME;
+//long ptrsize = sizeof(char *); printf("size of ptr = %ld\n", ptrsize);
+//long longsize = sizeof(long); printf("size of long = %ld\n", longsize);
 
    qtss_printf("%s/%s ( Build/%s; Platform/%s; %s) Built on: %s\n",QTSServerInterface::GetServerName().Ptr,
                                         QTSServerInterface::GetServerVersion().Ptr,
@@ -97,7 +99,7 @@ Bool16 sendtochild(int sig, pid_t myPID)
 {
     if (sChildPID != 0 && sChildPID != myPID) // this is the parent
     {   // Send signal to child
-        ::kill(sChildPID, sig);						
+        ::kill(sChildPID, sig);
         return true;
     }
 
@@ -206,6 +208,8 @@ int main(int argc, char * argv[])
 {
     extern char* optarg;
     
+    
+
     // on write, don't send signal for SIGPIPE, just set errno to EPIPE
     // and return -1
     //signal is a deprecated and potentially dangerous function
@@ -233,7 +237,7 @@ int main(int argc, char * argv[])
     (void)::sigaction(SIGALRM, &act, NULL);
 
 
-#if __MacOSX__ || __solaris__ || __linux__ || __hpux__
+#if __solaris__ || __linux__ || __hpux__
     //grow our pool of file descriptors to the max!
     struct rlimit rl;
     
@@ -245,18 +249,27 @@ int main(int argc, char * argv[])
 #endif
 
 #if __MacOSX__
-   getrlimit(RLIMIT_NOFILE,  &rl); //get the resulting max value from setting RLIM_INFINITY
-   rl.rlim_cur = (rlim_t) ( (float) rl.rlim_cur * 0.9);   //use 90%
-   rl. rlim_max = (rlim_t) ( (float) rl. rlim_max * 0.9);   //use 90%
-   setrlimit (RLIMIT_NOFILE, &rl);
+    struct rlimit rl;
+    getrlimit(RLIMIT_NOFILE,  &rl); //get the default values
+    //printf("current open file limit =%"_U32BITARG_"\n", (UInt32) rl.rlim_cur); //leopard returns  256
+    //printf("current open file max =%"_U32BITARG_"\n", (UInt32) rl.rlim_max);//leopard returns infinity (-1)
+    
+    rl. rlim_max = (rlim_t) RLIM_INFINITY -1; //use a big number to find out the real max but do not use RLIM_INFINITY that is not allowed. see man page
+    setrlimit (RLIMIT_NOFILE, &rl); //resets the max value stored by limits to the boot config values.
+    getrlimit(RLIMIT_NOFILE,  &rl); //now get the real max value
+    //printf("current open file limit =%"_U32BITARG_"\n", (UInt32) rl.rlim_cur);
+    //printf("current open file max =%"_U32BITARG_"\n", (UInt32) rl.rlim_max);
+    
+    rl.rlim_cur = (rlim_t) ( (float) rl.rlim_max * 0.9);   //use 90% of the max set in /etc/rc.server and /etc/sysctl.conf.default
+    setrlimit (RLIMIT_NOFILE, &rl);  //finally set the current limit 
+    
 #endif
-
+    
 #if 0 // testing
     getrlimit(RLIMIT_NOFILE,  &rl);
-    printf("current open file limit =%lu\n", (long unsigned) rl.rlim_cur);
-    printf("current open file max =%lu\n", (long unsigned) rl.rlim_max);
+    printf("current open file limit =%"_U32BITARG_"\n", (UInt32) rl.rlim_cur);
+    printf("current open file max =%"_U32BITARG_"\n", (UInt32) rl.rlim_max);
 #endif
-
 
 #if __MacOSX__ || __FreeBSD__
         //
@@ -272,8 +285,10 @@ int main(int argc, char * argv[])
         mib[2] = KIPC_MAXSOCKBUF;
         mib[3] = 0;
 
-        int maxSocketBufferSizeVal = 2048 * 1024; // Allow up to 2 MB. That is WAY more than we should need
+        int maxSocketBufferSizeVal = 2000 * 1024; // Allow up to 2 MB. That is WAY more than we should need
         (void) ::sysctl(mib, 3, 0, 0, &maxSocketBufferSizeVal, sizeof(maxSocketBufferSizeVal));
+        //int sysctlErr =  ::sysctl(mib, 3, 0, 0, &maxSocketBufferSizeVal, sizeof(maxSocketBufferSizeVal));
+        //qtss_printf("sysctl maxSocketBufferSizeVal=%d err=%d\n",maxSocketBufferSizeVal, sysctlErr);
  #endif
     
     //First thing to do is to read command-line arguments.

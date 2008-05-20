@@ -2,7 +2,10 @@
 #define __playlist_picker__
 
 /*
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
+ *
+ * @APPLE_LICENSE_HEADER_START@
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
  *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
@@ -10,7 +13,7 @@
  * compliance with the License. Please obtain a copy of the License at
  * http://www.opensource.apple.com/apsl/ and read it before using this
  * file.
- *
+ * 
  * The Original Code and all software distributed under the License are
  * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
@@ -18,6 +21,9 @@
  * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
  * Please see the License for the specific language governing rights and
  * limitations under the License.
+ * 
+ * @APPLE_LICENSE_HEADER_END@
+ *
  */
 
 
@@ -49,8 +55,8 @@ class PlaylistPicker
         bool        mRemoveFlag;
         bool        mStopFlag;
 /* ***************************************************** */
-        long*       mPickCounts;
-        long        mNumToPickFrom;
+        SInt32*       mPickCounts;
+        SInt32        mNumToPickFrom;
         UInt32      mRecentMoviesListSize;
         char*       fLastPick;
         PLDoubleLinkedList<SimplePlayListElement>*  GetBucket( UInt32 myIndex ) { return mElementLists[myIndex]; }

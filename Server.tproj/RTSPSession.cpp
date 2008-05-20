@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -31,11 +31,13 @@
 */
 #define __RTSP_HTTP_DEBUG__ 0
 #define __RTSP_HTTP_VERBOSE__ 0
-#define __RTSP_AUTHENTICATION_DEBUG__ 0
+#define __RTSP_AUTH_DEBUG__ 0
+#define debug_printf if (__RTSP_AUTH_DEBUG__) qtss_printf
 
 #include "RTSPSession.h"
 #include "RTSPRequest.h"
 #include "QTSServerInterface.h"
+#include "RTSPRequest3GPP.h"
 
 #include "MyAssert.h"
 #include "OSMemory.h"
@@ -46,6 +48,7 @@
 #include "base64.h"
 #include "OSArrayObjectDeleter.h"
 #include "md5digest.h"
+#include "QTSSDataConverter.h"
 
 #if __FreeBSD__ || __hpux__	
     #include <unistd.h>
@@ -196,6 +199,7 @@ RTSPSession::~RTSPSession()
     for (UInt32 x = 0; x < QTSServerInterface::GetNumModulesInRole(QTSSModule::kRTSPSessionClosingRole); x++)
         (void)QTSServerInterface::GetModule(QTSSModule::kRTSPSessionClosingRole, x)->CallDispatch(QTSS_RTSPSessionClosing_Role, &theParams);
 
+    fLiveSession = false; //used in Clean up request to remove the RTP session.
     this->CleanupRequest();// Make sure that all our objects are deleted
     if (fSessionType == qtssRTSPSession)
         QTSServerInterface::GetServer()->AlterCurrentRTSPSessionCount(-1);
@@ -495,14 +499,14 @@ SInt64 RTSPSession::Run()
                     break;
                 }
 
-				if (fSentOptionsRequest && this->ParseOptionsResponse())
-				{
-					fRoundTripTime = (SInt32) (OS::Milliseconds() - fOptionsRequestSendTime);
-					//qtss_printf("RTSPSession::Run RTT time = %ld msec\n", fRoundTripTime);
-					fState = kSendingResponse;
-					break;
-				}
-				else	
+                if (fSentOptionsRequest && this->ParseOptionsResponse())
+                {
+                    fRoundTripTime = (SInt32) (OS::Milliseconds() - fOptionsRequestSendTime);
+                    //qtss_printf("RTSPSession::Run RTT time = %"_S32BITARG_" msec\n", fRoundTripTime);
+                    fState = kSendingResponse;
+                    break;
+                }
+                else	
                 // Otherwise, this is a normal request, so parse it and get the RTPSession.
                     this->SetupRequest();
                 
@@ -588,7 +592,19 @@ SInt64 RTSPSession::Run()
             
             case kAuthenticatingRequest:
             {
+                Bool16      allowedDefault = QTSServerInterface::GetServer()->GetPrefs()->GetAllowGuestDefault();
+                Bool16      allowed = allowedDefault; //server pref?
+                Bool16      hasUser = false; 
+                Bool16      handled = false;
+                Bool16      wasHandled = false;
+
+                StrPtrLenDel prefRealm(QTSServerInterface::GetServer()->GetPrefs()->GetAuthorizationRealm());      
+                if (prefRealm.Ptr != NULL)
+                {  
+                    fRequest->SetValue(qtssRTSPReqURLRealm,0, prefRealm.Ptr, prefRealm.Len, kDontObeyReadOnly);
+                }
                 
+
                 QTSS_RTSPMethod method = fRequest->GetMethod();
                 if (method != qtssIllegalMethod) do  
                 {   //Set the request action before calling the authentication module
@@ -618,6 +634,9 @@ SInt64 RTSPSession::Run()
                             fRequest->SetAuthScheme(qtssAuthBasic);
                     else if( scheme == qtssAuthDigest)
                             fRequest->SetAuthScheme(qtssAuthDigest);
+                    
+                    if( scheme == qtssAuthDigest)
+                        debug_printf("RTSPSession.cpp:kAuthenticatingRequest  scheme == qtssAuthDigest\n");
                 }
                 
                 // Setup the authentication param block
@@ -626,21 +645,48 @@ SInt64 RTSPSession::Run()
             
                 fModuleState.eventRequested = false;
                 fModuleState.idleTime = 0;
-                if (QTSServerInterface::GetNumModulesInRole(QTSSModule::kRTSPAthnRole) > 0)
+
+                fRequest->SetAllowed(allowed);  
+                fRequest->SetHasUser(hasUser);
+                fRequest->SetAuthHandled(handled);
+
+                StrPtrLen* lastUsedDigestChallengePtr = this->GetValue(qtssRTSPSesLastDigestChallenge);
+                if (lastUsedDigestChallengePtr != NULL)
+                    (void) fRequest->SetValue(qtssRTSPReqDigestChallenge,(UInt32) 0,(void *) lastUsedDigestChallengePtr->Ptr,lastUsedDigestChallengePtr->Len, QTSSDictionary::kDontObeyReadOnly);
+                
+
+                numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kRTSPAthnRole);
+                for (fCurrentModule = 0; (fCurrentModule < numModules) && ((!fRequest->HasResponseBeenSent()) || fModuleState.eventRequested); fCurrentModule++)
                 {
+  
+                    fRequest->SetAllowed(allowedDefault);  
+                    fRequest->SetHasUser(false);
+                    fRequest->SetAuthHandled(false);
+                    debug_printf("RTSPSession.cpp:kAuthenticatingRequest  fCurrentModule = %lu numModules=%lu\n", fCurrentModule,numModules);
+                    
+                    
+                    fModuleState.eventRequested = false;
+                    fModuleState.idleTime = 0;
                     if (fModuleState.globalLockRequested )
-                    {   
-                        fModuleState.globalLockRequested = false;
+                    {   fModuleState.globalLockRequested = false;
                         fModuleState.isGlobalLocked = true;
                     } 
+ 
 
-                    theModule = QTSServerInterface::GetModule(QTSSModule::kRTSPAthnRole, 0);
+                    theModule = QTSServerInterface::GetModule(QTSSModule::kRTSPAthnRole, fCurrentModule);
+                    if (NULL == theModule)
+                        continue;
+                        
+            if (__RTSP_AUTH_DEBUG__)
+            {    theModule->GetValue(qtssModName)->PrintStr("QTSSModule::CallDispatch ENTER module=", "\n");
+            }  
+
                     (void)theModule->CallDispatch(QTSS_RTSPAuthenticate_Role, &theAuthenticationParams);
                     fModuleState.isGlobalLocked = false;
-                        
+
                     if (fModuleState.globalLockRequested) // call this request back locked
                         return this->CallLocked();
-
+                        
                     // If this module has requested an event, return and wait for the event to transpire
                     if (fModuleState.eventRequested)
                     {
@@ -648,9 +694,24 @@ SInt64 RTSPSession::Run()
                                                     // the same thread to be used for next Run()
                         return fModuleState.idleTime; // If the module has requested idle time...
                     }
+
+                    allowed = fRequest->GetAllowed();
+                    hasUser = fRequest->GetHasUser();
+                    handled = fRequest->GetAuthHandled();
+                    debug_printf("RTSPSession::Run Role(kAuthenticatingRequest) allowedDefault =%d allowed= %d hasUser = %d handled=%d \n",allowedDefault, allowed,hasUser, handled);
+                    if (handled) 
+                        wasHandled = handled;
+                    
+                    if (hasUser || handled ) 
+                    {   
+                        debug_printf("RTSPSession.cpp::Run(kAuthenticatingRequest)  skipping other modules fCurrentModule = %lu numModules=%lu\n", fCurrentModule,numModules);
+                        break;
+                    }
+
                 }
                 
-                this->CheckAuthentication();
+                if (!wasHandled) //don't check and possibly fail the user if it the user has already been checked.
+                    this->CheckAuthentication();
                                                 
                 fCurrentModule = 0;
                 if (fRequest->HasResponseBeenSent())
@@ -664,8 +725,10 @@ SInt64 RTSPSession::Run()
             {
                 // Invoke authorization modules
                 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kRTSPAuthRole);
-
-                Bool16      allowed = true; 
+                Bool16      allowedDefault = QTSServerInterface::GetServer()->GetPrefs()->GetAllowGuestDefault();
+                Bool16      allowed = true;
+                Bool16      hasUser = false;
+                Bool16      handled = false;
                 QTSS_Error  theErr = QTSS_NoErr;
                                 
                 // Invoke authorization modules
@@ -675,10 +738,16 @@ SInt64 RTSPSession::Run()
                 Assert(fRTPSession != NULL);
                 OSMutexLocker   locker(fRTPSession->GetSessionMutex());
 
-                fRequest->SetAllowed(allowed);                  
+                fRequest->SetAllowed(allowed);  
+                fRequest->SetHasUser(hasUser);
+                fRequest->SetAuthHandled(handled);
             
                 for (; (fCurrentModule < numModules) && ((!fRequest->HasResponseBeenSent()) || fModuleState.eventRequested); fCurrentModule++)
                 {
+                    fRequest->SetHasUser(false);
+                    fRequest->SetAuthHandled(false);
+                    debug_printf("RTSPSession.cpp:kAuthorizingRequest  BEFORE DISPATCH fCurrentModule = %lu numModules=%lu\n", fCurrentModule,numModules);
+
                     fModuleState.eventRequested = false;
                     fModuleState.idleTime = 0;
                     if (fModuleState.globalLockRequested )
@@ -687,6 +756,14 @@ SInt64 RTSPSession::Run()
                     } 
                     
                     theModule = QTSServerInterface::GetModule(QTSSModule::kRTSPAuthRole, fCurrentModule);
+                   if (NULL == theModule)
+                        continue;
+                        
+            if (__RTSP_AUTH_DEBUG__)
+            {    theModule->GetValue(qtssModName)->PrintStr("QTSSModule::CallDispatch ENTER module=", "\n");
+            }  
+
+
                     (void)theModule->CallDispatch(QTSS_RTSPAuthorize_Role, &fRoleParams);
                     fModuleState.isGlobalLocked = false;
 
@@ -700,23 +777,29 @@ SInt64 RTSPSession::Run()
                                                     // the same thread to be used for next Run()
                         return fModuleState.idleTime; // If the module has requested idle time...
                     }
-                        
-                    // If module has failed the request send a response and exit loop   
+
+                    // allowed != default means a module has set the result
+                    // handled means a module wants to be the primary for this request
+                    // -- example qtaccess says only allow valid user and allowed default is false.  So module says handled, hasUser is false, allowed is false
+                    // 
                     allowed = fRequest->GetAllowed();
+                    hasUser = fRequest->GetHasUser();
+                    handled = fRequest->GetAuthHandled();
+                    debug_printf("RTSPSession::Run Role(kAuthorizingRequest) allowedDefault =%d allowed= %d hasUser = %d handled=%d \n",allowedDefault, allowed,hasUser, handled);
                     
-                    #if __RTSP_AUTHENTICATION_DEBUG__
-                    {
-                        UInt32 len = sizeof(Bool16);
-                        theErr = fRequest->GetValue(qtssRTSPReqUserAllowed,0,  &allowed, &len);
-                        qtss_printf("Module result for qtssRTSPReqUserAllowed = %d err = %ld \n",allowed,theErr);
-                    }
-                    #endif
-                    
-                    if (!allowed) 
+                    if (!allowed && !handled)  //old module break on !allowed
+                    {   
+                        debug_printf("RTSPSession.cpp::Run(kAuthorizingRequest)  skipping other modules fCurrentModule = %lu numModules=%lu\n", fCurrentModule,numModules);
                         break;
+                    }
+                    if (!allowed && hasUser && handled)  //new module break on !allowed
+                    {   
+                        debug_printf("RTSPSession.cpp::Run(kAuthorizingRequest)  skipping other modules fCurrentModule = %lu numModules=%lu\n", fCurrentModule,numModules);
+                        break;
+                    }
+                   
 
                 }
-                
                 this->SaveRequestAuthorizationParams(fRequest);
 
                 if (!allowed) 
@@ -724,7 +807,14 @@ SInt64 RTSPSession::Run()
                     if (false == fRequest->HasResponseBeenSent())
                     {
                         QTSS_AuthScheme challengeScheme = fRequest->GetAuthScheme();
-                                                                
+                   
+                        if( challengeScheme == qtssAuthDigest)
+                        {    debug_printf("RTSPSession.cpp:kAuthorizingRequest  scheme == qtssAuthDigest)\n");
+                        }
+                        else if( challengeScheme == qtssAuthBasic)
+                        {     debug_printf("RTSPSession.cpp:kAuthorizingRequest  scheme == qtssAuthBasic)\n");
+                        }
+
                         if(challengeScheme == qtssAuthBasic) {
                             fRTPSession->SetAuthScheme(qtssAuthBasic);
                             theErr = fRequest->SendBasicChallenge();
@@ -732,7 +822,7 @@ SInt64 RTSPSession::Run()
                         else if(challengeScheme == qtssAuthDigest) {
                             fRTPSession->UpdateDigestAuthChallengeParams(false, false, RTSPSessionInterface::kNoQop);
                             theErr = fRequest->SendDigestChallenge(fRTPSession->GetAuthQop(), fRTPSession->GetAuthNonce(), fRTPSession->GetAuthOpaque());
-                        }
+                         }
                         else {
                             // No authentication scheme is given and the request was not allowed,
                             // so send a 403: Forbidden message
@@ -743,12 +833,10 @@ SInt64 RTSPSession::Run()
                             fRequest->SetResponseKeepAlive(false);
                             fCurrentModule = 0;
                             fState = kPostProcessingRequest;
-                            //if (fRTPSession) fRTPSession->Teardown(); // make sure the RTP Session is ended and logged
                             break;
                             
                         }                   
                     }
-                    //if (fRTPSession) fRTPSession->Teardown(); // close RTP Session and log
                 }
                     
                 fCurrentModule = 0;
@@ -846,6 +934,8 @@ SInt64 RTSPSession::Run()
                     if (fRTPSession->HasAnRTPStream() && fRTPSession->GetPacketSendingModule() == NULL)
                         fRTPSession->SetPacketSendingModule(theModule);
                         
+                    this->Process3GPPData();
+
                     if (fModuleState.globalLockRequested) // call this request back locked
                         return this->CallLocked();
 
@@ -949,22 +1039,22 @@ SInt64 RTSPSession::Run()
                 // RTSP request output buffer is completely flushed to the socket.
                 Assert(fRequest != NULL);
                 
-				// If x-dynamic-rate header is sent with a value of 1, send OPTIONS request
-				if ((fRequest->GetMethod() == qtssSetupMethod) && (fRequest->GetStatus() == qtssSuccessOK)
-				    && (fRequest->GetDynamicRateState() == 1) && fRoundTripTimeCalculation)
-				{
-					this->SaveOutputStream();
-					this->ResetOutputStream();
-					this->SendOptionsRequest();
-				}
-			
-				if (fSentOptionsRequest && (fRequest->GetMethod() == qtssIllegalMethod))
-				{
-					this->ResetOutputStream();
-					this->RevertOutputStream();
-					fSentOptionsRequest = false;
-				}
-				
+                // If x-dynamic-rate header is sent with a value of 1, send OPTIONS request
+                if ((fRequest->GetMethod() == qtssSetupMethod) && (fRequest->GetStatus() == qtssSuccessOK)
+                    && (fRequest->GetDynamicRateState() == 1) && fRoundTripTimeCalculation)
+                {
+                    this->SaveOutputStream();
+                    this->ResetOutputStream();
+                    this->SendOptionsRequest();
+                }
+            
+                if (fSentOptionsRequest && (fRequest->GetMethod() == qtssIllegalMethod))
+                {
+                    this->ResetOutputStream();
+                    this->RevertOutputStream();
+                    fSentOptionsRequest = false;
+                }
+                
                 err = fOutputStream.Flush();
                 
                 if (err == EAGAIN)
@@ -1376,7 +1466,7 @@ void RTSPSession::CheckAuthentication() {
     StrPtrLen* userPassword = profile->GetValue(qtssUserPassword);
     QTSS_AuthScheme scheme = fRequest->GetAuthScheme();
     Bool16 authenticated = true;
-    
+ 
     // Check if authorization information returned by the client is for the scheme that the server sent the challenge
     if(scheme != (fRTPSession->GetAuthScheme())) {
         authenticated = false;
@@ -1454,12 +1544,20 @@ void RTSPSession::CheckAuthentication() {
             // For qop="auth"
             if(qop ==  RTSPSessionInterface::kAuthQop) {
                 StrPtrLen* nonceCount = fRequest->GetAuthNonceCount();
+                UInt32 ncValue = 0;
+
                 // Convert nounce count (which is a string of 8 hex digits) into a UInt32
-                UInt32 ncValue, i, pos = 1;
-                ncValue = (nonceCount->Ptr)[nonceCount->Len - 1];
-                for(i = (nonceCount->Len - 1); i > 0; i--) {
-                    pos *= 16;
-                    ncValue += (nonceCount->Ptr)[i - 1] * pos;
+                if (nonceCount && nonceCount->Len)
+                {
+                     // Convert nounce count (which is a string of 8 hex digits) into a UInt32                 
+                    UInt32 bufSize = sizeof(ncValue);
+                    StrPtrLenDel tempString(nonceCount->GetAsCString());
+                    tempString.ToUpper();
+                    QTSSDataConverter::ConvertCHexStringToBytes(tempString.Ptr,
+                                                        &ncValue,
+                                                        &bufSize);
+                    ncValue = ntohl(ncValue);
+                                                        
                 }
                 // nonce count must not be repeated by the client
                 if(ncValue < (fRTPSession->GetAuthNonceCount())) { 
@@ -1499,10 +1597,14 @@ void RTSPSession::CheckAuthentication() {
     
     // If authenticaton failed, set qtssUserName in the qtssRTSPReqUserProfile attribute
     // to NULL and clear out the password and any groups that have been set.
-    if((!authenticated) || (authenticated && (fRequest->GetStale()))) {
-        (void)profile->SetValue(qtssUserName, 0,  sEmptyStr.Ptr, sEmptyStr.Len, QTSSDictionary::kDontObeyReadOnly);
-        (void)profile->SetValue(qtssUserPassword, 0,  sEmptyStr.Ptr, sEmptyStr.Len, QTSSDictionary::kDontObeyReadOnly);
-        (void)profile->SetNumValues(qtssUserGroups, 0);
+    if (!fRequest->GetAuthHandled())
+    {
+        if((!authenticated) || (authenticated && (fRequest->GetStale()))) {
+            debug_printf("erasing username from profile\n");
+            (void)profile->SetValue(qtssUserName, 0,  sEmptyStr.Ptr, sEmptyStr.Len, QTSSDictionary::kDontObeyReadOnly);
+            (void)profile->SetValue(qtssUserPassword, 0,  sEmptyStr.Ptr, sEmptyStr.Len, QTSSDictionary::kDontObeyReadOnly);
+            (void)profile->SetNumValues(qtssUserGroups, 0);
+        }
     }
 }
 
@@ -1515,6 +1617,47 @@ Bool16 RTSPSession::ParseOptionsResponse()
 	parser.ConsumeLength(&theProtocol, 4);
 	
 	return (theProtocol.Equal(sRTSPStr));
+}
+
+void RTSPSession::Process3GPPData()
+{
+    if (fRTPSession == NULL)
+        return;
+        
+        
+    RTSPRequest3GPP* request3GPPInfoPtr = fRequest->GetRequest3GPPInfo();
+    
+    if (!request3GPPInfoPtr || !request3GPPInfoPtr->Is3GPP())
+        return;
+      
+    fRTPSession->SetIs3GPPSession(true);
+      
+    if (request3GPPInfoPtr->HasLinkChar())
+    {
+        StrPtrLen dataStr;
+        LinkCharDataFields linkCharFieldsParser;
+        if(0 == fRequest->GetHeaderDictionary()->GetValuePtr(qtss3GPPLinkCharHeader, 0, (void**) &dataStr.Ptr, &dataStr.Len, true))
+        {
+            linkCharFieldsParser.SetData(&dataStr);
+            fRTPSession->Set3GPPLinkCharData(&linkCharFieldsParser); 
+        }
+    }
+    
+        
+    if (request3GPPInfoPtr->HasRateAdaptation())
+    {
+        StrPtrLen dataStr;
+        RateAdapationStreamDataFields fieldsParser;
+        
+        for (int numValues = 0; request3GPPInfoPtr->GetValuePtr(qtss3GPPRequestRateAdaptationStreamData, numValues, (void**) &dataStr.Ptr, &dataStr.Len) == QTSS_NoErr; numValues++)
+        {
+            //dataStr.PrintStr("RTSPSession::Process3GPPData qtss3GPPRequestRateAdaptationStreamData=[","]\n");      
+            fieldsParser.SetData(&dataStr);       
+            fRTPSession->Set3GPPRateAdaptionData(&fieldsParser);                             
+        }
+    }
+    
+    return;
 }
 
 void RTSPSession::SetupRequest()
@@ -1532,17 +1675,31 @@ void RTSPSession::SetupRequest()
     theErr = this->FindRTPSession(theMap);
     
     if (fRTPSession != NULL)
-        fRTPSession->RefreshTimeout();
+    {        
+        OSMutexLocker locker(fRTPSession->GetMutex());
 
+        fRTPSession->RefreshTimeout();
+        UInt32 headerBits = fRequest->GetBandwidthHeaderBits();
+        if (headerBits != 0)
+            (void)fRTPSession->SetValue(qtssCliSessLastRTSPBandwidth, (UInt32) 0,&headerBits,sizeof(headerBits), QTSSDictionary::kDontObeyReadOnly );
+
+        
+    }
     QTSS_RTSPStatusCode statusCode = qtssSuccessOK;
     char *body = NULL;
     UInt32 bodySizeBytes = 0;
     
+
     //
     // If this is an OPTIONS request, don't even bother letting modules see it. Just
-    // send a standard OPTIONS response, and bedone.
+    // send a standard OPTIONS response, and be done.
     if (fRequest->GetMethod() == qtssOptionsMethod)
     {
+    
+    
+    
+        this->Process3GPPData();
+        
         StrPtrLen* cSeqPtr = fRequest->GetHeaderDictionary()->GetValue(qtssCSeqHeader);
         if (cSeqPtr == NULL || cSeqPtr->Len == 0)
         {   
@@ -1581,7 +1738,7 @@ void RTSPSession::SetupRequest()
 	if (fRequest->GetMethod() == qtssSetParameterMethod)
 	{
          
-
+ 
 		// Check that it has the CSeq header
 		StrPtrLen* cSeqPtr = fRequest->GetHeaderDictionary()->GetValue(qtssCSeqHeader);
 		if (cSeqPtr == NULL || cSeqPtr->Len == 0) // keep session
@@ -1605,6 +1762,7 @@ void RTSPSession::SetupRequest()
 		// refresh RTP session timeout so that it's kept alive in sync with the RTSP session.
 		if (fRequest->GetLateToleranceInSec() != -1)
         {
+            OSMutexLocker locker(fRTPSession->GetMutex());
             fRTPSession->SetStreamThinningParams(fRequest->GetLateToleranceInSec());
             fRequest->SendHeader();
             return;
@@ -1634,6 +1792,12 @@ void RTSPSession::SetupRequest()
         if (theErr != QTSS_NoErr)
             return;
     }
+
+
+    OSMutexLocker locker(fRTPSession->GetMutex());
+    UInt32 headerBits = fRequest->GetBandwidthHeaderBits();
+    if (headerBits != 0)
+        (void)fRTPSession->SetValue(qtssCliSessLastRTSPBandwidth, 0,&headerBits,sizeof(headerBits), QTSSDictionary::kDontObeyReadOnly );
 
 	// If it's a play request and the late tolerance is sent in the request use this value
 	if ((fRequest->GetMethod() == qtssPlayMethod) && (fRequest->GetLateToleranceInSec() != -1))
@@ -1672,6 +1836,11 @@ void RTSPSession::CleanupRequest()
         // NULL out any references to this RTP session
         fRTPSession = NULL;
         fRoleParams.rtspRequestParams.inClientSession = NULL;
+    }
+     
+    if (this->IsLiveSession() == false) //clear out the ID so it can't be re-used.
+    {   fLastRTPSessionID[0] = 0;
+        fLastRTPSessionIDPtr.Set( fLastRTPSessionID, 0 );
     }
     
     if (fRequest != NULL)

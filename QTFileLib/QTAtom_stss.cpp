@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -22,7 +22,7 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-// $Id: QTAtom_stss.cpp,v 1.11.14.2 2007/04/19 04:16:21 murata Exp $
+// $Id: QTAtom_stss.cpp,v 1.2 2006/03/29 00:47:00 murata Exp $
 //
 // QTAtom_stss:
 //   The 'stss' QTAtom class.
@@ -76,7 +76,7 @@ QTAtom_stss::~QTAtom_stss(void)
 {
     //
     // Free our variables.
-#if __MacOSX__
+#if MMAP_TABLES
     if( fSyncSampleTable != NULL )
         this->UnMap(fSyncSampleTable, fTableSize);
 #else
@@ -108,17 +108,17 @@ Bool16 QTAtom_stss::Initialize(void)
 
         //
         // Validate the size of the sample table.
-        if( (unsigned long)(fNumEntries * 4) != (fTOCEntry.AtomDataLength - 8) )
+        if( (UInt32)(fNumEntries * 4) != (fTOCEntry.AtomDataLength - 8) )
             return false;
 
         
-#if 0 //__MacOSX__ MMAP_TABLES needs fixing. It should be page aligned and maybe on a 64bit system the whole file should be mapped.
+#if 0// MMAP_TABLES needs fixing should be page aligned and maybe on a 64bit system the whole file should be mapped.
     fTableSize = (fNumEntries * 4);
     fSyncSampleTable = this->MemMap(stssPos_SampleTable, fTableSize);
     fTable = (UInt32 *) fSyncSampleTable;
     if (fSyncSampleTable == NULL)
         return false;
- 
+        
 #else
         //
         // Read in the sync sample table.
@@ -132,8 +132,9 @@ Bool16 QTAtom_stss::Initialize(void)
             fTable = (UInt32 *)(((PointerSizedInt)fSyncSampleTable + 4) & ~((PointerSizedInt)0x3));
         
         initSucceeds = ReadBytes(stssPos_SampleTable, (char *)fTable, fNumEntries * 4);
+ 
+#endif
 
-#endif        
         if ( initSucceeds )
         {
             // This atom has been successfully read in.
@@ -208,7 +209,7 @@ void QTAtom_stss::NextSyncSample(UInt32 SampleNumber, UInt32 *SyncSampleNumber)
 void QTAtom_stss::DumpAtom(void)
 {
     DEBUG_PRINT(("QTAtom_stss::DumpAtom - Dumping atom.\n"));
-    DEBUG_PRINT(("QTAtom_stss::DumpAtom - ..Number of sync sample entries: %ld\n", fNumEntries));
+    DEBUG_PRINT(("QTAtom_stss::DumpAtom - ..Number of sync sample entries: %"_S32BITARG_"\n", fNumEntries));
 }
 
 void QTAtom_stss::DumpTable(void)
@@ -225,6 +226,6 @@ void QTAtom_stss::DumpTable(void)
     for( UInt32 CurEntry = 1; CurEntry <= fNumEntries; CurEntry++ ) {
         //
         // Print out a listing.
-        qtss_printf("  %10lu : %10lu\n", CurEntry, fTable[CurEntry-1]);
+        qtss_printf("  %10"_U32BITARG_" : %10"_U32BITARG_"\n", CurEntry, fTable[CurEntry-1]);
     }
 }

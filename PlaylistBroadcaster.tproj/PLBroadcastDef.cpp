@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -160,7 +160,7 @@ Bool16 PLBroadcastDef::ConfigSetter( const char* paramName, const char* paramVal
 	    {    
 	        UInt32 startTime =  time(NULL) + 2208988800LU + (time_t) ::strtol(&theValue[1], NULL, 10);
 	        char startTimeStr[20] = "";
-	        qtss_sprintf(startTimeStr,"%lu", startTime); // current time
+	        qtss_sprintf(startTimeStr,"%"_U32BITARG_"", startTime); // current time
 		    return broadcastParms->SetValue( &broadcastParms->mStartTime, startTimeStr );            
         }
           
@@ -179,7 +179,7 @@ Bool16 PLBroadcastDef::ConfigSetter( const char* paramName, const char* paramVal
             return true;
                 
         char endTimeStr[20] = "";
-        qtss_sprintf(endTimeStr,"%lu", endTime); // current time + offset time
+        qtss_sprintf(endTimeStr,"%"_U32BITARG_"", endTime); // current time + offset time
         return broadcastParms->SetValue( &broadcastParms->mEndTime, endTimeStr ); 
              
     }
@@ -225,12 +225,12 @@ Bool16 PLBroadcastDef::ConfigSetter( const char* paramName, const char* paramVal
 		if ( !paramValue[0] || !strlen(paramValue[0]) )
 			return true;
 
-  		unsigned long setvalue = kSInt32_Max;
+  		UInt32 setvalue = kSInt32_Max;
 		int maxValue = ::atoi( paramValue[0] );
   		if (maxValue >= 0)
-			setvalue = (unsigned long) maxValue;
+			setvalue = (UInt32) maxValue;
 		
-		qtss_setmaxprintfcharsinK( (unsigned long) setvalue);
+		qtss_setmaxprintfcharsinK( (UInt32) setvalue);
         return false;
     }
 
@@ -283,46 +283,42 @@ Bool16 PLBroadcastDef::SetDefaults( const char* setupFileName )
     if ( !didFail ) 
         didFail = this->SetValue( &mRTSPPort, "554" );
 
-    char    nameBuff[512];
-    ::strcpy( nameBuff, "broadcast" );
-    if (setupFileName)
-        ::strcpy( nameBuff, setupFileName );
-        
-    int     baseLen = strlen(nameBuff);
-
-/*
+    char    nameBuff[kBufferLen];
+    int     maxNameLen = kMaxBufferStringLen;  //maxNameLen = 492
+    nameBuff[ sizeof(nameBuff) -1] = 0; //term buffer
+    ::strncpy( nameBuff, "broadcast" , maxNameLen);
     
-    if you want to add .log to the base name of the 
-    description file with the .ext stripped, un comment 
-    this code.
-    rt 8.12.99
-*/
+    if (setupFileName)
+        ::strncpy( nameBuff, setupFileName , maxNameLen);
+
+    nameBuff[maxNameLen] = '\0'; //zero term the name
+        
+    int baseLen = ::strlen(nameBuff); //maxNameLen max
+
+//add .log to the base name of the description file with the .ext stripped
+
     char    *ext = NULL;
     ext = ::strrchr( nameBuff, '.' );
     if ( ext )
     {   
         *ext  = 0;
-        baseLen = ::strlen(nameBuff);
+        baseLen = ::strlen(nameBuff);        
     }
+    nameBuff[baseLen] = 0;
 
         
-    ::strcat( nameBuff, ".log" );   
+    ::strncat( nameBuff, ".log",sizeof(nameBuff) - strlen(nameBuff) - 1 );   
     if ( !didFail )
         didFail = this->SetValue( &mLogFile, nameBuff );
 
     nameBuff[baseLen] = 0;  
-    ::strcat( nameBuff, ".ply" );   
+    ::strncat( nameBuff, ".ply" ,sizeof(nameBuff) - strlen(nameBuff) - 1);   
     if ( !didFail ) 
         didFail = this->SetValue( &mPlayListFile, nameBuff );
     
-
-//  nameBuff[baseLen] = 0;
-//  ::strcat( nameBuff, ".mov" );   
-//  if ( !didFail ) 
-//      didFail = this->SetValue( &mSDPReferenceMovie, nameBuff );
     
     nameBuff[baseLen] = 0;
-    ::strcat( nameBuff, ".sdp" );
+    ::strncat( nameBuff, ".sdp" ,sizeof(nameBuff) - strlen(nameBuff) - 1 );
     if ( !didFail ) 
         didFail = this->SetValue( &mSDPFile, nameBuff );
 
@@ -332,27 +328,27 @@ Bool16 PLBroadcastDef::SetDefaults( const char* setupFileName )
 
 /* current, upcoming, and replacelist created by emil@popwire.com */
     nameBuff[baseLen] = 0;
-    ::strcat( nameBuff, ".current" );   
+    ::strncat( nameBuff, ".current" ,sizeof(nameBuff) - strlen(nameBuff) - 1 );   
     if ( !didFail )
         didFail = this->SetValue( &mCurrentFile, nameBuff );
 
     nameBuff[baseLen] = 0;
-    ::strcat( nameBuff, ".upcoming" );  
+    ::strncat( nameBuff, ".upcoming"  ,sizeof(nameBuff) - strlen(nameBuff) - 1);  
     if ( !didFail )
         didFail = this->SetValue( &mUpcomingFile, nameBuff );
 
     nameBuff[baseLen] = 0;
-    ::strcat( nameBuff, ".replacelist" );   
+    ::strncat( nameBuff, ".replacelist" ,sizeof(nameBuff) - strlen(nameBuff) - 1 );   
     if ( !didFail )
         didFail = this->SetValue( &mReplaceFile, nameBuff );
 
     nameBuff[baseLen] = 0;
-    ::strcat( nameBuff, ".stoplist" );  
+    ::strncat( nameBuff, ".stoplist"  ,sizeof(nameBuff) - strlen(nameBuff) - 1);  
     if ( !didFail )
         didFail = this->SetValue( &mStopFile, nameBuff );
         
     nameBuff[baseLen] = 0;
-    ::strcat( nameBuff, ".insertlist" );    
+    ::strncat( nameBuff, ".insertlist" ,sizeof(nameBuff) - strlen(nameBuff) - 1 );    
     if ( !didFail )
         didFail = this->SetValue( &mInsertFile, nameBuff );
     
@@ -547,7 +543,7 @@ void PLBroadcastDef::ShowSettings()
         qtss_printf( "broadcast_start_time %s (NTP seconds)\n",mStartTime);
 
         startTime -= 2208988800LU; //1970 - 1900 secs      
-        qtss_printf( "-->broadcast_start_time = %lu (unix seconds)\n",startTime);
+        qtss_printf( "-->broadcast_start_time = %"_U32BITARG_" (unix seconds)\n",startTime);
         
         time_t tmpTime;
         tmpTime = (time_t) startTime;
@@ -577,7 +573,7 @@ void PLBroadcastDef::ShowSettings()
         qtss_printf( "broadcast_end_time   %s (NTP seconds)\n",mEndTime);
         
         endTime -= 2208988800LU;//convert to 1970 secs
-        qtss_printf( "-->broadcast_end_time   = %lu (unix seconds)\n",endTime);
+        qtss_printf( "-->broadcast_end_time   = %"_U32BITARG_" (unix seconds)\n",endTime);
         
         time_t tmpTime = (time_t) endTime;
         struct tm  timeResult;
@@ -600,7 +596,7 @@ void PLBroadcastDef::ShowSettings()
     else
         qtss_printf( "broadcast_end_time   1900 + %s seconds (looks invalid)\n", mEndTime);
         
-	qtss_printf( "max_err_file_k_size %lu\n", qtss_getmaxprintfcharsinK());
+	qtss_printf( "max_err_file_k_size %"_U32BITARG_"\n", qtss_getmaxprintfcharsinK());
 
     
     qtss_printf( "============================\n" );

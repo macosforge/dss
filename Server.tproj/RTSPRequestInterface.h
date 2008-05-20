@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -47,7 +47,7 @@
 #include "RTSPProtocol.h"
 #include "QTSSMessages.h"
 #include "QTSSUserProfile.h"
-
+#include "RTSPRequest3GPP.h"
 
 class RTSPRequestInterface : public QTSSDictionary
 {
@@ -164,6 +164,12 @@ class RTSPRequestInterface : public QTSSDictionary
         Bool16                      GetAllowed()                { return fAllowed; }
         void                        SetAllowed(Bool16 allowed)  { fAllowed = allowed;}
         
+        Bool16                      GetHasUser()                 { return fHasUser; }
+        void                        SetHasUser(Bool16 hasUser)  { fHasUser = hasUser;}
+
+        Bool16                      GetAuthHandled()                 { return fAuthHandled; }
+        void                        SetAuthHandled(Bool16 handled)  { fAuthHandled = handled;}
+       
         QTSS_ActionFlags            GetAction()             { return fAction; }
         void                        SetAction(QTSS_ActionFlags action)  { fAction = action;}
 
@@ -182,6 +188,8 @@ class RTSPRequestInterface : public QTSSDictionary
         StrPtrLen*                  GetAuthResponse()           { return &fAuthResponse; }                          
         StrPtrLen*                  GetAuthOpaque()             { return &fAuthOpaque; }
         QTSSUserProfile*            GetUserProfile()            { return fUserProfilePtr; }
+        RTSPRequest3GPP*			GetRequest3GPPInfo()        { return fRequest3GPPPtr; }
+        
         
         Bool16                      GetStale()                  { return fStale; }
         void                        SetStale(Bool16 stale)      { fStale = stale; }
@@ -192,6 +200,11 @@ class RTSPRequestInterface : public QTSSDictionary
         
 		// DJM PROTOTYPE
 		UInt32						GetRandomDataSize()			{ return fRandomDataSize; }
+		
+		UInt32                      GetBandwidthHeaderBits()    { return fBandwidthBits; }
+		
+		StrPtrLen*                  GetRequestChallenge()       { return &fAuthDigestChallenge; }
+		
         
     protected:
 
@@ -247,6 +260,9 @@ class RTSPRequestInterface : public QTSSDictionary
         QTSSDictionary              fHeaderDictionary;
         
         Bool16                      fAllowed;
+        Bool16                      fHasUser;
+        Bool16                      fAuthHandled;
+        
         QTSS_RTPTransportMode       fTransportMode;
         UInt16                      fSetUpServerPort;           //send this back as the server_port if is SETUP request
     
@@ -272,7 +288,13 @@ class RTSPRequestInterface : public QTSSDictionary
         
 		// DJM PROTOTYPE
 		UInt32						fRandomDataSize;
-        
+		
+		RTSPRequest3GPP				fRequest3GPP;
+		RTSPRequest3GPP*			fRequest3GPPPtr;
+		
+		UInt32                      fBandwidthBits;
+		StrPtrLen                   fAuthDigestChallenge;
+                StrPtrLen                   fAuthDigestResponse;
     private:
 
         RTSPSessionInterface*   fSession;
@@ -299,6 +321,7 @@ class RTSPRequestInterface : public QTSSDictionary
         static void*        GetFileDigit(QTSSDictionary* inRequest, UInt32* outLen);
         static void*        GetRealStatusCode(QTSSDictionary* inRequest, UInt32* outLen);
 		static void*		GetLocalPath(QTSSDictionary* inRequest, UInt32* outLen);
+		static void* 		GetAuthDigestResponse(QTSSDictionary* inRequest, UInt32* outLen);
 
         //optimized preformatted response header strings
         static char             sPremadeHeader[kStaticHeaderSizeInBytes];

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -78,7 +78,12 @@ class StringFormatter
         void        PutEOL()            {  Put(sEOL, sEOLLen); }
         void        PutChar(char c)     { Put(&c, 1); }
         void        PutTerminator()     { PutChar('\0'); }
+		
+		//Writes a printf style formatted string
+		Bool16		PutFmtStr(const char *fmt,  ...);
+
             
+		//the number of characters in the buffer
         inline UInt32       GetCurrentOffset();
         inline UInt32       GetSpaceLeft();
         inline UInt32       GetTotalBufferSize();
@@ -92,13 +97,22 @@ class StringFormatter
         
         inline void         PutFilePath(StrPtrLen *inPath, StrPtrLen *inFileName);
         inline void         PutFilePath(char *inPath, char *inFileName);
+		
+		//Return a NEW'd copy of the buffer as a C string
+		char *GetAsCString()
+		{
+			StrPtrLen str(fStartPut, this->GetCurrentOffset());
+			return str.GetAsCString();
+		}
 
     protected:
 
         //If you fill up the StringFormatter buffer, this function will get called. By
-        //default, no action is taken. But derived objects can clear out the data and reset the buffer
-        //Use the ResizeableStringFormatter if you want a buffer that will dynamically grow
-        virtual void    BufferIsFull(char* /*inBuffer*/, UInt32 /*inBufferLen*/) { }
+        //default, the function simply returns false.  But derived objects can clear out the data,
+		//reset the buffer, and then returns true.
+        //Use the ResizeableStringFormatter if you want a buffer that will dynamically grow.
+		//Returns true if the buffer has been resized.
+        virtual Bool16    BufferIsFull(char* /*inBuffer*/, UInt32 /*inBufferLen*/) { return false; }
 
         char*       fCurrentPut;
         char*       fStartPut;

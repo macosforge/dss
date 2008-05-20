@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -101,11 +101,21 @@ QTSSAttrInfoDict::AttrInfo  RTSPRequestInterface::sAttributes[] =
     /* 34 */ { "qtssRTSPReqAuthScheme",         NULL,                   qtssAttrDataTypeUInt32,     qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite },
     /* 35 */ { "qtssRTSPReqSkipAuthorization",  NULL,                   qtssAttrDataTypeBool16,     qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite },
     /* 36 */ { "qtssRTSPReqNetworkMode",		NULL,					qtssAttrDataTypeUInt32,		qtssAttrModeRead | qtssAttrModePreempSafe },
-    /* 37 */ { "qtssRTSPReqDynamicRateValue",	NULL,					qtssAttrDataTypeSInt32,		qtssAttrModeRead | qtssAttrModePreempSafe }
+    /* 37 */ { "qtssRTSPReqDynamicRateValue",	NULL,					qtssAttrDataTypeSInt32,		qtssAttrModeRead | qtssAttrModePreempSafe },
+    /* 38 */ { "qtssRTSPReq3GPPRequestObject",	NULL,					qtssAttrDataTypeQTSS_Object,qtssAttrModeRead | qtssAttrModePreempSafe },
+    /* 39 */ { "qtssRTSPReqBandwidthBits",	    NULL,					qtssAttrDataTypeUInt32,     qtssAttrModeRead | qtssAttrModePreempSafe },
+    /* 40 */ { "qtssRTSPReqUserFound",          NULL,                   qtssAttrDataTypeBool16,     qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite },
+    /* 41 */ { "qtssRTSPReqAuthHandled",        NULL,                   qtssAttrDataTypeBool16,     qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite },
+    /* 42 */ { "qtssRTSPReqDigestChallenge",    NULL,                   qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModePreempSafe },
+    /* 43 */ { "qtssRTSPReqDigestResponse",     GetAuthDigestResponse,  qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModePreempSafe }
+    
+    
+    
+ 
  };
 
 
-void  RTSPRequestInterface::Initialize()
+void  RTSPRequestInterface::Initialize(void)
 {
     //make a partially complete header
     StringFormatter headerFormatter(sPremadeHeaderPtr.Ptr, kStaticHeaderSizeInBytes);
@@ -164,6 +174,8 @@ RTSPRequestInterface::RTSPRequestInterface(RTSPSessionInterface *session)
     fMovieFolderPtr(&fMovieFolderPath[0]),
     fHeaderDictionary(QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kRTSPHeaderDictIndex)),
     fAllowed(true),
+    fHasUser(false),
+    fAuthHandled(false),
     fTransportMode(qtssRTPTransportModePlay),
     fSetUpServerPort(0),
     fAction(qtssActionFlagsNoFlags),
@@ -176,9 +188,15 @@ RTSPRequestInterface::RTSPRequestInterface(RTSPSessionInterface *session)
     fEnableDynamicRateState(-1),// -1 undefined, 0 disabled, 1 enabled
 	// DJM PROTOTYPE
 	fRandomDataSize(0),
+    fRequest3GPP( QTSServerInterface::GetServer()->GetPrefs()->Get3GPPEnabled() ),
+    fRequest3GPPPtr(&fRequest3GPP),
+    fBandwidthBits(0),
+    	
+	// private storage initializes after protected and public storage above
     fSession(session),
     fOutputStream(session->GetOutputStream()),
-    fStandardHeadersWritten(false)
+    fStandardHeadersWritten(false) // private initializes after protected and public storage above
+       
 {
     //Setup QTSS parameters that can be setup now. These are typically the parameters that are actually
     //pointers to binary variable values. Because these variables are just member variables of this object,
@@ -195,7 +213,7 @@ RTSPRequestInterface::RTSPRequestInterface(RTSPSessionInterface *session)
     this->SetVal(qtssRTSPReqSpeed, &fSpeed, sizeof(fSpeed));
     this->SetVal(qtssRTSPReqLateTolerance, &fLateTolerance, sizeof(fLateTolerance));
     this->SetVal(qtssRTSPReqPrebufferMaxTime, &fPrebufferAmt, sizeof(fPrebufferAmt));
-    
+ 
     // Get the default root directory from QTSSPrefs, and store that in the proper parameter
     // Note that the GetMovieFolderPath function may allocate memory, so we check for that
     // in this object's destructor and free that memory if necessary.
@@ -208,15 +226,25 @@ RTSPRequestInterface::RTSPRequestInterface(RTSPSessionInterface *session)
     //typically aren't set for every request, so we lazy initialize those when we parse the request
 
     this->SetVal(qtssRTSPReqUserAllowed, &fAllowed, sizeof(fAllowed));
+    this->SetVal(qtssRTSPReqUserFound, &fHasUser, sizeof(fHasUser));
+    this->SetVal(qtssRTSPReqAuthHandled, &fAuthHandled, sizeof(fAuthHandled));
+    
     this->SetVal(qtssRTSPReqTransportType, &fTransportType, sizeof(fTransportType));
     this->SetVal(qtssRTSPReqTransportMode, &fTransportMode, sizeof(fTransportMode));
     this->SetVal(qtssRTSPReqSetUpServerPort, &fSetUpServerPort, sizeof(fSetUpServerPort));
     this->SetVal(qtssRTSPReqAction, &fAction, sizeof(fAction));
-    this->SetVal(qtssRTSPReqUserProfile, &fUserProfilePtr, sizeof(QTSSUserProfile*));
+    this->SetVal(qtssRTSPReqUserProfile, &fUserProfilePtr, sizeof(fUserProfilePtr));
     this->SetVal(qtssRTSPReqAuthScheme, &fAuthScheme, sizeof(fAuthScheme));
     this->SetVal(qtssRTSPReqSkipAuthorization, &fSkipAuthorization, sizeof(fSkipAuthorization));
 
     this->SetVal(qtssRTSPReqDynamicRateState, &fEnableDynamicRateState, sizeof(fEnableDynamicRateState));
+    
+    this->SetVal(qtssRTSPReq3GPPRequestObject, &fRequest3GPPPtr, sizeof(fRequest3GPPPtr));
+    this->SetVal(qtssRTSPReqBandwidthBits, &fBandwidthBits, sizeof(fBandwidthBits));
+    
+    this->SetVal(qtssRTSPReqDigestResponse, &fAuthDigestResponse, sizeof(fAuthDigestResponse));
+ 
+       
  }
 
 void RTSPRequestInterface::AppendHeader(QTSS_RTSPHeader inHeader, StrPtrLen* inValue)
@@ -249,7 +277,7 @@ void RTSPRequestInterface::AppendContentLength(UInt32 contentLength)
 
     char dataSize[10];
     dataSize[sizeof(dataSize) -1] = 0;
-    qtss_snprintf(dataSize, sizeof(dataSize) -1, "%lu", contentLength);
+    qtss_snprintf(dataSize, sizeof(dataSize) -1, "%"_U32BITARG_"", contentLength);
     StrPtrLen contentLengthStr(dataSize);
     this->AppendHeader(qtssContentLengthHeader, &contentLengthStr);
     
@@ -414,7 +442,7 @@ void RTSPRequestInterface::AppendTransportHeader(StrPtrLen* serverPortA,
         OSCharArrayDeleter cStrDeleter(theCString);
         
         UInt32 ssrcVal = 0;
-        ::sscanf(theCString, "%lu", &ssrcVal);
+        ::sscanf(theCString, "%"_U32BITARG_"", &ssrcVal);
         ssrcVal = htonl(ssrcVal);
         
         StrPtrLen hexSSRC(QTSSDataConverter::ValueToString( &ssrcVal, sizeof(ssrcVal), qtssAttrDataTypeUnknown));
@@ -577,6 +605,17 @@ void RTSPRequestInterface::WriteStandardHeaders()
     //tags the response with the Connection: close header
     if (!fResponseKeepAlive)
         AppendHeader(qtssConnectionHeader, &sCloseString);
+        
+    // 3gpp release 6 rate adaptation calls for echoing the rate adapt header back
+    // some clients use this header in the response to signal whether to send rate adapt
+    // NADU rtcp reports.
+     Bool16 doRateAdaptation = QTSServerInterface::GetServer()->GetPrefs()->Get3GPPEnabled() && QTSServerInterface::GetServer()->GetPrefs()->Get3GPPRateAdaptationEnabled();
+     if (doRateAdaptation)
+     {   StrPtrLen* rateAdaptHeader = fHeaderDictionary.GetValue(qtss3GPPAdaptationHeader);
+         if (rateAdaptHeader && rateAdaptHeader->Ptr && rateAdaptHeader->Len > 0)
+            AppendHeader(qtss3GPPAdaptationHeader, fHeaderDictionary.GetValue(qtss3GPPAdaptationHeader));
+    }
+    
 }
 
 void RTSPRequestInterface::SendHeader()
@@ -757,3 +796,11 @@ void* RTSPRequestInterface::GetLocalPath(QTSSDictionary* inRequest, UInt32* outL
 	
 	return NULL;
 }
+
+void* RTSPRequestInterface::GetAuthDigestResponse(QTSSDictionary* inRequest, UInt32* )
+{
+	RTSPRequestInterface* theRequest = (RTSPRequestInterface*)inRequest;
+	(void)theRequest->SetValue(qtssRTSPReqDigestResponse, 0, theRequest->fAuthDigestResponse.Ptr,theRequest->fAuthDigestResponse.Len , QTSSDictionary::kDontObeyReadOnly);
+	return NULL;
+}
+

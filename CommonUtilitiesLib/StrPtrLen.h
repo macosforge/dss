@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -98,7 +98,7 @@ class StrPtrLen
         
         StrPtrLen& operator=(const StrPtrLen& newStr) { Ptr = newStr.Ptr; Len = newStr.Len;
                                                         return *this; }
-         char operator[](int i) { /*Assert(i<Len);i*/ return Ptr[i]; }
+        char operator[](int i) { /*Assert(i<Len);i*/ return Ptr[i]; }
         void Set(char* inPtr, UInt32 inLen) { Ptr = inPtr; Len = inLen; }
         void Set(char* inPtr) { Ptr = inPtr; Len = (inPtr) ?  ::strlen(inPtr) : 0; }
 
@@ -111,7 +111,9 @@ class StrPtrLen
         char*   GetAsCString() const;
         void    PrintStr();
         void    PrintStr(char *appendStr);
-        void    PrintStrEOL(char* stopStr = NULL, char *appendStr = NULL);
+        void    PrintStr(char* prependStr, char *appendStr);
+
+        void    PrintStrEOL(char* stopStr = NULL, char *appendStr = NULL); //replace chars x0A and x0D with \r and \n
  
         //Utility function
         UInt32    TrimTrailingWhitespace();

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -37,9 +37,9 @@
 
 
     static int gLogSwitchSetting = switchEntries;
-    static long gLogEntries  = 0;
+    static SInt32 gLogEntries  = 0;
     static SInt64 gLogTimeStart = 0;
-    static long gLogNumBytes = 0;
+    static SInt32 gLogNumBytes = 0;
     static gLogNumPackets = 0;
     static char gTempStr[256];
     static FILE *gLogFile_1 = 0;
@@ -201,15 +201,15 @@ void  LogFloat(char *str, float num, char *str2)
     LogNum(str,gTempStr,str2);
 }
 
-void LogInt(char *str, long num, char *str2)
+void LogInt(char *str, SInt32 num, char *str2)
 {
-    qtss_sprintf(gTempStr,"%ld",num);
+    qtss_sprintf(gTempStr,"%"_S32BITARG_"",num);
     LogNum(str,gTempStr,str2);
 }
 
-void LogUInt (char *str, unsigned long num, char *str2)
+void LogUInt (char *str, UInt32 num, char *str2)
 {
-    qtss_sprintf(gTempStr,"%lu",num);
+    qtss_sprintf(gTempStr,"%"_U32BITARG_"",num);
     LogNum(str,gTempStr,str2);
 }
 

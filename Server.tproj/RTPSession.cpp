@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -38,6 +38,7 @@
 #include "RTSPProtocol.h" 
 #include "QTSServerInterface.h"
 #include "QTSS.h"
+#include "RTSPRequest3gpp.h"
 
 #include "OS.h"
 #include "OSMemory.h"
@@ -96,9 +97,9 @@ RTPSession::~RTPSession()
         RTPBandwidthTracker* tracker = this->GetBandwidthTracker(); 
     
         qtss_printf("Client complete. URL: %s.\n",theURL);
-        qtss_printf("Max congestion window: %ld. Min congestion window: %ld. Avg congestion window: %ld\n", tracker->GetMaxCongestionWindowSize(), tracker->GetMinCongestionWindowSize(), tracker->GetAvgCongestionWindowSize());
-        qtss_printf("Max RTT: %ld. Min RTT: %ld. Avg RTT: %ld\n", tracker->GetMaxRTO(), tracker->GetMinRTO(), tracker->GetAvgRTO());
-        qtss_printf("Num resends: %ld. Num skipped frames: %ld. Num late packets dropped: %ld\n", theNumResends, this->GetFramesSkipped(), theNumLatePacketsDropped);
+        qtss_printf("Max congestion window: %"_S32BITARG_". Min congestion window: %"_S32BITARG_". Avg congestion window: %"_S32BITARG_"\n", tracker->GetMaxCongestionWindowSize(), tracker->GetMinCongestionWindowSize(), tracker->GetAvgCongestionWindowSize());
+        qtss_printf("Max RTT: %"_S32BITARG_". Min RTT: %"_S32BITARG_". Avg RTT: %"_S32BITARG_"\n", tracker->GetMaxRTO(), tracker->GetMinRTO(), tracker->GetAvgRTO());
+        qtss_printf("Num resends: %"_S32BITARG_". Num skipped frames: %"_S32BITARG_". Num late packets dropped: %"_S32BITARG_"\n", theNumResends, this->GetFramesSkipped(), theNumLatePacketsDropped);
         
         delete [] theURL;
     }
@@ -142,9 +143,11 @@ RTPSession::~RTPSession()
 
     //we better not be in the RTPSessionMap anymore!
 #if DEBUG
+/* does not compile???
     Assert(!fRTPMapElem.IsInTable());
     OSRef* theRef = QTSServerInterface::GetServer()->GetRTPSessionMap()->Resolve(&fRTSPSessionID);
     Assert(theRef == NULL);
+*/
 #endif
 }
 
@@ -265,6 +268,44 @@ void RTPSession::SetStreamThinningParams(Float32 inLateTolerance)
 	}
 }
 
+
+void RTPSession::Set3GPPRateAdaptionData(RateAdapationStreamDataFields *rateAdaptStreamData)
+{
+	RTPStream** theStream = NULL;
+	UInt32 theLen = 0;
+	
+	for (int x = 0; this->GetValuePtr(qtssCliSesStreamObjects, x, (void**)&theStream, &theLen) == QTSS_NoErr; x++)
+	{
+	   if ((*theStream)->GetSDPStreamID() == rateAdaptStreamData->GetSDPStreamID())
+	   {    
+	       (*theStream)->SetRateAdaptData(rateAdaptStreamData);
+	       break;
+	   }
+	}
+}
+
+void RTPSession::SetMovieBitRateData()
+{
+	RTPStream** theStream = NULL;
+	UInt32 theLen = 0;
+	
+	//should eventually set the stream rate too. Use some gross amount right now.
+	UInt32 movieBitRate = GetMovieAvgBitrate();
+	
+	for (int x = 0; this->GetValuePtr(qtssCliSesStreamObjects, x, (void**)&theStream, &theLen) == QTSS_NoErr; x++)
+	{
+        (*theStream)->SetBitRateData(movieBitRate);
+	}
+}
+
+
+
+void RTPSession::Set3GPPLinkCharData(LinkCharDataFields *linkCharData)
+{
+    this->Get3GPPSessPtr()->SetLinkCharData(linkCharData);
+}
+
+
 QTSS_Error  RTPSession::Play(RTSPRequestInterface* request, QTSS_PlayFlags inFlags)
 {
     //first setup the play associated session interface variables
@@ -358,6 +399,8 @@ QTSS_Error  RTPSession::Play(RTSPRequestInterface* request, QTSS_PlayFlags inFla
         // Same deal for max buffer size
         if (theBufferSize > thePrefs->GetMaxTCPBufferSizeInBytes())
             theBufferSize = thePrefs->GetMaxTCPBufferSizeInBytes();
+            
+        this->SetMovieBitRateData();
     }
     
     Assert(fRTSPSession != NULL); // can this ever happen?
@@ -366,11 +409,25 @@ QTSS_Error  RTPSession::Play(RTSPRequestInterface* request, QTSS_PlayFlags inFla
         
     
 #if RTPSESSION_DEBUGGING
-    qtss_printf("RTPSession %ld: In Play, about to call Signal\n",(SInt32)this);
+    qtss_printf("RTPSession %"_S32BITARG_": In Play, about to call Signal\n",(SInt32)this);
 #endif
     this->Signal(Task::kStartEvent);
     
     return QTSS_NoErr;
+}
+
+void RTPSession::Pause()
+{
+	fState = qtssPausedState;
+    RTPStream** theStream = NULL;
+    UInt32 theLen = 0;
+
+    for (int x = 0; this->GetValuePtr(qtssCliSesStreamObjects, x, (void**)&theStream, &theLen) == QTSS_NoErr; x++)
+    {
+        Assert(theStream != NULL);
+        Assert(theLen == sizeof(RTPStream*));
+		(*theStream)->Pause();
+    }
 }
 
 UInt32 RTPSession::PowerOf2Floor(UInt32 inNumToFloor)
@@ -476,7 +533,7 @@ SInt64 RTPSession::Run()
                                                     //as the first parameter
     
 #if RTPSESSION_DEBUGGING
-    qtss_printf("RTPSession %ld: In Run. Events %ld\n",(SInt32)this, (SInt32)events);
+    qtss_printf("RTPSession %"_S32BITARG_": In Run. Events %"_S32BITARG_"\n",(SInt32)this, (SInt32)events);
 #endif
     // Some callbacks look for this struct in the thread object
     OSThreadDataSetter theSetter(&fModuleState, NULL);
@@ -496,7 +553,7 @@ SInt64 RTPSession::Run()
         //threads). We do this by first removing the session from the session map.
         
 #if RTPSESSION_DEBUGGING
-        qtss_printf("RTPSession %ld: about to be killed. Eventmask = %ld\n",(SInt32)this, (SInt32)events);
+        qtss_printf("RTPSession %"_S32BITARG_": about to be killed. Eventmask = %"_S32BITARG_"\n",(SInt32)this, (SInt32)events);
 #endif
         // We cannot block waiting to UnRegister, because we have to
         // give the RTSPSessionTask a chance to release the RTPSession.
@@ -583,7 +640,7 @@ SInt64 RTPSession::Run()
         else
         {           
     #if RTPSESSION_DEBUGGING
-            qtss_printf("RTPSession %ld: about to call SendPackets\n",(SInt32)this);
+            qtss_printf("RTPSession %"_S32BITARG_": about to call SendPackets\n",(SInt32)this);
     #endif
             if ((theParams.rtpSendPacketsParams.inCurrentTime - fLastBandwidthTrackerStatsUpdate) > 1000)
                 this->GetBandwidthTracker()->UpdateStats();
@@ -594,7 +651,7 @@ SInt64 RTPSession::Run()
             Assert(fModule != NULL);
             (void)fModule->CallDispatch(QTSS_RTPSendPackets_Role, &theParams);
     #if RTPSESSION_DEBUGGING
-            qtss_printf("RTPSession %ld: back from sendPackets, nextPacketTime = %"_64BITARG_"d\n",(SInt32)this, theParams.rtpSendPacketsParams.outNextPacketTime);
+            qtss_printf("RTPSession %"_S32BITARG_": back from sendPackets, nextPacketTime = %"_64BITARG_"d\n",(SInt32)this, theParams.rtpSendPacketsParams.outNextPacketTime);
     #endif
             //make sure not to get deleted accidently!
             if (theParams.rtpSendPacketsParams.outNextPacketTime < 0)

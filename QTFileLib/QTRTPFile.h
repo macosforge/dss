@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -22,7 +22,7 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-// $Id: QTRTPFile.h,v 1.23 2003/08/15 23:53:14 sbasu Exp $
+// $Id: QTRTPFile.h,v 1.1 2006/01/05 13:20:36 murata Exp $
 //
 // QTRTPFile:
 //   An interface to QTFile for TimeShare.
@@ -187,7 +187,7 @@ public:
             
             void        SetTrackSSRC(UInt32 TrackID, UInt32 SSRC);
             void        SetTrackCookies(UInt32 TrackID, void * Cookie1, UInt32 Cookie2);
-            
+            void        SetAllowInvalidHintRefs(Bool16 inAllowInvalidHintRefs) { fAllowInvalidHintRefs = inAllowInvalidHintRefs; }
         
             //
             // If you want QTRTPFile to output an RTP-Meta-Info packet instead
@@ -205,7 +205,9 @@ public:
                 kNoBFrames = 1,
                 k75PercentPFrames = 2,
                 k50PercentPFrames = 3,
-                kKeyFramesOnly = 4
+				k25PercentPFrames = 4,
+                kKeyFramesOnly = 5,
+				kKeyFramesPlusOneP = 6			//Special quality level with Key frames followed by 1 P frame
             };
             
             void SetTrackQualityLevel(RTPTrackListEntry* inEntry, UInt32 inNewLevel);
@@ -272,6 +274,7 @@ protected:
     Bool16              fHasRTPMetaInfoFieldArray;
     Bool16              fWasLastSeekASeekToPacketNumber;
     Bool16              fDropRepeatPackets;
+    Bool16              fAllowInvalidHintRefs;
     ErrorCode           fErr;
     
     static const RTPMetaInfoPacket::FieldID kMetaInfoFields[];

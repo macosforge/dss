@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -477,7 +477,7 @@ QTSS_Error LogRequest( QTSS_ClientSessionObject inClientSession,
         startPlayTimeInSecs = (UInt32)(((*theCreateTime - *thePlayTime)/1000)+0.5);
 
    
-    // We need a value of 'c-bytes' to report as a long entry. This is supposed to be the total number
+    // We need a value of 'c-bytes' to report as a log entry. This is supposed to be the total number
     // of bytes the client has received during the session. Unfortunately, the QT client does not give
     // us this number. We will use the following heuristic formula to estimate the number of bytes the
     // client has received during the session:
@@ -488,7 +488,7 @@ QTSS_Error LogRequest( QTSS_ClientSessionObject inClientSession,
     // sent to the server from the client. If those values are accurate then the above formula will not 
     // be exactly correct but it will be nearly correct.
     
-    clientBytesRecv = (UInt32)((*rtcpBytesRecv * (100.0 - *packetLossPercent))/100.0);
+    clientBytesRecv = (UInt32)((*rtpBytesSent * (100.0 - *packetLossPercent))/100.0);
     
     tempLogStr.Ptr[0] = 0; tempLogStr.Len = eUserAgentSize;
     (void)QTSS_GetValue(inClientSession, qtssCliSesFirstUserAgent, 0, tempLogStr.Ptr, &tempLogStr.Len);
@@ -621,7 +621,7 @@ QTSS_Error LogRequest( QTSS_ClientSessionObject inClientSession,
     UInt32* theStatusCode = &sTimeoutCode;
     theLen = sizeof(UInt32);
     (void)QTSS_GetValuePtr(inClientSession, qtssCliRTSPReqRealStatusCode, 0, (void **) &theStatusCode, &theLen);
-//  qtss_printf("qtssCliRTSPReqRealStatusCode = %lu \n", *theStatusCode);
+//  qtss_printf("qtssCliRTSPReqRealStatusCode = %"_U32BITARG_" \n", *theStatusCode);
         
     
     if (inCloseReasonPtr) do
@@ -642,7 +642,7 @@ QTSS_Error LogRequest( QTSS_ClientSessionObject inClientSession,
                 QTSS_CliSesClosingReason* theReasonPtr = &sReason;
                 theLen = sizeof(QTSS_CliSesTeardownReason);
                 (void)QTSS_GetValuePtr(inClientSession, qtssCliTeardownReason, 0, (void **) &theReasonPtr, &theLen);
-//              qtss_printf("qtssCliTeardownReason = %lu \n", *theReasonPtr);
+//              qtss_printf("qtssCliTeardownReason = %"_U32BITARG_" \n", *theReasonPtr);
 
                 if (*theReasonPtr == qtssCliSesTearDownClientRequest) //  the client asked for a tear down
                 {
@@ -672,7 +672,7 @@ QTSS_Error LogRequest( QTSS_ClientSessionObject inClientSession,
                 
     } while (false);
 
-//  qtss_printf(" = %lu \n", *theStatusCode);
+//  qtss_printf(" = %"_U32BITARG_" \n", *theStatusCode);
 
         
     // Find out what time it is
@@ -697,9 +697,13 @@ QTSS_Error LogRequest( QTSS_ClientSessionObject inClientSession,
     
     float zeroFloat = 0;
     UInt64 zeroUInt64 = 0;
-    
+    Float32 fcpuUtilized = 0;
     UInt32 cpuUtilized = 0; // percent
         
+	theLen = sizeof(fcpuUtilized);
+	(void)QTSS_GetValue(sServer, qtssSvrCPULoadPercent, 0, &fcpuUtilized, &theLen);
+	cpuUtilized = (UInt32)fcpuUtilized;
+
     char lastUserName[eTempLogItemSize] ={ 0 };
     StrPtrLen lastUserNameStr(lastUserName,eTempLogItemSize);
     
@@ -711,12 +715,12 @@ QTSS_Error LogRequest( QTSS_ClientSessionObject inClientSession,
     tempLogStr.Ptr[0] = 0; tempLogStr.Len = eTempLogItemSize;
     (void)QTSS_GetValue(inClientSession, qtssCliRTSPSesUserName, 0, tempLogStr.Ptr, &tempLogStr.Len);
     ReplaceSpaces(&tempLogStr, &lastUserNameStr, "%20");
-    //qtss_printf("qtssRTSPSesLastUserName dictionary item = %s len = %ld\n",lastUserNameStr.Ptr,lastUserNameStr.Len);
+    //qtss_printf("qtssRTSPSesLastUserName dictionary item = %s len = %"_S32BITARG_"\n",lastUserNameStr.Ptr,lastUserNameStr.Len);
         
     tempLogStr.Ptr[0] = 0; tempLogStr.Len = eTempLogItemSize;
     (void)QTSS_GetValue(inClientSession, qtssCliRTSPSesURLRealm, 0, tempLogStr.Ptr, &tempLogStr.Len);
     ReplaceSpaces(&tempLogStr, &lastURLRealmStr, "%20");
-    //qtss_printf("qtssRTSPSesLastURLRealm dictionary  item = %s len = %ld\n",lastURLRealmStr.Ptr,lastURLRealmStr.Len);  
+    //qtss_printf("qtssRTSPSesLastURLRealm dictionary  item = %s len = %"_S32BITARG_"\n",lastURLRealmStr.Ptr,lastURLRealmStr.Len);  
 
     char respMsgBuffer[1024] = { 0 };
     StrPtrLen theRespMsg;   
@@ -748,14 +752,14 @@ QTSS_Error LogRequest( QTSS_ClientSessionObject inClientSession,
     ::strcat(logBuffer, tempLogBuffer);
     qtss_sprintf(tempLogBuffer, "%s ", (url.Ptr[0] == '\0') ? sVoidField : url.Ptr);   //cs-uri-stem*
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%lu ", startPlayTimeInSecs);  //c-starttime 
+    qtss_sprintf(tempLogBuffer, "%"_U32BITARG_" ", startPlayTimeInSecs);  //c-starttime 
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%lu ", theCreateTime == NULL ? 0UL : (UInt32) (QTSS_MilliSecsTo1970Secs(curTime)  
+    qtss_sprintf(tempLogBuffer, "%"_U32BITARG_" ", theCreateTime == NULL ? (UInt32) 0 : (UInt32) (QTSS_MilliSecsTo1970Secs(curTime)  
                         - QTSS_MilliSecsTo1970Secs(*theCreateTime)));   //x-duration* 
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%ld ", 1UL);  //c-rate
+    qtss_sprintf(tempLogBuffer, "%"_S32BITARG_" ", (UInt32) 1);  //c-rate
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%ld ", *theStatusCode);   //c-status*
+    qtss_sprintf(tempLogBuffer, "%"_S32BITARG_" ", *theStatusCode);   //c-status*
     ::strcat(logBuffer, tempLogBuffer);
     qtss_sprintf(tempLogBuffer, "%s ", (playerIDBuf[0] == '\0') ? sVoidField : playerIDBuf);   //c-playerid*
     ::strcat(logBuffer, tempLogBuffer);
@@ -775,7 +779,7 @@ QTSS_Error LogRequest( QTSS_ClientSessionObject inClientSession,
     ::strcat(logBuffer, tempLogBuffer);
     qtss_sprintf(tempLogBuffer, "%"_64BITARG_"d ", movieSizeInBytes == NULL ? zeroUInt64 : *movieSizeInBytes); //filesize in bytes*
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%lu ", movieAverageBitRatePtr == NULL ? (UInt32) 0 : *movieAverageBitRatePtr);    //avgbandwidth in bits per second
+    qtss_sprintf(tempLogBuffer, "%"_U32BITARG_" ", movieAverageBitRatePtr == NULL ? (UInt32) 0 : *movieAverageBitRatePtr);    //avgbandwidth in bits per second
     ::strcat(logBuffer, tempLogBuffer);
     qtss_sprintf(tempLogBuffer, "%s ", "RTP"); //protocol
     ::strcat(logBuffer, tempLogBuffer);
@@ -785,31 +789,31 @@ QTSS_Error LogRequest( QTSS_ClientSessionObject inClientSession,
     ::strcat(logBuffer, tempLogBuffer);
     qtss_sprintf(tempLogBuffer, "%s ", (videoPayloadName.Ptr[0] == '\0') ? sVoidField : videoPayloadName.Ptr); //videocodec*
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%lu ",rtpBytesSent == NULL ? 0UL : *rtpBytesSent);    //sc-bytes*
+    qtss_sprintf(tempLogBuffer, "%"_U32BITARG_" ",rtpBytesSent == NULL ? (UInt32) 0 : *rtpBytesSent);    //sc-bytes*
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%lu ",rtcpBytesRecv == NULL ? 0UL : *rtcpBytesRecv);    //cs-bytes*
+    qtss_sprintf(tempLogBuffer, "%"_U32BITARG_" ",rtcpBytesRecv == NULL ? (UInt32) 0 : *rtcpBytesRecv);    //cs-bytes*
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%lu ", clientBytesRecv);  //c-bytes
+    qtss_sprintf(tempLogBuffer, "%"_U32BITARG_" ", clientBytesRecv);  //c-bytes
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%lu ", rtpPacketsSent == NULL ? 0UL : *rtpPacketsSent);   //s-pkts-sent*
+    qtss_sprintf(tempLogBuffer, "%"_U32BITARG_" ", rtpPacketsSent == NULL ? (UInt32)0 : *rtpPacketsSent);   //s-pkts-sent*
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%lu ", clientPacketsReceived);    //c-pkts-recieved
+    qtss_sprintf(tempLogBuffer, "%"_U32BITARG_" ", clientPacketsReceived);    //c-pkts-recieved
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%lu ", clientPacketsLost);    //c-pkts-lost-client*
+    qtss_sprintf(tempLogBuffer, "%"_U32BITARG_" ", clientPacketsLost);    //c-pkts-lost-client*
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%lu ", 1UL);  //c-buffercount 
+    qtss_sprintf(tempLogBuffer, "%"_U32BITARG_" ", (UInt32)1);  //c-buffercount 
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%lu ", clientBufferTime);     //c-totalbuffertime*
+    qtss_sprintf(tempLogBuffer, "%"_U32BITARG_" ", clientBufferTime);     //c-totalbuffertime*
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%lu ", qualityLevel); //c-quality 
+    qtss_sprintf(tempLogBuffer, "%"_U32BITARG_" ", qualityLevel); //c-quality 
     ::strcat(logBuffer, tempLogBuffer);
     qtss_sprintf(tempLogBuffer, "%s ", (localIPAddr.Ptr[0] == '\0') ? sVoidField : localIPAddr.Ptr);   //s-ip 
     ::strcat(logBuffer, tempLogBuffer);
     qtss_sprintf(tempLogBuffer, "%s ", (localDNS.Ptr[0] == '\0') ? sVoidField : localDNS.Ptr); //s-dns
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%lu ", numCurClients);    //s-totalclients
+    qtss_sprintf(tempLogBuffer, "%"_U32BITARG_" ", numCurClients);    //s-totalclients
     ::strcat(logBuffer, tempLogBuffer);
-    qtss_sprintf(tempLogBuffer, "%lu ", cpuUtilized);  //s-cpu-util
+    qtss_sprintf(tempLogBuffer, "%"_U32BITARG_" ", cpuUtilized);  //s-cpu-util
     ::strcat(logBuffer, tempLogBuffer);
     qtss_sprintf(tempLogBuffer, "%s ", (urlQry.Ptr[0] == '\0') ? sVoidField : urlQry.Ptr); //cs-uri-query
     ::strcat(logBuffer, tempLogBuffer);

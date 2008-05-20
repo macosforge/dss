@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -62,7 +62,7 @@ SSL_remove_session(ctx,ses)
 void
 SSL_flush_sessions(ctx,tm)
      SSL_CTX *          ctx
-     long               tm
+     SInt32               tm
 
  */
 
@@ -1714,7 +1714,7 @@ XS(XS_Net__SSLeay_CTX_flush_sessions)
 	Perl_croak(aTHX_ "Usage: Net::SSLeay::CTX_flush_sessions(ctx, tm)");
     {
 	SSL_CTX *	ctx = (SSL_CTX *)SvIV(ST(0));
-	long	tm = (long)SvIV(ST(1));
+	SInt32	tm = (SInt32)SvIV(ST(1));
 
 	SSL_CTX_flush_sessions(ctx, tm);
     }
@@ -2117,7 +2117,7 @@ XS(XS_Net__SSLeay_use_RSAPrivateKey_ASN1)
     {
 	SSL *	s = (SSL *)SvIV(ST(0));
 	unsigned char *	d = (unsigned char *)SvPV(ST(1),PL_na);
-	long	len = (long)SvIV(ST(2));
+	SInt32	len = (SInt32)SvIV(ST(2));
 	int	RETVAL;
 	dXSTARG;
 
@@ -2189,7 +2189,7 @@ XS(XS_Net__SSLeay_use_PrivateKey_ASN1)
 	int	pk = (int)SvIV(ST(0));
 	SSL *	s = (SSL *)SvIV(ST(1));
 	unsigned char *	d = (unsigned char *)SvPV(ST(2),PL_na);
-	long	len = (long)SvIV(ST(3));
+	SInt32	len = (SInt32)SvIV(ST(3));
 	int	RETVAL;
 	dXSTARG;
 
@@ -2260,7 +2260,7 @@ XS(XS_Net__SSLeay_use_certificate_ASN1)
     {
 	SSL *	s = (SSL *)SvIV(ST(0));
 	unsigned char *	d = (unsigned char *)SvPV(ST(1),PL_na);
-	long	len = (long)SvIV(ST(2));
+	SInt32	len = (SInt32)SvIV(ST(2));
 	int	RETVAL;
 	dXSTARG;
 
@@ -2377,7 +2377,7 @@ XS(XS_Net__SSLeay_get_time)
 	Perl_croak(aTHX_ "Usage: Net::SSLeay::get_time(ses)");
     {
 	SSL_SESSION *	ses = (SSL_SESSION *)SvIV(ST(0));
-	long	RETVAL;
+	SInt32	RETVAL;
 	dXSTARG;
 
 	RETVAL = SSL_get_time(ses);
@@ -2393,8 +2393,8 @@ XS(XS_Net__SSLeay_set_time)
 	Perl_croak(aTHX_ "Usage: Net::SSLeay::set_time(ses, t)");
     {
 	SSL_SESSION *	ses = (SSL_SESSION *)SvIV(ST(0));
-	long	t = (long)SvIV(ST(1));
-	long	RETVAL;
+	SInt32	t = (SInt32)SvIV(ST(1));
+	SInt32	RETVAL;
 	dXSTARG;
 
 	RETVAL = SSL_set_time(ses, t);
@@ -2410,7 +2410,7 @@ XS(XS_Net__SSLeay_get_timeout)
 	Perl_croak(aTHX_ "Usage: Net::SSLeay::get_timeout(ses)");
     {
 	SSL_SESSION *	ses = (SSL_SESSION *)SvIV(ST(0));
-	long	RETVAL;
+	SInt32	RETVAL;
 	dXSTARG;
 
 	RETVAL = SSL_get_timeout(ses);
@@ -2426,8 +2426,8 @@ XS(XS_Net__SSLeay_set_timeout)
 	Perl_croak(aTHX_ "Usage: Net::SSLeay::set_timeout(ses, t)");
     {
 	SSL_SESSION *	ses = (SSL_SESSION *)SvIV(ST(0));
-	long	t = (long)SvIV(ST(1));
-	long	RETVAL;
+	SInt32	t = (SInt32)SvIV(ST(1));
+	SInt32	RETVAL;
 	dXSTARG;
 
 	RETVAL = SSL_set_timeout(ses, t);
@@ -2761,7 +2761,7 @@ XS(XS_Net__SSLeay_d2i_SSL_SESSION)
     {
 	SSL_SESSION *	a = (SSL_SESSION *)SvIV(ST(0));
 	unsigned char *	pp = (unsigned char *)SvPV(ST(1),PL_na);
-	long	length = (long)SvIV(ST(2));
+	SInt32	length = (SInt32)SvIV(ST(2));
 	SSL_SESSION *	RETVAL;
 	dXSTARG;
 
@@ -2828,9 +2828,9 @@ XS(XS_Net__SSLeay_ctrl)
     {
 	SSL *	ssl = (SSL *)SvIV(ST(0));
 	int	cmd = (int)SvIV(ST(1));
-	long	larg = (long)SvIV(ST(2));
+	SInt32	larg = (SInt32)SvIV(ST(2));
 	char *	parg = (char *)SvPV(ST(3),PL_na);
-	long	RETVAL;
+	SInt32	RETVAL;
 	dXSTARG;
 
 	RETVAL = SSL_ctrl(ssl, cmd, larg, parg);
@@ -2847,9 +2847,9 @@ XS(XS_Net__SSLeay_CTX_ctrl)
     {
 	SSL_CTX *	ctx = (SSL_CTX *)SvIV(ST(0));
 	int	cmd = (int)SvIV(ST(1));
-	long	larg = (long)SvIV(ST(2));
+	SInt32	larg = (SInt32)SvIV(ST(2));
 	char *	parg = (char *)SvPV(ST(3),PL_na);
-	long	RETVAL;
+	SInt32	RETVAL;
 	dXSTARG;
 
 	RETVAL = SSL_CTX_ctrl(ctx, cmd, larg, parg);
@@ -2865,7 +2865,7 @@ XS(XS_Net__SSLeay_get_options)
 	Perl_croak(aTHX_ "Usage: Net::SSLeay::get_options(ssl)");
     {
 	SSL *	ssl = (SSL *)SvIV(ST(0));
-	long	RETVAL;
+	SInt32	RETVAL;
 	dXSTARG;
 
 	RETVAL = SSL_get_options(ssl);
@@ -2881,7 +2881,7 @@ XS(XS_Net__SSLeay_set_options)
 	Perl_croak(aTHX_ "Usage: Net::SSLeay::set_options(ssl, op)");
     {
 	SSL *	ssl = (SSL *)SvIV(ST(0));
-	unsigned long	op = (unsigned long)SvUV(ST(1));
+	UInt32	op = (UInt32)SvUV(ST(1));
 
 	SSL_set_options(ssl, op);
     }
@@ -2895,7 +2895,7 @@ XS(XS_Net__SSLeay_CTX_get_options)
 	Perl_croak(aTHX_ "Usage: Net::SSLeay::CTX_get_options(ctx)");
     {
 	SSL_CTX *	ctx = (SSL_CTX *)SvIV(ST(0));
-	long	RETVAL;
+	SInt32	RETVAL;
 	dXSTARG;
 
 	RETVAL = SSL_CTX_get_options(ctx);
@@ -2911,7 +2911,7 @@ XS(XS_Net__SSLeay_CTX_set_options)
 	Perl_croak(aTHX_ "Usage: Net::SSLeay::CTX_set_options(ctx, op)");
     {
 	SSL_CTX *	ctx = (SSL_CTX *)SvIV(ST(0));
-	unsigned long	op = (unsigned long)SvUV(ST(1));
+	UInt32	op = (UInt32)SvUV(ST(1));
 
 	SSL_CTX_set_options(ctx, op);
     }
@@ -2944,7 +2944,7 @@ XS(XS_Net__SSLeay_CTX_sess_number)
 	Perl_croak(aTHX_ "Usage: Net::SSLeay::CTX_sess_number(ctx)");
     {
 	SSL_CTX *	ctx = (SSL_CTX *)SvIV(ST(0));
-	unsigned long	RETVAL;
+	UInt32	RETVAL;
 	dXSTARG;
 
 	RETVAL = SSL_CTX_sess_number(ctx);
@@ -3212,7 +3212,7 @@ XS(XS_Net__SSLeay_ERR_get_error)
     if (items != 0)
 	Perl_croak(aTHX_ "Usage: Net::SSLeay::ERR_get_error()");
     {
-	unsigned long	RETVAL;
+	UInt32	RETVAL;
 	dXSTARG;
 
 	RETVAL = ERR_get_error();
@@ -3227,7 +3227,7 @@ XS(XS_Net__SSLeay_ERR_peek_error)
     if (items != 0)
 	Perl_croak(aTHX_ "Usage: Net::SSLeay::ERR_peek_error()");
     {
-	unsigned long	RETVAL;
+	UInt32	RETVAL;
 	dXSTARG;
 
 	RETVAL = ERR_peek_error();
@@ -3271,7 +3271,7 @@ XS(XS_Net__SSLeay_ERR_error_string)
     if (items < 1 || items > 2)
 	Perl_croak(aTHX_ "Usage: Net::SSLeay::ERR_error_string(error, buf=NULL)");
     {
-	unsigned long	error = (unsigned long)SvUV(ST(0));
+	UInt32	error = (UInt32)SvUV(ST(0));
 	char *	buf;
 	char *	RETVAL;
 	dXSTARG;

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -118,21 +118,46 @@ QTSS_ServerState StartServer(XMLPrefsParser* inPrefsSource, PrefsSource* inMessa
 
     if (sServer->GetServerState() != qtssFatalErrorState)
     {
+        UInt32 numShortTaskThreads = 0;
+        UInt32 numBlockingThreads = 0;
         UInt32 numThreads = 0;
+        UInt32 numProcessors = 0;
         
         if (OS::ThreadSafe())
         {
-            numThreads = sServer->GetPrefs()->GetNumThreads(); // whatever the prefs say
-            if (numThreads == 0)
-                numThreads = OS::GetNumProcessors(); // 1 worker thread per processor
+            numShortTaskThreads = sServer->GetPrefs()->GetNumThreads(); // whatever the prefs say
+            if (numShortTaskThreads == 0) {
+               numProcessors = OS::GetNumProcessors();
+                // 1 worker thread per processor, up to 2 threads.
+                // Note: Limiting the number of worker threads to 2 on a MacOS X system with > 2 cores
+                //     results in better performance on those systems, as of MacOS X 10.5.  Future
+                //     improvements should make this limit unnecessary.
+                if (numProcessors > 2)
+                    numShortTaskThreads = 2;
+                else
+                    numShortTaskThreads = numProcessors;
+            }
+
+            numBlockingThreads = sServer->GetPrefs()->GetNumBlockingThreads(); // whatever the prefs say
+            if (numBlockingThreads == 0)
+                numBlockingThreads = 1;
+                
         }
-        if (numThreads == 0)
-            numThreads = 1;
+        if (numShortTaskThreads == 0)
+            numShortTaskThreads = 1;
 
+        if (numBlockingThreads == 0)
+            numBlockingThreads = 1;
+
+        numThreads = numShortTaskThreads + numBlockingThreads;
+        //qtss_printf("Add threads shortask=%lu blocking=%lu\n",numShortTaskThreads, numBlockingThreads);
+        TaskThreadPool::SetNumShortTaskThreads(numShortTaskThreads);
+        TaskThreadPool::SetNumBlockingTaskThreads(numBlockingThreads);
         TaskThreadPool::AddThreads(numThreads);
-
+		sServer->InitNumThreads(numThreads);
+		
     #if DEBUG
-        qtss_printf("Number of task threads: %lu\n",numThreads);
+        qtss_printf("Number of task threads: %"_U32BITARG_"\n",numThreads);
     #endif
     
         // Start up the server's global tasks, and start listening
@@ -397,7 +422,7 @@ void DebugLevel_1(FILE*   statusFile, FILE*   stdOut,  Bool16 printHeader )
     UInt32 curBandwidth = 0;
     theLen = sizeof(curBandwidth);
     (void)QTSS_GetValue(sServer, qtssRTPSvrCurBandwidth, 0, &curBandwidth, &theLen);
-    qtss_snprintf(numStr, 11, "%lu", curBandwidth/1024);
+    qtss_snprintf(numStr, 11, "%"_U32BITARG_"", curBandwidth/1024);
     print_status(statusFile, stdOut,"%11s", numStr);
 
     (void)QTSS_GetValueAsString(sServer, qtssRTPSvrCurPackets, 0, &thePrefStr);
@@ -406,7 +431,7 @@ void DebugLevel_1(FILE*   statusFile, FILE*   stdOut,  Bool16 printHeader )
 
 
     UInt32 currentPlaying = sServer->GetNumRTPPlayingSessions();
-    qtss_snprintf( numStr, sizeof(numStr) -1, "%lu", currentPlaying);
+    qtss_snprintf( numStr, sizeof(numStr) -1, "%"_U32BITARG_"", currentPlaying);
     print_status(statusFile, stdOut,"%14s", numStr);
 
    
@@ -429,21 +454,21 @@ void DebugLevel_1(FILE*   statusFile, FILE*   stdOut,  Bool16 printHeader )
     
     ::qtss_snprintf(numStr, sizeof(numStr) -1, "%s", "0");
     if (deltaPackets > 0)
-        qtss_snprintf(numStr, sizeof(numStr) -1, "%ld", (SInt32) ((SInt64)totalLate /  (SInt64) deltaPackets ));
+        qtss_snprintf(numStr, sizeof(numStr) -1, "%"_S32BITARG_"", (SInt32) ((SInt64)totalLate /  (SInt64) deltaPackets ));
     print_status(statusFile, stdOut,"%11s", numStr);
 
-    qtss_snprintf(numStr,sizeof(numStr) -1, "%ld", (SInt32) currentMaxLate);
+    qtss_snprintf(numStr,sizeof(numStr) -1, "%"_S32BITARG_"", (SInt32) currentMaxLate);
     print_status(statusFile, stdOut,"%11s", numStr);
     
-    qtss_snprintf(numStr,sizeof(numStr) -1, "%ld", (SInt32)  sServer->GetMaxLate() );
+    qtss_snprintf(numStr,sizeof(numStr) -1, "%"_S32BITARG_"", (SInt32)  sServer->GetMaxLate() );
     print_status(statusFile, stdOut,"%11s", numStr);
 
     ::qtss_snprintf(numStr, sizeof(numStr) -1, "%s", "0");
     if (deltaPackets > 0)
-        qtss_snprintf(numStr, sizeof(numStr) -1, "%ld", (SInt32) ((SInt64) deltaQuality /  (SInt64) deltaPackets));
+        qtss_snprintf(numStr, sizeof(numStr) -1, "%"_S32BITARG_"", (SInt32) ((SInt64) deltaQuality /  (SInt64) deltaPackets));
     print_status(statusFile, stdOut,"%11s", numStr);
 
-    qtss_snprintf(numStr,sizeof(numStr) -1, "%ld", (SInt32) sServer->GetNumThinned() );
+    qtss_snprintf(numStr,sizeof(numStr) -1, "%"_S32BITARG_"", (SInt32) sServer->GetNumThinned() );
     print_status(statusFile, stdOut,"%11s", numStr);
 
     
@@ -550,7 +575,7 @@ void PrintStatus(Bool16 printHeader)
     UInt32 curBandwidth = 0;
     theLen = sizeof(curBandwidth);
     (void)QTSS_GetValue(sServer, qtssRTPSvrCurBandwidth, 0, &curBandwidth, &theLen);
-    qtss_printf( "%11lu", curBandwidth/1024);
+    qtss_printf("%11"_U32BITARG_, curBandwidth/1024);
     
     (void)QTSS_GetValueAsString(sServer, qtssRTPSvrCurPackets, 0, &thePrefStr);
     qtss_printf( "%11s", thePrefStr);

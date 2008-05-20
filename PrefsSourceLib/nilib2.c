@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -732,7 +732,7 @@ ni_status ni2_pathsearch(void *domain, ni_id *dir, char *pathname)
         if (!isdigit(pathname[i])) is_id = false;
 
     if (is_id) {
-        dir->nii_object = (unsigned long)atoi(pathname);
+        dir->nii_object = (UInt32)atoi(pathname);
         return ni_self(domain, dir);
     }
     else {

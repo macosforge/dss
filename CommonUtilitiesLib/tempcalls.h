@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -21,11 +21,20 @@
  * 
  * @APPLE_LICENSE_HEADER_END@
  *
+
  */
+#ifdef AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER
+// these optimized calls are implemented in stdclib and declared in sys/ev.h on 10.5 and later for better performance.
 
+/*    
+    int watchevent(struct eventreq *u_req, int u_eventmask);
+    int waitevent(struct eventreq *u_req, struct timeval *tv);
+    int modwatch(struct eventreq *u_req, int u_eventmask);
+*/
 
-#define watchevent(a,b) syscall(231,(a),(b))
-#define waitevent(a,b) syscall(232,(a),(b))
-#define modwatch(a,b) syscall(233,(a),(b))
-
-
+#else 
+    // use syscall for the performance calls.
+    #define watchevent(a,b) syscall(231,(a),(b))
+    #define waitevent(a,b) syscall(232,(a),(b))
+    #define modwatch(a,b) syscall(233,(a),(b))
+#endif //AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -22,7 +22,7 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-// $Id: QTAtom_stts.cpp,v 1.15 2004/05/14 23:03:13 murata Exp $
+// $Id: QTAtom_stts.cpp,v 1.2 2006/03/29 00:47:00 murata Exp $
 //
 // QTAtom_stts:
 //   The 'stts' QTAtom class.
@@ -106,7 +106,7 @@ QTAtom_stts::~QTAtom_stts(void)
 {
     //
     // Free our variables.
-#if __MacOSX__
+#if MMAP_TABLES
     if( fTimeToSampleTable != NULL )
         this->UnMap(fTimeToSampleTable, fTableSize);
 #else
@@ -138,13 +138,13 @@ Bool16 QTAtom_stts::Initialize(void)
 
     //
     // Validate the size of the sample table.
-    if( (unsigned long)(fNumEntries * 8) != (fTOCEntry.AtomDataLength - 8) )
+    if( (UInt32)(fNumEntries * 8) != (fTOCEntry.AtomDataLength - 8) )
         return false;
 
     //
     // Read in the time-to-sample table.
 
-#if __MacOSX__
+#if MMAP_TABLES
     fTableSize = (fNumEntries * 8);
     fTimeToSampleTable = this->MemMap(sttsPos_SampleTable, fTableSize);
     if( fTimeToSampleTable == NULL )
@@ -235,7 +235,7 @@ Bool16 QTAtom_stts::SampleNumberToMediaTime(UInt32 SampleNumber, UInt32 * MediaT
 
     if ( STCB->fGetSampleMediaTime_SampleNumber == SampleNumber)
     {   
-//      qtss_printf("QTTrack::GetSampleMediaTime cache hit SampleNumber %ld \n", SampleNumber);
+//      qtss_printf("QTTrack::GetSampleMediaTime cache hit SampleNumber %"_S32BITARG_" \n", SampleNumber);
         *MediaTime = STCB->fGetSampleMediaTime_MediaTime;
         return true;
     }
@@ -291,7 +291,7 @@ Bool16 QTAtom_stts::SampleNumberToMediaTime(UInt32 SampleNumber, UInt32 * MediaT
 void QTAtom_stts::DumpAtom(void)
 {
     DEBUG_PRINT(("QTAtom_stts::DumpAtom - Dumping atom.\n"));
-    DEBUG_PRINT(("QTAtom_stts::DumpAtom - ..Number of TTS entries: %ld\n", fNumEntries));
+    DEBUG_PRINT(("QTAtom_stts::DumpAtom - ..Number of TTS entries: %"_S32BITARG_"\n", fNumEntries));
 }
 
 void QTAtom_stts::DumpTable(void)
@@ -317,7 +317,7 @@ void QTAtom_stts::DumpTable(void)
         SampleDuration = ntohl(SampleDuration);
 
         // Print out a listing.
-        qtss_printf("  %10lu : %10lu  %10lu\n", CurEntry, SampleCount, SampleDuration);
+        qtss_printf("  %10"_U32BITARG_" : %10"_U32BITARG_"  %10"_U32BITARG_"\n", CurEntry, SampleCount, SampleDuration);
     }
 }
 
@@ -405,7 +405,7 @@ Bool16 QTAtom_ctts::Initialize(void)
 
     //
     // Validate the size of the sample table.
-    if( (unsigned long)(fNumEntries * 8) != (fTOCEntry.AtomDataLength - 8) )
+    if( (UInt32)(fNumEntries * 8) != (fTOCEntry.AtomDataLength - 8) )
         return false;
 
     //
@@ -494,7 +494,7 @@ Bool16 QTAtom_ctts::SampleNumberToMediaTimeOffset(UInt32 SampleNumber, UInt32 * 
 
     if ( STCB->fGetSampleMediaTime_SampleNumber == SampleNumber)
     {   
-//      qtss_printf("QTTrack::GetSampleMediaTime cache hit SampleNumber %ld \n", SampleNumber);
+//      qtss_printf("QTTrack::GetSampleMediaTime cache hit SampleNumber %"_S32BITARG_" \n", SampleNumber);
         *MediaTimeOffset = STCB->fGetSampleMediaTime_MediaTime;
         return true;
     }
@@ -550,7 +550,7 @@ Bool16 QTAtom_ctts::SampleNumberToMediaTimeOffset(UInt32 SampleNumber, UInt32 * 
 void QTAtom_ctts::DumpAtom(void)
 {
     DEBUG_PRINT(("QTAtom_ctts::DumpAtom - Dumping atom.\n"));
-    DEBUG_PRINT(("QTAtom_ctts::DumpAtom - ..Number of CTTS entries: %ld\n", fNumEntries));
+    DEBUG_PRINT(("QTAtom_ctts::DumpAtom - ..Number of CTTS entries: %"_S32BITARG_"\n", fNumEntries));
 }
 
 void QTAtom_ctts::DumpTable(void)
@@ -576,6 +576,6 @@ void QTAtom_ctts::DumpTable(void)
         SampleOffset = ntohl(SampleOffset);
 
         // Print out a listing.
-        qtss_printf("  %10lu : %10lu  %10lu\n", CurEntry, SampleCount, SampleOffset);
+        qtss_printf("  %10"_U32BITARG_" : %10"_U32BITARG_"  %10"_U32BITARG_"\n", CurEntry, SampleCount, SampleOffset);
     }
 }

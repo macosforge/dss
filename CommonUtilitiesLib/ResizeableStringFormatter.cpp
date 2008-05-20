@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -33,7 +33,7 @@
 #include "ResizeableStringFormatter.h"
 #include "OSMemory.h"
 
-void    ResizeableStringFormatter::BufferIsFull(char* inBuffer, UInt32 inBufferLen)
+Bool16 ResizeableStringFormatter::BufferIsFull(char* inBuffer, UInt32 inBufferLen)
 {
     //allocate a buffer twice as big as the old one, and copy over the contents
     UInt32 theNewBufferSize = this->GetTotalBufferSize() * 2;
@@ -50,4 +50,5 @@ void    ResizeableStringFormatter::BufferIsFull(char* inBuffer, UInt32 inBufferL
     fStartPut = theNewBuffer;
     fCurrentPut = theNewBuffer + inBufferLen;
     fEndPut = theNewBuffer + theNewBufferSize;
+	return true;
 }

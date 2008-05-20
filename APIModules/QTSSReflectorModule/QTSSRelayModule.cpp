@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -502,7 +502,7 @@ QTSS_Error Filter(QTSS_StandardRTSP_Params* inParams)
 
                 // Write current stats for this output
                 char theStatsBuf[1024];
-                qtss_sprintf(theStatsBuf, "Current stats for this relay: %lu packets per second. %lu bits per second. %"_64BITARG_"d packets since it started. %"_64BITARG_"d bits since it started<P>", theOutput->GetCurPacketsPerSecond(), theOutput->GetCurBitsPerSecond(), theOutput->GetTotalPacketsSent(), theOutput->GetTotalBytesSent());
+                qtss_sprintf(theStatsBuf, "Current stats for this relay: %"_U32BITARG_" packets per second. %"_U32BITARG_" bits per second. %"_64BITARG_"d packets since it started. %"_64BITARG_"d bits since it started<P>", theOutput->GetCurPacketsPerSecond(), theOutput->GetCurBitsPerSecond(), theOutput->GetTotalPacketsSent(), theOutput->GetTotalBytesSent());
                 (void)QTSS_Write(inParams->inRTSPRequest, &theStatsBuf[0], ::strlen(theStatsBuf), NULL, 0);
             }
         }
@@ -608,7 +608,7 @@ QTSS_Error SetupAnnouncedSessions(QTSS_StandardRTSP_Params* inParams)
     
     OSMutexLocker locker(RelayOutput::GetQueueMutex());
         
-        RTSPSessionIDQueueElem* theElem = FindRTSPSessionIDQueueElem(*theSessionID);
+    RTSPSessionIDQueueElem* theElem = FindRTSPSessionIDQueueElem(*theSessionID);
     
     // If the RTSPSessionID is not in the queue
     if (theElem == NULL)
@@ -632,7 +632,9 @@ QTSS_Error SetupAnnouncedSessions(QTSS_StandardRTSP_Params* inParams)
     
     // Remove the session ID from the queue
     sRTSPSessionIDQueue->Remove(&theElem->fElem);
-                        
+    delete theElem;  
+    theElem = 0;
+    
     // Get the Remote IP address
     UInt32* theIP = 0;
     theLen = 0;

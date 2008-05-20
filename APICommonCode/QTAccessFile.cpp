@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -44,6 +44,18 @@
 #include "QTAccessFile.h"
 #include "OSArrayObjectDeleter.h"
 
+
+#include <grp.h>
+#include <membership.h>
+#include <pwd.h>
+#include <signal.h>
+#include <unistd.h>
+     
+#define DEBUG_QTACCESS 0
+#define debug_printf if (DEBUG_QTACCESS) qtss_printf
+
+char* QTAccessFile::sAccessValidUser = "require valid-user\n";
+char* QTAccessFile::sAccessAnyUser = "require any-user\n";
 
 UInt8 QTAccessFile::sWhitespaceAndGreaterThanMask[] =
 {
@@ -106,12 +118,81 @@ void QTAccessFile::SetAccessFileName(const char *inQTAccessFileName)
 }
 
 
+Bool16 QTAccessFile::HaveUser(char *userName, void* extraDataPtr)
+{
+    Bool16 result = false;
+
+    if (NULL != userName && 0 != userName[0])
+        result = true;
+
+   return result;        
+}
+
+Bool16 QTAccessFile::HaveGroups( char** groupArray, UInt32 numGroups, void* extraDataPtr)
+{
+   Bool16 result = false;
+
+   if (numGroups > 0 && groupArray != NULL)
+        result = true;
+        
+   return result;   
+}
+
+Bool16 QTAccessFile::HaveRealm(   char *userName, StrPtrLen* ioRealmNameStr, void *extraData )
+{
+    Bool16 result = false;
+
+    if (ioRealmNameStr != NULL && ioRealmNameStr->Ptr != NULL && ioRealmNameStr->Len > 0)
+        result = true;
+       
+    return result;   
+}
+
+void QTAccessFile::GetRealm(StrPtrLen* accessRealm, StrPtrLen* ioRealmNameStr, char *userName,void *extraDataPtr )
+{
+    
+    if (ioRealmNameStr->Len <= accessRealm->Len) 
+        accessRealm->Len = ioRealmNameStr->Len -1; // just copy what we can
+    ::memcpy(ioRealmNameStr->Ptr, accessRealm->Ptr,accessRealm->Len);
+    ioRealmNameStr->Ptr[accessRealm->Len] = 0; 
+
+}
+
+Bool16 QTAccessFile::TestUser(StrPtrLen* accessUser, char *userName,void *extraDataPtr )
+{
+   Bool16 result = false;
+    
+    if ( accessUser->Equal(userName) ) 
+        result = true;
+
+  return result;   
+}
+
+Bool16 QTAccessFile::TestGroup( StrPtrLen* accessGroup, char *userName, char**groupArray, UInt32 numGroups, void *extraDataPtr)
+{
+   
+    for (UInt32 index = 0; index < numGroups; index ++)
+    {   if(accessGroup->Equal(groupArray[index])) 
+            return true;
+    }
+
+  return false;   
+
+}
+
+Bool16 QTAccessFile::TestExtraData( StrPtrLen* wordPtr, StringParser* lineParserPtr, void* extraDataPtr)
+{
+    return false;
+}
+
+
 Bool16 QTAccessFile::AccessAllowed  (   char *userName, char**groupArray, UInt32 numGroups, StrPtrLen *accessFileBufPtr,
-                                        QTSS_ActionFlags inFlags,StrPtrLen* ioRealmNameStr 
+                                        QTSS_ActionFlags inFlags,StrPtrLen* ioRealmNameStr, Bool16 *outAllowAnyUserPtr, void *extraDataPtr
                                     )
 {       
     if (NULL == accessFileBufPtr || NULL == accessFileBufPtr->Ptr || 0 == accessFileBufPtr->Len)
-        return false; // nothing to check
+        return true; // nothing to check
+        
     if (ioRealmNameStr != NULL && ioRealmNameStr->Ptr != NULL && ioRealmNameStr->Len > 0)
         ioRealmNameStr->Ptr[0] = 0;
         
@@ -123,15 +204,14 @@ Bool16 QTAccessFile::AccessAllowed  (   char *userName, char**groupArray, UInt32
     Bool16                  haveRealmResultBuffer = false;
     Bool16                  haveGroups = false;
     
-    if (NULL != userName && 0 != userName[0])
-        haveUserName = true;
-    
-    if (numGroups > 0 && groupArray != NULL)
-        haveGroups = true;
+    *outAllowAnyUserPtr = false;
         
-    if (ioRealmNameStr != NULL && ioRealmNameStr->Ptr != NULL && ioRealmNameStr->Len > 0)
-        haveRealmResultBuffer = true;
-        
+    haveUserName = HaveUser(userName, extraDataPtr);
+  
+    haveGroups = HaveGroups(groupArray, numGroups, extraDataPtr);
+
+    haveRealmResultBuffer =  HaveRealm(userName, ioRealmNameStr, extraDataPtr );
+  
     while( accessFileParser.GetDataRemaining() != 0 ) 
     {
         accessFileParser.GetThruEOL(&line);  // Read each line  
@@ -176,10 +256,8 @@ Bool16 QTAccessFile::AccessAllowed  (   char *userName, char**groupArray, UInt32
             lineParser.GetThruEOL(&word);
             StringParser::UnQuote(&word);// if the parsed string is surrounded by quotes then remove them.
             
-            if (ioRealmNameStr->Len <= word.Len) 
-                word.Len = ioRealmNameStr->Len -1; // just copy what we can
-            ::memcpy(ioRealmNameStr->Ptr, word.Ptr,word.Len);
-            ioRealmNameStr->Ptr[word.Len] = 0; 
+            GetRealm(&word, ioRealmNameStr, userName, extraDataPtr );
+
             // we don't change the buffer len ioRealmNameStr->Len because we might have another AuthName tag to copy
             continue; // done with AuthName (realm)
         }
@@ -195,7 +273,9 @@ Bool16 QTAccessFile::AccessAllowed  (   char *userName, char**groupArray, UInt32
             }
             
             if ( word.Equal("any-user")  ) 
-            {   return true; 
+            {   
+                *outAllowAnyUserPtr = true;
+                return true; 
             }
     
             if (!haveUserName)
@@ -208,9 +288,9 @@ Bool16 QTAccessFile::AccessAllowed  (   char *userName, char**groupArray, UInt32
                     
                 while (word.Len != 0) // compare each word in the line
                 {   
-                    if ( word.Equal(userName) ) 
-                    {   return true; 
-                    }
+                    if (TestUser(&word, userName, extraDataPtr ))
+                        return true;
+
                     lineParser.ConsumeWhitespace();
                     lineParser.ConsumeUntilWhitespace(&word);       
                 }
@@ -224,16 +304,18 @@ Bool16 QTAccessFile::AccessAllowed  (   char *userName, char**groupArray, UInt32
                 
                 while (word.Len != 0) // compare each word in the line
                 {   
-                    for (UInt32 index = 0; index < numGroups; index ++)
-                    {   if(word.Equal(groupArray[index])) 
-                            return true;
-                    }
-                
+                    if (TestGroup(&word, userName, groupArray, numGroups, extraDataPtr) )
+                        return true;
+
                     lineParser.ConsumeWhitespace();
                     lineParser.ConsumeUntilWhitespace(&word);
                 }
                 continue; // done with "require group" line
             }
+            
+            if (TestExtraData(&word, &lineParser, extraDataPtr))
+                return true;
+                
                     
             continue; // done with unparsed "require" line
         }
@@ -323,58 +405,58 @@ QTSS_AuthScheme QTAccessFile::FindUsersAndGroupsFilesAndAuthScheme(char* inAcces
     
     while( accessFileParser.GetDataRemaining() != 0 ) 
     {
-    accessFileParser.GetThruEOL(&line);     // Read each line   
-    StringParser lineParser(&line);
-    lineParser.ConsumeWhitespace();         //skip over leading whitespace
-    if (lineParser.GetDataRemaining() == 0)     // must be an empty line
-        continue;
+        accessFileParser.GetThruEOL(&line);     // Read each line   
+        StringParser lineParser(&line);
+        lineParser.ConsumeWhitespace();         //skip over leading whitespace
+        if (lineParser.GetDataRemaining() == 0)     // must be an empty line
+            continue;
 
-    char firstChar = lineParser.PeekFast();
-    if ( (firstChar == '#') || (firstChar == '\0') )
-        continue;               //skip over comments and blank lines...
+        char firstChar = lineParser.PeekFast();
+        if ( (firstChar == '#') || (firstChar == '\0') )
+            continue;               //skip over comments and blank lines...
         
         lineParser.ConsumeUntilWhitespace(&word);
                
         if ( word.Equal("<Limit") ) // a limit line
-    {
-        currentFlags = qtssActionFlagsNoFlags; // clear to no access
-        lineParser.ConsumeWhitespace();
-        lineParser.ConsumeUntil( &word, sWhitespaceAndGreaterThanMask); // the flag <limit Read> or <limit Read >
-        while (word.Len != 0) // compare each word in the line
-        {   
-            if (word.Equal("WRITE")  ) 
-            {   
-                            currentFlags |= inAction & qtssActionFlagsWrite; // accept following lines if inFlags has write
-            }
-                
-            if (word.Equal("READ") ) 
-            {   
-                            currentFlags |= inAction & qtssActionFlagsRead; // accept following lines if inFlags has read
-            }
-                        
+        {
+            currentFlags = qtssActionFlagsNoFlags; // clear to no access
             lineParser.ConsumeWhitespace();
-            lineParser.ConsumeUntil(&word, sWhitespaceAndGreaterThanMask);
+            lineParser.ConsumeUntil( &word, sWhitespaceAndGreaterThanMask); // the flag <limit Read> or <limit Read >
+            while (word.Len != 0) // compare each word in the line
+            {   
+                if (word.Equal("WRITE")  ) 
+                {   
+                    currentFlags |= inAction & qtssActionFlagsWrite; // accept following lines if inFlags has write
                 }
-                continue; //done with limit line
+                    
+                if (word.Equal("READ") ) 
+                {   
+                    currentFlags |= inAction & qtssActionFlagsRead; // accept following lines if inFlags has read
+                }
+                            
+                lineParser.ConsumeWhitespace();
+                lineParser.ConsumeUntil(&word, sWhitespaceAndGreaterThanMask);
+            }
+            continue; //done with limit line
         }
         
         if ( word.Equal("</Limit>") )
-                currentFlags = qtssActionFlagsRead; // set the current access state to the default of read access
+            currentFlags = qtssActionFlagsRead; // set the current access state to the default of read access
         
         if (0 == (currentFlags & inAction))
             continue; // ignore lines because inFlags doesn't match the current access state
             
         if (word.Equal("AuthUserFile") )
-    {
-                lineParser.ConsumeWhitespace();
-                lineParser.GetThruEOL(&word);
-                StringParser::UnQuote(&word);// if the parsed string is surrounded by quotes then remove them.
-        
-                if(*outUsersFilePath != NULL)       // we are encountering the AuthUserFile keyword twice!
-                    delete[] *outUsersFilePath; // The last one found takes precedence...delete the previous path
-                
-                *outUsersFilePath = word.GetAsCString();
-        continue;
+        {
+            lineParser.ConsumeWhitespace();
+            lineParser.GetThruEOL(&word);
+            StringParser::UnQuote(&word);// if the parsed string is surrounded by quotes then remove them.
+    
+            if(*outUsersFilePath != NULL)       // we are encountering the AuthUserFile keyword twice!
+                delete[] *outUsersFilePath; // The last one found takes precedence...delete the previous path
+            
+            *outUsersFilePath = word.GetAsCString();
+            continue;
         }
         
         if (word.Equal("AuthGroupFile") )
@@ -385,8 +467,10 @@ QTSS_AuthScheme QTAccessFile::FindUsersAndGroupsFilesAndAuthScheme(char* inAcces
 
             if(*outGroupsFilePath != NULL)      // we are encountering the AuthGroupFile keyword twice!
                 delete[] *outGroupsFilePath;    // The last one found takes precedence...delete the previous path       
-        *outGroupsFilePath = word.GetAsCString();
-        continue;
+            
+            *outGroupsFilePath = word.GetAsCString();
+            
+            continue;
         }
         
         if (word.Equal("AuthScheme") )
@@ -407,11 +491,14 @@ QTSS_AuthScheme QTAccessFile::FindUsersAndGroupsFilesAndAuthScheme(char* inAcces
     return authScheme;
 }
 
-QTSS_Error QTAccessFile::AuthorizeRequest(QTSS_StandardRTSP_Params* inParams, Bool16 allowNoAccessFiles, QTSS_ActionFlags noAction, QTSS_ActionFlags authorizeAction)
+QTSS_Error QTAccessFile::AuthorizeRequest(QTSS_StandardRTSP_Params* inParams, Bool16 allowNoAccessFiles, QTSS_ActionFlags noAction, QTSS_ActionFlags authorizeAction, Bool16 *outAuthorizedPtr, Bool16 *outAllowAnyUserPtr)
 {
-    if  ( (NULL == inParams) || (NULL == inParams->inRTSPRequest) )
+    if  ( (NULL == inParams) || (NULL == inParams->inRTSPRequest) || (NULL == outAllowAnyUserPtr) || (NULL == outAuthorizedPtr)  )
         return QTSS_RequestFailed;
 
+    *outAllowAnyUserPtr = false;
+    *outAuthorizedPtr = false;
+    
     QTSS_RTSPRequestObject  theRTSPRequest = inParams->inRTSPRequest;
     
     // get the type of request
@@ -441,13 +528,7 @@ QTSS_Error QTAccessFile::AuthorizeRequest(QTSS_StandardRTSP_Params* inParams, Bo
 
     char* accessFilePath = QTAccessFile::GetAccessFile_Copy(movieRootDirStr, pathBuffStr);
     OSCharArrayDeleter accessFilePathDeleter(accessFilePath);
-    
-    if (NULL == accessFilePath) // we are done nothing to do
-    {   if (QTSS_NoErr != QTSS_SetValue(theRTSPRequest,qtssRTSPReqUserAllowed, 0, &allowNoAccessFiles, sizeof(allowNoAccessFiles)))
-            return QTSS_RequestFailed; // Bail on the request. The Server will handle the error
-        return QTSS_NoErr;
-    }
-    
+        
     char* username = QTSSModuleUtils::GetUserName_Copy(theUserProfile);
     OSCharArrayDeleter usernameDeleter(username);
 
@@ -459,11 +540,24 @@ QTSS_Error QTAccessFile::AuthorizeRequest(QTSS_StandardRTSP_Params* inParams, Bo
     (void)QTSSModuleUtils::ReadEntireFile(accessFilePath, &accessFileBuf);
     OSCharArrayDeleter accessFileBufDeleter(accessFileBuf.Ptr);
         
+    if (accessFileBuf.Len == 0 && !allowNoAccessFiles)
+    {   accessFileBuf.Set(sAccessValidUser);
+        if (DEBUG_QTACCESS) 
+            qtss_printf("QTAccessFile::AuthorizeRequest SET Accessfile valid user for no accessfile %s\n", sAccessValidUser);
+    }
+      
+    if (accessFileBuf.Len == 0 && allowNoAccessFiles)
+    {   accessFileBuf.Set(sAccessAnyUser);
+        if (DEBUG_QTACCESS) 
+            qtss_printf("QTAccessFile::AuthorizeRequest SET Accessfile any user for no access file %s\n", sAccessAnyUser);
+    }
+      
     char realmName[kBuffLen] = { 0 };
     StrPtrLen   realmNameStr(realmName,kBuffLen -1);
     
     //check if this user is allowed to see this movie
-    Bool16 allowRequest = QTAccessFile::AccessAllowed(username, groupCharPtrArray, numGroups,  &accessFileBuf, authorizeAction,&realmNameStr);
+    Bool16 allowRequest = this->AccessAllowed(username, groupCharPtrArray, numGroups,  &accessFileBuf, authorizeAction,&realmNameStr, outAllowAnyUserPtr );
+    debug_printf("accessFile.AccessAllowed for user=%s returned %d\n", username, allowRequest);
     
     // Get the auth scheme
     QTSS_AuthScheme theAuthScheme = qtssAuthNone;
@@ -477,7 +571,7 @@ QTSS_Error QTAccessFile::AuthorizeRequest(QTSS_StandardRTSP_Params* inParams, Bo
     if((theAuthScheme == qtssAuthBasic) && (realmNameStr.Ptr[0] != '\0'))   //set the realm if we have one
         (void) QTSS_SetValue(theRTSPRequest,qtssRTSPReqURLRealm, 0, realmNameStr.Ptr, ::strlen(realmNameStr.Ptr));
     else // if auth scheme is basic and no realm is present, or if the auth scheme is digest, use the realm from the users file
-    {
+    {  
         char*   userRealm = NULL;   
         (void) QTSS_GetValueAsString(theUserProfile, qtssUserRealm, 0, &userRealm);
         if(userRealm != NULL)
@@ -487,10 +581,79 @@ QTSS_Error QTAccessFile::AuthorizeRequest(QTSS_StandardRTSP_Params* inParams, Bo
         }
     }
     
-    // We are denying the request so pass false back to the server.
-    if (QTSS_NoErr != QTSS_SetValue(theRTSPRequest,qtssRTSPReqUserAllowed, 0, &allowRequest, sizeof(allowRequest)))
-        return QTSS_RequestFailed; // Bail on the request. The Server will handle the error
+    *outAuthorizedPtr = allowRequest;
+    
+    Bool16 founduser = this->HaveUser(username, NULL);
+    Bool16 authContinue = true;
+    char nameBuff[256];
+    StrPtrLen reqNameStr(nameBuff, kBuffLen);
+    StrPtrLen profileNameStr(username);
+    theErr = QTSS_GetValue (theRTSPRequest,qtssRTSPReqUserName,0, (void *) reqNameStr.Ptr, &reqNameStr.Len);
+ 
+    
+if (DEBUG_QTACCESS)
+{   qtss_printf("QTAccessFile::AuthorizeRequest qtaccess profile user =%s ", username);
+    reqNameStr.PrintStr("request user=","\n");
+    qtss_printf("QTAccessFile::AuthorizeRequest allowRequest=%d founduser=%d authContinue=%d\n", allowRequest, founduser, authContinue);
+}   
+    if (allowRequest && founduser)
+        theErr = QTSSModuleUtils::AuthorizeRequest(theRTSPRequest, &allowRequest, &founduser,&authContinue);
+    if (!allowRequest && !founduser)
+        theErr = QTSSModuleUtils::AuthorizeRequest(theRTSPRequest, &allowRequest, &founduser,&authContinue);
 
-    return QTSS_NoErr;
+if (DEBUG_QTACCESS)
+{   qtss_printf("QTAccessFile::AuthorizeRequest QTSSModuleUtils::AuthorizeRequest qtaccess profile user =%s ", username);
+    reqNameStr.PrintStr("request user=","\n");
+    qtss_printf("QTAccessFile::AuthorizeRequest allowRequest=%d founduser=%d authContinue=%d\n", allowRequest, founduser, authContinue);
+}   
+ 
+    return theErr;
 }
+
+
+bool DSAccessFile::CheckGroupMembership(const char* inUsername, const char* inGroupName)
+{   
+	// In Tiger, group membership is painfully simple: we ask memberd for it!
+	struct passwd	*user		= NULL;
+	struct group	*group		= NULL;
+	uuid_t			userID;
+	uuid_t			groupID;
+	int				isMember	= 0;
+
+	// Look up the user using the POSIX APIs: only care about the UID.
+	user = getpwnam(inUsername);
+	if ( user == NULL )
+		return false;
+	uuid_clear(userID);
+	if ( mbr_uid_to_uuid(user->pw_uid, userID) )
+		return false;
+
+	// Look up the group using the POSIX APIs: only care about the GID.
+	group = getgrnam(inGroupName);
+	endgrent();
+	if ( group == NULL )
+		return false;
+	uuid_clear(groupID);
+	if ( mbr_gid_to_uuid(group->gr_gid, groupID) )
+		return false;
+
+	// mbr_check_membership() returns 0 on success and error code on failure.
+	if ( mbr_check_membership(userID, groupID, &isMember) )
+		return false;
+	return (bool)isMember;
+}
+
+Bool16 DSAccessFile::ValidUser( char*userName, void* extraDataPtr)
+{
+    struct passwd	*user = getpwnam(userName);
+    Bool16 result =true;
+    if ( user == NULL )
+    {    
+         return result;
+    }
+        
+    return true;
+}
+
+
 

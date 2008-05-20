@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -40,27 +40,50 @@
 #include <stdio.h>
 
 
-Bool16 RTCPAckPacket::ParseAckPacket(UInt8* inPacketBuffer, UInt32 inPacketLen)
+// use if you don't know what kind of packet this is
+Bool16 RTCPAckPacket::ParseAckPacket(UInt8* inPacketBuffer, UInt32 inPacketLength)
 {
+        
+    if (!this->ParseAPPPacket(inPacketBuffer, inPacketLength))
+        return false;
+        
+    if (this->GetAppPacketName() == RTCPAckPacket::kAckPacketName)
+        return true;
+        
+    if (this->GetAppPacketName() == RTCPAckPacket::kAckPacketAlternateName)
+        return true;
+          
+    return false;
+
+}
+
+
+Bool16 RTCPAckPacket::ParseAPPData(UInt8* inPacketBuffer, UInt32 inPacketLength)
+{
+    if ( !this->ParseAckPacket(inPacketBuffer, inPacketLength) )
+        return false;
+
+
     fRTCPAckBuffer = inPacketBuffer;
 
     //
     // Check whether this is an ack packet or not.
-    if ((inPacketLen < kAckMaskOffset) || (!this->IsAckPacketType()))
+    if ( (inPacketLength < kAckMaskOffset) || (!this->IsAckPacketType() ) )
         return false;
     
-    Assert(inPacketLen == (UInt32)((this->GetPacketLength() * 4)) + RTCPPacket::kRTCPHeaderSizeInBytes);
-    fAckMaskSize = inPacketLen - kAckMaskOffset;
+    Assert(inPacketLength == (UInt32)((this->GetPacketLength() * 4)) + RTCPPacket::kRTCPHeaderSizeInBytes);
+    fAckMaskSize = inPacketLength - kAckMaskOffset;
+    
     return true;
 }
 
 Bool16 RTCPAckPacket::IsAckPacketType()
 {
     // While we are moving to a new type, check for both
-    UInt32 theAppType = ntohl(*(UInt32*)&fRTCPAckBuffer[kAppPacketTypeOffset]);
+    UInt32 theAppType = this->GetAppPacketName();
     
-//  if ( theAppType == kOldAckPacketType ) qtss_printf("ack\n"); 
-//  if ( theAppType == kAckPacketType ) qtss_printf("qtack\n");
+//  if ( theAppType == kAckPacketAlternateName ) qtss_printf("ack\n"); 
+//  if ( theAppType == kAckPacketName ) qtss_printf("qtack\n");
                                                         
     return this->IsAckType(theAppType);
 }
@@ -84,11 +107,11 @@ void   RTCPAckPacket::Dump()
     {
         if (this->IsNthBitEnabled(maskCount))
         {
-            qtss_sprintf(&maskBytesBuffer[::strlen(maskBytesBuffer)],"%lu, ", theSeqNum + 1 + maskCount);
+            qtss_sprintf(&maskBytesBuffer[::strlen(maskBytesBuffer)],"%"_U32BITARG_", ", theSeqNum + 1 + maskCount);
         }
     }
     Assert(::strlen(maskBytesBuffer) < numBufferBytes);
-    qtss_printf(" H_name=%s H_seq=%u H_len=%u mask_size=%lu seq_nums_bit_set=%s\n",
+    qtss_printf(" H_name=%s H_seq=%u H_len=%u mask_size=%"_U32BITARG_" seq_nums_bit_set=%s\n",
                                     name, theSeqNum,thePacketLen,theAckMaskSizeInBits, maskBytesBuffer);
 
 }

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -81,7 +81,7 @@ static QTSS_Error   Register(QTSS_Register_Params* inParams);
 static QTSS_Error   Initialize(QTSS_Initialize_Params* inParams);
 static QTSS_Error   RereadPrefs();
 static QTSS_Error   ProcessRTCPPacket(QTSS_RTCPProcess_Params* inParams);
-static void             InitializeDictionaryItems(QTSS_RTPStreamObject inStream);
+static void         InitializeDictionaryItems(QTSS_RTPStreamObject inStream);
 
 
 
@@ -144,6 +144,8 @@ QTSS_Error Initialize(QTSS_Initialize_Params* inParams)
     sPrefs = QTSSModuleUtils::GetModulePrefsObject(inParams->inModule);
     return RereadPrefs();
 }
+
+
 QTSS_Error RereadPrefs()
 {
     //
@@ -169,20 +171,34 @@ QTSS_Error RereadPrefs()
 }
 
 
+        
+Bool16 Is3GPPSession(QTSS_RTCPProcess_Params *inParams)
+{
+
+   Bool16 is3GPP = false;
+   UInt32 theLen = sizeof(is3GPP);
+   (void)QTSS_GetValue(inParams->inClientSession, qtssCliSessIs3GPPSession, 0, (void*)&is3GPP, &theLen);
+ 
+   return is3GPP;
+}
+
+
 QTSS_Error ProcessRTCPPacket(QTSS_RTCPProcess_Params* inParams)
 {
-    if (!sModuleEnabled || sDisableThinning)
+    if (!sModuleEnabled || sDisableThinning || Is3GPPSession(inParams) )
+    {
+        //qtss_printf("QTSSFlowControlModule.cpp:ProcessRTCPPacket processing disabled sModuleEnabled=%d sDisableThinning=%d Is3GPPSession(inParams)=%d\n", sModuleEnabled, sDisableThinning,Is3GPPSession(inParams));
         return QTSS_NoErr;
+    }
         
-
 #if FLOW_CONTROL_DEBUGGING
-    QTSS_RTPPayloadType* thePayloadType = NULL;
+    QTSS_RTPPayloadType* thePayloadType = 0;
     UInt32 thePayloadLen = 0;
     (void)QTSS_GetValuePtr(inParams->inRTPStream, qtssRTPStrPayloadType, 0, (void**)&thePayloadType, &thePayloadLen);
     
-    if ((*thePayloadType != NULL) && (*thePayloadType == qtssVideoPayloadType))
+    if ((*thePayloadType != 0) && (*thePayloadType == qtssVideoPayloadType))
         qtss_printf("Video track reporting:\n");
-    else if ((*thePayloadType != NULL) && (*thePayloadType == qtssAudioPayloadType))
+    else if ((*thePayloadType != 0) && (*thePayloadType == qtssAudioPayloadType))
         qtss_printf("Audio track reporting:\n");
     else
         qtss_printf("Unknown track reporting\n");
@@ -279,7 +295,7 @@ QTSS_Error ProcessRTCPPacket(QTSS_RTCPProcess_Params* inParams)
             else
             {
 #if FLOW_CONTROL_DEBUGGING
-                qtss_printf("Percent loss too high: Incrementing percent loss count to %lu\n", theNumLossesAboveTol);
+                qtss_printf("Percent loss too high: Incrementing percent loss count to %"_U32BITARG_"\n", theNumLossesAboveTol);
 #endif
                 (void)QTSS_SetValue(theStream, sNumLossesAboveTolAttr, 0, &theNumLossesAboveTol, sizeof(theNumLossesAboveTol));
                 clearPercentLossThinCount = false;
@@ -299,7 +315,7 @@ QTSS_Error ProcessRTCPPacket(QTSS_RTCPProcess_Params* inParams)
             else
             {
 #if FLOW_CONTROL_DEBUGGING
-                qtss_printf("Percent is low: Incrementing percent loss count to %lu\n", theNumLossesBelowTol);
+                qtss_printf("Percent is low: Incrementing percent loss count to %"_U32BITARG_"\n", theNumLossesBelowTol);
 #endif
                 (void)QTSS_SetValue(theStream, sNumLossesBelowTolAttr, 0, &theNumLossesBelowTol, sizeof(theNumLossesBelowTol));
                 clearPercentLossThickCount = false;
@@ -328,7 +344,7 @@ QTSS_Error ProcessRTCPPacket(QTSS_RTCPProcess_Params* inParams)
             else
             {
 #if FLOW_CONTROL_DEBUGGING
-                qtss_printf("Client reporting getting worse. Incrementing num worses count to %lu\n", theNumWorses);
+                qtss_printf("Client reporting getting worse. Incrementing num worses count to %"_U32BITARG_"\n", theNumWorses);
 #endif
                 (void)QTSS_SetValue(theStream, sNumWorsesAttr, 0, &theNumWorses, sizeof(theNumWorses));
             }
@@ -371,7 +387,8 @@ QTSS_Error ProcessRTCPPacket(QTSS_RTCPProcess_Params* inParams)
                 curQuality = 1;
             (void)QTSS_SetValue(theStream, qtssRTPStrQualityLevel, 0, &curQuality, sizeof(curQuality));
         }
-        
+ 
+ 
         Bool16 *startedThinningPtr = NULL;
         SInt32 numThinned = 0;
         (void)QTSS_GetValuePtr(inParams->inClientSession, qtssCliSesStartedThinning, 0, (void**)&startedThinningPtr, &theLen);

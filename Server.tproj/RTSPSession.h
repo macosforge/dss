@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -81,7 +81,9 @@ class RTSPSession : public RTSPSessionInterface
         
         // test current connections handled by this object against server pref connection limit
         Bool16 OverMaxConnections(UInt32 buffer);
-
+        
+        // Process the 3GPP Request Data for the session
+        void Process3GPPData();
 
         char                fLastRTPSessionID[QTSS_MAX_SESSION_ID_LENGTH];
         StrPtrLen           fLastRTPSessionIDPtr;
@@ -105,7 +107,7 @@ class RTSPSession : public RTSPSessionInterface
 
     enum
     {
-        kMaxHTTPResponseLen = 300
+        kMaxHTTPResponseLen = 512
     };
     static              char        sHTTPResponseHeaderBuf[kMaxHTTPResponseLen];
     static              StrPtrLen   sHTTPResponseHeaderPtr;

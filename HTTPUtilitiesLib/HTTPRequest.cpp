@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -374,7 +374,7 @@ void HTTPRequest::AppendContentLengthHeader(UInt64 length_64bit)
 void HTTPRequest::AppendContentLengthHeader(UInt32 length_32bit)
 {
     char* contentLength = NEW char[256];
-    qtss_sprintf(contentLength, "%lu", length_32bit);
+    qtss_sprintf(contentLength, "%"_U32BITARG_"", length_32bit);
     StrPtrLen contentLengthPtr(contentLength);
     AppendResponseHeader(httpContentLengthHeader, &contentLengthPtr);
 }

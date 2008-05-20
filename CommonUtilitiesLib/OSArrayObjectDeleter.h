@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -40,6 +40,7 @@ template <class T>
 class OSArrayObjectDeleter
 {
     public:
+		OSArrayObjectDeleter() : fT(NULL) {}
         OSArrayObjectDeleter(T* victim) : fT(victim)  {}
         ~OSArrayObjectDeleter() { delete [] fT; }
         
@@ -64,6 +65,7 @@ template <class T>
 class OSPtrDeleter
 {
     public:
+		OSPtrDeleter() : fT(NULL) {}
         OSPtrDeleter(T* victim) : fT(victim)  {}
         ~OSPtrDeleter() { delete fT; }
         

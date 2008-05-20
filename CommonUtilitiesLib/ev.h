@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -23,12 +23,19 @@
  *
  */
 
-#ifndef _SYS_EV_H_
-#define _SYS_EV_H_
+#ifndef _DSS_SYS_EV_H_
+#define _DSS_SYS_EV_H_
+
+
 
 #if !defined(__Win32__) && !defined(__solaris__) && !defined(__sgi__) && !defined(__osf__) && !defined(__hpux__)
     #include <sys/queue.h>
 #endif
+
+#if MACOSXEVENTQUEUE
+    #include <sys/ev.h>
+#else
+	
 
 struct eventreq {
   int      er_type;
@@ -46,6 +53,7 @@ struct eventreq {
 };
 
 typedef struct eventreq *er_t;
+
 
 #ifdef _KERNEL
 
@@ -73,7 +81,6 @@ struct eventqelt {
 
 #endif /* _KERNEL */
 
-#if !MACOSXEVENTQUEUE
 
 int select_watchevent(struct eventreq *req, int which);
 int select_modwatch(struct eventreq *req, int which);
@@ -81,6 +88,6 @@ int select_waitevent(struct eventreq *req, void* onlyForMOSX);
 void select_startevents();
 int select_removeevent(int which);
 
-#endif
+#endif /* !MACOSXEVENTQUEUE */
 
-#endif /* _SYS_EV_H_ */
+#endif /* _DSS_SYS_EV_H_ */

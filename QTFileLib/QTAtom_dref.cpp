@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -237,7 +237,7 @@ Bool16 QTAtom_dref::Read(UInt32 RefID, UInt64 Offset, char * const Buffer, UInt3
     if( (RefID == 0) || (RefID > fNumRefs) )
         return false;
 
-//  qtss_printf("QTAtom_dref::Read Offset = %qd, Length = %ld \n", Offset, Length);
+//  qtss_printf("QTAtom_dref::Read Offset = %qd, Length = %"_S32BITARG_" \n", Offset, Length);
     //
     // If this data reference is in the movie file itself, then we can forward
     // the request directly to QTFile.
@@ -316,7 +316,7 @@ void QTAtom_dref::DumpAtom(void)
 {
     DEBUG_PRINT(("QTAtom_dref::DumpAtom - Dumping atom.\n"));
     for( UInt32 CurRef = 1; CurRef <= fNumRefs; CurRef++ )
-        DEBUG_PRINT(("QTAtom_dref::DumpAtom - ..Ref #%lu is in file: %s\n", CurRef, IsRefInThisFile(CurRef) ? "yes" : "no"));
+        DEBUG_PRINT(("QTAtom_dref::DumpAtom - ..Ref #%"_U32BITARG_" is in file: %s\n", CurRef, IsRefInThisFile(CurRef) ? "yes" : "no"));
 }
 
 

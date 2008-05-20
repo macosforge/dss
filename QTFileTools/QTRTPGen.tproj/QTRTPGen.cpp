@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
         char        buffer[kTimeStrSize];
         struct tm  timeResult;
         
-        qtss_printf("-- Track #%02ld ---------------------------\n", HintTrack->GetTrackID());
+        qtss_printf("-- Track #%02"_S32BITARG_" ---------------------------\n", HintTrack->GetTrackID());
         qtss_printf("   Name               : %s\n", HintTrack->GetTrackName());
         qtss_printf("   Created on         : %s", qtss_asctime(qtss_gmtime(&unixCreationTime, &timeResult),buffer, sizeof(buffer)));
         qtss_printf("   Modified on        : %s", qtss_asctime(qtss_gmtime(&unixModificationTime, &timeResult),buffer, sizeof(buffer)));
@@ -176,7 +176,7 @@ int main(int argc, char *argv[]) {
     while( HintTrack->GetNumPackets(curSample, &NumPackets) == QTTrack::errNoError ) {
         //
         // Generate all of the packets.
-        qtss_printf("Generating %u packet(s) in sample #%lu..\n", NumPackets, curSample);
+        qtss_printf("Generating %u packet(s) in sample #%"_U32BITARG_"..\n", NumPackets, curSample);
         for( UInt16 curPacket = 1; curPacket <= NumPackets; curPacket++ ) {
             // General vars
             #define MAX_PACKET_LEN 2048

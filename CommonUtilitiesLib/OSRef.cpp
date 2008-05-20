@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -39,6 +39,8 @@ UInt32  OSRefTableUtils::HashString(StrPtrLen* inString)
     Assert(inString != NULL);
     Assert(inString->Ptr != NULL);
     Assert(inString->Len > 0);
+    if (inString == NULL || inString->Len == 0 || inString->Ptr == NULL)
+        return 0;
     
     //make sure to convert to unsigned here, as there may be binary
     //data in this string
@@ -55,13 +57,21 @@ UInt32  OSRefTableUtils::HashString(StrPtrLen* inString)
 OS_Error OSRefTable::Register(OSRef* inRef)
 {
     Assert(inRef != NULL);
+    if (inRef == NULL)
+        return EPERM;
 #if DEBUG
     Assert(!inRef->fInATable);
 #endif
     Assert(inRef->fRefCount == 0);
+    Assert(inRef->fString.Ptr != NULL);
+    Assert(inRef->fString.Len != 0);
     
     OSMutexLocker locker(&fMutex);
-
+    if (inRef->fString.Ptr == NULL || inRef->fString.Len == 0)
+    {   //printf("OSRefTable::Register inRef is invalid \n");
+        return EPERM;
+    }
+    
     // Check for a duplicate. In this function, if there is a duplicate,
     // return an error, don't resolve the duplicate
     OSRefKey key(&inRef->fString);
@@ -156,7 +166,7 @@ void    OSRefTable::Release(OSRef* ref)
     Assert(ref != NULL);
     OSMutexLocker locker(&fMutex);
     ref->fRefCount--;
-    // fRefCount is an unsigned long and QTSS should never run into
+    // fRefCount is a UInt32  and QTSS should never run into
     // a ref greater than 16 * 64K, so this assert just checks to
     // be sure that we have not decremented the ref less than zero.
     Assert( ref->fRefCount < 1048576L );
