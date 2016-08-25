@@ -1,6 +1,6 @@
 {% assign page_url_parts = page.url | split: '/' %}
 {% assign page_url_level = page_url_parts | size %}
-{% capture relative_root_url %}{% for i in (2..page_url_level) %}..{% if i < page_url_level %}/{% endif %}{% endfor %}{% endcapture %}
+{% capture relative_root_url %}{% if page_url_level < 2 %}.{% else %}{% for i in (2..page_url_level) %}..{% if i < page_url_level %}/{% endif %}{% endfor %}{% endif %}{% endcapture %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
