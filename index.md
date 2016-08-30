@@ -2,6 +2,7 @@
 title: Darwin Streaming Server
 ---
 
+{:.lead}
 Welcome to Darwin Streaming Server, the open source server technology that allows you to send streaming media to clients across the Internet using the industry standard RTP and RTSP protocols. Darwin Streaming Server provides a high level of customizability and runs on a variety of platforms allowing you to manipulate the code to fit your needs.
 
 ## Who should use Darwin Streaming Server?
