@@ -1,2 +1,9 @@
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      layout: "default"
 gems:
   - jekyll-redirect-from
+permalink: pretty
