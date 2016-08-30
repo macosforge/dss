@@ -29,7 +29,7 @@ The package includes source files for a streaming server with web based administ
 
 ## Where can I find information about streaming with Darwin Streaming Server (DSS)?
 
-* <http://macosforge.github.io/dss/>
+* <https://macosforge.github.io/dss/>
 * <http://soundscreen.com/streaming/>
 * <http://streaming411.com/wiki>
 * <http://streaming411.com/forums>
