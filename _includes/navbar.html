@@ -12,8 +12,8 @@
     </div>
     <div class="collapse navbar-collapse" id="main-navbar">
       <ul class="nav navbar-nav">
+        <li{% if page_url_parts[1] == 'faq' %} class="active"{% endif %}><a href="{{ '/faq/' | prepend: site.baseurl }}">FAQ</a></li>
         <li><a href="{{ '/releases' | prepend: site.github.repository_url }}">Downloads</a></li>
-        <li><a href="{{ '/faq/' | prepend: site.baseurl }}">FAQ</a></li>
         <li><a href="{{ site.github.repository_url }}">Development</a></li>
       </ul>
     </div>
