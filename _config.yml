@@ -5,6 +5,11 @@ defaults:
       path: ""
     values:
       layout: "default"
+exclude:
+  - .gitignore
+  - Gemfile
+  - Gemfile.lock
+  - README.md
 gems:
   - jekyll-redirect-from
 permalink: pretty
