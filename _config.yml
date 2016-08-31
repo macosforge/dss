@@ -1,3 +1,4 @@
+baseurl: "/dss"
 defaults:
   -
     scope:
@@ -7,3 +8,5 @@ defaults:
 gems:
   - jekyll-redirect-from
 permalink: pretty
+title: "Darwin Streaming Server"
+url: "https://macosforge.github.io"
