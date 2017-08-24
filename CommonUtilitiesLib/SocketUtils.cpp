@@ -549,9 +549,6 @@ Bool16 SocketUtils::IncrementIfReqIter(char** inIfReqIter, ifreq* ifr)
     //if the length of the addr is 0, use the family to determine
     //what the addr size is
     if (ifr->ifr_addr.sa_len == 0)
-#else
-    *inIfReqIter += sizeof(ifr->ifr_name) + 0;
-#endif
     {
         switch (ifr->ifr_addr.sa_family)
         {
@@ -565,6 +562,9 @@ Bool16 SocketUtils::IncrementIfReqIter(char** inIfReqIter, ifreq* ifr)
 //              return false;
         }
     }
+#else
+    *inIfReqIter += sizeof(struct ifreq);
+#endif
     return true;
 }
 #endif
