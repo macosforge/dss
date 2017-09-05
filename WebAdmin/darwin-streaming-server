@@ -1,0 +1,101 @@
+#!/bin/sh
+# Darwin Streaming Media Server
+
+# chkconfig: 35 50 50
+# description: Darwin Streaming Media Server
+#
+### BEGIN INIT INFO
+# Provides:          darwin-streaming-server
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Description:       Darwin Streaming Media Server
+### END INIT INFO
+set -e
+
+# What is this?
+DESC="Darwin Streaming Media Server"
+D0="streaming server"
+D1="DSS administration console"
+PREFIX=/usr/local
+
+# Exit if required binaries are missing.
+[ -x $PREFIX/sbin/DarwinStreamingServer    ] || exit 0
+[ -x $PREFIX/sbin/streamingadminserver.pl  ] || exit 0
+
+. /lib/lsb/init-functions
+
+# See how we were called.
+case "$1" in
+  start)
+	log_daemon_msg "Starting $DESC"
+	log_progress_msg "$D0"
+	start-stop-daemon --start --oknodo --quiet \
+	    --exec $PREFIX/sbin/DarwinStreamingServer
+	if [ $? != 0 ]; then
+		log_end_msg $?
+		exit $?
+	fi
+
+	log_progress_msg "$D1"
+	start-stop-daemon --start --oknodo --quiet \
+	    --exec $PREFIX/sbin/streamingadminserver.pl
+	if [ $? != 0 ]; then
+		log_end_msg $?
+		exit $?
+	fi
+
+	log_end_msg 0
+	;;
+
+  stop)
+	log_daemon_msg "Stopping $DESC"
+
+	log_progress_msg "$D0"
+	start-stop-daemon --stop --oknodo --quiet --name DarwinStreaming --retry 3
+	if [ $? != 0 ]; then
+		log_end_msg $?
+		exit $?
+	fi
+
+	start-stop-daemon --stop --oknodo --quiet --name streamingadmins
+	if [ $? != 0 ]; then
+		log_end_msg $?
+		exit $?
+	fi
+
+	log_end_msg 0
+	;;
+
+  status)
+	if pidof DarwinStreamingServer >/dev/null
+	then
+	    echo "$D0 running"
+	else
+	    echo "$D0 not running"
+	    exit 3
+	fi
+	if pidof streamingadminserver.pl >/dev/null
+	then
+	    echo "$D1 running"
+	else
+	    echo "$D1 not running"
+	    exit 3
+	fi
+	exit 0
+	;;
+
+  restart)
+	$0 stop
+	sleep 1
+	$0 start
+	;;
+
+  *)
+	log_success_msg "Usage: darwin-streaming-server {start|stop|status|restart}"
+	exit 1
+	;;
+esac
+
+exit 0
