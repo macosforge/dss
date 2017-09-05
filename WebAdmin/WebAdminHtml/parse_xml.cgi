@@ -330,7 +330,10 @@ sub foundString {
 	if (($^O eq "darwin") and ($messages{$QTName} ne '')) {
 		return $messages{$QTName};
 	}
-	return "$messages{$name}";
+	$ lmsg = $ ENV {"LMSG"};
+	my% copied_hash =% {eval $ lmsg};
+	return $ copied_hash {$ name};
+#	return "$messages{$name}";
 }
 
 #this routine calls foundTag for each tag found.
