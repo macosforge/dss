@@ -39,6 +39,7 @@ package streamingadminserver;
 use Socket;
 use POSIX;
 use Sys::Hostname;
+use Data::Dumper;
 #eval "use Net::SSLeay";
 
 if ($^O eq "darwin")
@@ -1428,6 +1429,9 @@ sub handle_request
 		$ENV{"LANGUAGE"} = $language;
 		$ENV{"SSL_AVAIL"} = $ssl_available;
 		$ENV{"HTTPS"} =  "ON" if ($use_ssl);
+
+		$ENV{"LMSG"} = Dumper ($ messages {"en"});
+
 		if (defined($header{"content-length"})) {
 	    	$ENV{"CONTENT_LENGTH"} = $header{"content-length"};
 		}
