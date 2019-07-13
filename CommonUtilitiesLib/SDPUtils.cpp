@@ -189,7 +189,7 @@ void SDPContainer::Initialize()
     fSDPLineArray = NEW SDPLine[fNumSDPLines]; 
     fValid = false;
     fReqLines = 0;
-    ::memset(fFieldStr, sizeof(fFieldStr), 0);
+    ::memset(fFieldStr, 0, sizeof(fFieldStr));
 }
 
 Bool16 SDPContainer::SetSDPBuffer(char *sdpBuffer) 

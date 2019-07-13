@@ -348,7 +348,7 @@ void OSFileSource::Set(const char *inPath)
     if (fFile != -1)
     {
         struct stat buf;
-		::memset(&buf,sizeof(buf),0);
+		::memset(&buf,0,sizeof(buf));
         if (::fstat(fFile, &buf) >= 0)
         {
             fLength = buf.st_size;
