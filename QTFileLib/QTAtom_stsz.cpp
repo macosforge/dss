@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -22,7 +22,7 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-// $Id: QTAtom_stsz.cpp,v 1.10 2003/08/15 23:53:14 sbasu Exp $
+// $Id: QTAtom_stsz.cpp,v 1.1 2006/01/05 13:20:36 murata Exp $
 //
 // QTAtom_stsz:
 //   The 'stsz' QTAtom class.
@@ -114,7 +114,7 @@ Bool16 QTAtom_stsz::Initialize(void)
 
     //
     // Validate the size of the sample table.
-    if( (unsigned long)(fNumEntries * 4) != (fTOCEntry.AtomDataLength - 12) )
+    if( (UInt32)(fNumEntries * 4) != (fTOCEntry.AtomDataLength - 12) )
         return false;
 
     //
@@ -144,13 +144,13 @@ Bool16 QTAtom_stsz::SampleRangeSize(UInt32 firstSampleNumber, UInt32 lastSampleN
     {
         if (lastSampleNumber < firstSampleNumber) 
         {
-//          qtss_printf("QTAtom_stsz::SampleRangeSize (lastSampleNumber %ld < firstSampleNumber %ld) \n",lastSampleNumber, firstSampleNumber);
+//          qtss_printf("QTAtom_stsz::SampleRangeSize (lastSampleNumber %"_S32BITARG_" < firstSampleNumber %"_S32BITARG_") \n",lastSampleNumber, firstSampleNumber);
             break;
         }
         
         if(fCommonSampleSize) 
         { 
-//          qtss_printf("QTAtom_stsz::SampleRangeSize fCommonSampleSize %ld firstSampleNumber %ld lastSampleNumber %ld *sizePtr %ld\n",fCommonSampleSize,firstSampleNumber,lastSampleNumber,*sizePtr);
+//          qtss_printf("QTAtom_stsz::SampleRangeSize fCommonSampleSize %"_S32BITARG_" firstSampleNumber %"_S32BITARG_" lastSampleNumber %"_S32BITARG_" *sizePtr %"_S32BITARG_"\n",fCommonSampleSize,firstSampleNumber,lastSampleNumber,*sizePtr);
             if( sizePtr != NULL ) 
                 *sizePtr = fCommonSampleSize * (lastSampleNumber - firstSampleNumber + 1) ; 
                 
@@ -183,7 +183,7 @@ Bool16 QTAtom_stsz::SampleRangeSize(UInt32 firstSampleNumber, UInt32 lastSampleN
 void QTAtom_stsz::DumpAtom(void)
 {
     DEBUG_PRINT(("QTAtom_stsz::DumpAtom - Dumping atom.\n"));
-    DEBUG_PRINT(("QTAtom_stsz::DumpAtom - ..Number of sample size entries: %ld\n", fNumEntries));
+    DEBUG_PRINT(("QTAtom_stsz::DumpAtom - ..Number of sample size entries: %"_S32BITARG_"\n", fNumEntries));
 }
 
 void QTAtom_stsz::DumpTable(void)
@@ -200,6 +200,6 @@ void QTAtom_stsz::DumpTable(void)
     for( UInt32 CurEntry = 1; CurEntry <= fNumEntries; CurEntry++ ) {
         //
         // Print out a listing.
-        qtss_printf("  %10lu : %10lu\n", CurEntry, fTable[CurEntry-1]);
+        qtss_printf("  %10"_U32BITARG_" : %10"_U32BITARG_"\n", CurEntry, fTable[CurEntry-1]);
     }
 }

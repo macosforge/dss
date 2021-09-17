@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -75,7 +75,7 @@ UInt32 MediaStream::GetACName(char* ioCNameBuffer)
 
 void MediaStream::TestAndIncSoundDescriptor(RTpPacket *packetPtr)
 { // currently not executed
-    short test = 0;
+    SInt16 test = 0;
     do 
     {
         if (!fData.fIsSoundStream) break;
@@ -85,7 +85,7 @@ void MediaStream::TestAndIncSoundDescriptor(RTpPacket *packetPtr)
         SoundDescription *packetSDPtr = NULL;
         SoundDescription *savedSDPtr = (SoundDescription *) fData.fSoundDescriptionBuffer;
         (void) packetPtr->GetSoundDescriptionRef(&packetSDPtr);
-        long descSize = packetPtr->fSoundDescriptionLen;
+        SInt32 descSize = packetPtr->fSoundDescriptionLen;
         
         if (descSize == 0) break;
         if (descSize > eMaxSoundDescriptionSize) break;
@@ -153,8 +153,8 @@ void MediaStream::MapToStream(UInt32 curRTpTimeStamp, UInt16 curRTpSequenceNumbe
         outPayload |= (curPayload & 0x80);// the movie payload marker
     }
 
-//  qtss_printf("MediaStream::MapToStream outTime = %lu\n", outTime);
-//  qtss_printf("MediaStream::MapToStream calculated time = %lu\n",(UInt32) curTimeInScale); 
+//  qtss_printf("MediaStream::MapToStream outTime = %"_U32BITARG_"\n", outTime);
+//  qtss_printf("MediaStream::MapToStream calculated time = %"_U32BITARG_"\n",(UInt32) curTimeInScale); 
 
     if (outRTpTimeStampPtr) *outRTpTimeStampPtr = outTime;
     if (outRTpSequenceNumberPtr) *outRTpSequenceNumberPtr = outSeq;
@@ -360,7 +360,7 @@ int MediaStream::UpdateSenderReport(SInt64 theTime)
         curTimeInScale +=(Float64) fData.fRTpRandomOffset;
         curTimeInScale = (UInt32) ( (UInt64) curTimeInScale & (UInt64) 0xFFFFFFFF ); 
 
-        //qtss_printf("MediaStream::UpdateSenderReport RTCP timestamp = %lu\n",(UInt32) curTimeInScale);
+        //qtss_printf("MediaStream::UpdateSenderReport RTCP timestamp = %"_U32BITARG_"\n",(UInt32) curTimeInScale);
         *theReport = htonl((UInt32) curTimeInScale);
         
         theReport++;        
@@ -766,12 +766,12 @@ SInt16 RTpPacket::GetSoundDescriptionRef(SoundDescription **soundDescriptionPtr)
     
     if (fThePacket && soundDescriptionPtr)
     {
-        long minSoundLength = sizeof(SoundHeader) + sizeof(SoundDescription) + kRTpHeaderSize;
+        SInt32 minSoundLength = sizeof(SoundHeader) + sizeof(SoundDescription) + kRTpHeaderSize;
         if ( fLength >= minSoundLength  )
         {
             char *offsetPtr = fThePacket + kRTpHeaderSize + sizeof(SoundHeader);
             *soundDescriptionPtr = (SoundDescription *) offsetPtr;
-            long descSize = ntohl( (**soundDescriptionPtr).descSize);
+            SInt32 descSize = ntohl( (**soundDescriptionPtr).descSize);
             fSoundDescriptionLen = descSize;
             result = 0;
         }
@@ -788,7 +788,7 @@ bool RTpPacket::HasSoundDescription()
     {
     
 //      WritePacketToLog(fThePacket, fLength);
-        long minSoundLength = sizeof(SoundHeader) + sizeof(SoundDescription) + kRTpHeaderSize;
+        SInt32 minSoundLength = sizeof(SoundHeader) + sizeof(SoundDescription) + kRTpHeaderSize;
         if (fLength >= minSoundLength ) 
         {
             char *offsetPtr = fThePacket + kRTpHeaderSize;

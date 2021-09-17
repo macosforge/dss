@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -337,7 +337,7 @@ Bool16 QTSSRollingLog::RenameLogFile(const char* inFileName)
         }
 
         //add the log number & suffix
-        qtss_sprintf(theNewNameBuffer + theBaseNameLength, "%03ld.log", x);
+        qtss_sprintf(theNewNameBuffer + theBaseNameLength, "%03"_S32BITARG_".log", x);
 
         //assume that when ::stat returns an error, it is becase
         //the file doesnt exist. Once that happens, we have a unique name

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -129,11 +129,25 @@ enum
     qtssXPreBufferHeader        = 50,
 	qtssXDynamicRateHeader      = 51,
 	qtssXAcceptDynamicRateHeader= 52,
-	// DJM PROTOTYPE
+	
+	// QT Player random data request
 	qtssXRandomDataSizeHeader   = 53,
 	
-	qtssNumHeaders				= 54,
-	qtssIllegalHeader 			= 54
+	// 3gpp release 6
+	qtss3GPPLinkCharHeader      = 54,
+	qtss3GPPAdaptationHeader    = 55,
+	qtss3GPPQOEFeedback         = 56,
+	qtss3GPPQOEMetrics          = 57,
+
+	// 3gpp annex g
+	qtssXPreDecBufSizeHeader             = 58,
+	qtssXInitPredecBufPeriodHeader       = 59,
+	qtssXInitPostDecBufPeriodHeader      = 60,
+	qtss3GPPVideoPostDecBufSizeHeader    = 61,
+	
+	
+	qtssNumHeaders				= 62,
+	qtssIllegalHeader 			= 62
     
 };
 typedef UInt32 QTSS_RTSPHeader;

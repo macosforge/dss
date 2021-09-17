@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -36,236 +36,75 @@
 
 #include "RTCPPacket.h"
 #include "StrPtrLen.h"
+#include "ResizeableStringFormatter.h"
 
+#define APPEND_TO_DUMP_ARRAY(f, v) {if (fDebug && mDumpArray != NULL) { (void)::snprintf(mDumpArray,kmDumpArraySize, f, v); fDumpReport.Put(mDumpArray); }   }
 
-/****** RTCPCompressedQTSSPacket is the packet type that the client actually sends ******/
-class RTCPCompressedQTSSPacket : public RTCPPacket
+class RTCPAPPPacket : public RTCPPacket
 {
+
 public:
+    RTCPAPPPacket(Bool16 debug = false);
+    virtual ~RTCPAPPPacket() {};
+    virtual void Dump(); 
+    virtual Bool16 ParseAPPPacket(UInt8* inPacketBuffer, UInt32 inPacketLength); //default app header check
+    virtual Bool16 ParseAPPData(UInt8* inPacketBuffer, UInt32 inPacketLength) { return false; }; //derived class implements
+    inline FourCharCode GetAppPacketName(char *outName = NULL, UInt32 len = 0);
+    inline UInt32 GetAppPacketSSRC();
+    
+    
+    UInt8* fRTCPAPPDataBuffer;  //points into RTCPPacket::fReceiverPacketBuffer should be set past the app header
+    UInt32 fAPPDataBufferSize;
 
-    RTCPCompressedQTSSPacket(Bool16 debug = false);
-    virtual ~RTCPCompressedQTSSPacket() {}
-    
-    //Call this before any accessor method. Returns true if successful, false otherwise
-    Bool16 ParseCompressedQTSSPacket(UInt8* inPacketBuffer, UInt32 inPacketLength);
+    enum
+    {
+        kAppSSRCOffset = 4,
+        kAppNameOffset = 8, //byte offset to four char App identifier               //All are UInt32
 
-    inline UInt32 GetReportSourceID();
-    inline UInt16 GetAppPacketVersion();
-    inline UInt16 GetAppPacketLength(); //In 'UInt32's
-    inline FourCharCode GetAppPacketName();
-    
-    inline UInt32 GetReceiverBitRate() {return fReceiverBitRate;}
-    inline UInt16 GetAverageLateMilliseconds()  {return fAverageLateMilliseconds;}
-    inline UInt16 GetPercentPacketsLost()   {return fPercentPacketsLost;}
-    inline UInt16 GetAverageBufferDelayMilliseconds()   {return fAverageBufferDelayMilliseconds;}
-    inline Bool16 GetIsGettingBetter()  {return fIsGettingBetter;}
-    inline Bool16 GetIsGettingWorse()   {return fIsGettingWorse;}
-    inline UInt32 GetNumEyes()  {return fNumEyes;}
-    inline UInt32 GetNumEyesActive()    {return fNumEyesActive;}
-    inline UInt32 GetNumEyesPaused()    {return fNumEyesPaused;}
-    inline UInt32 GetOverbufferWindowSize() {return fOverbufferWindowSize;}
-    
-    //Proposed - are these there yet?
-    inline UInt32 GetTotalPacketReceived()  {return fTotalPacketsReceived;}
-    inline UInt16 GetTotalPacketsDropped()  {return fTotalPacketsDropped;}
-    inline UInt16 GetTotalPacketsLost() {return fTotalPacketsLost;}
-    inline UInt16 GetClientBufferFill() {return fClientBufferFill;}
-    inline UInt16 GetFrameRate()    {return fFrameRate;}
-    inline UInt16 GetExpectedFrameRate()    {return fExpectedFrameRate;}
-    inline UInt16 GetAudioDryCount()    {return fAudioDryCount;}
-    
-    virtual void Dump(); //Override
-    inline UInt8* GetRTCPAPPDataBuffer()    {return fRTCPAPPDataBuffer;}
+        kRTCPAPPHeaderSizeInBytes = 4, //
+        kmDumpArraySize = 1024
+    };
 
-private:
     char*           mDumpArray;
     StrPtrLenDel    mDumpArrayStrDeleter; 
+    ResizeableStringFormatter fDumpReport;
     Bool16 fDebug;
-    UInt8* fRTCPAPPDataBuffer;  //points into fReceiverPacketBuffer
 
-    void ParseAndStore();
-    
-    UInt32 fReceiverBitRate;
-    UInt16 fAverageLateMilliseconds;
-    UInt16 fPercentPacketsLost;
-    UInt16 fAverageBufferDelayMilliseconds;
-    Bool16 fIsGettingBetter;
-    Bool16 fIsGettingWorse;
-    UInt32 fNumEyes;
-    UInt32 fNumEyesActive;
-    UInt32 fNumEyesPaused;
-    UInt32 fOverbufferWindowSize;
-    
-    //Proposed - are these there yet?
-    UInt32 fTotalPacketsReceived;
-    UInt16 fTotalPacketsDropped;
-    UInt16 fTotalPacketsLost;
-    UInt16 fClientBufferFill;
-    UInt16 fFrameRate;
-    UInt16 fExpectedFrameRate;
-    UInt16 fAudioDryCount;
-    
-    enum
-    {
-        kAppNameOffset = 0, //four App identifier               //All are UInt32
-        kReportSourceIDOffset = 4,  //SSRC for this report
-        kAppPacketVersionOffset = 8,
-            kAppPacketVersionMask = 0xFFFF0000UL,
-            kAppPacketVersionShift = 16,
-        kAppPacketLengthOffset = 8,
-            kAppPacketLengthMask = 0x0000FFFFUL,
-        kQTSSDataOffset = 12,
-    
-    //Individual item offsets/masks
-        kQTSSItemTypeOffset = 0,    //SSRC for this report
-            kQTSSItemTypeMask = 0xFFFF0000UL,
-            kQTSSItemTypeShift = 16,
-        kQTSSItemVersionOffset = 0,
-            kQTSSItemVersionMas = 0x0000FF00UL,
-            kQTSSItemVersionShift = 8,
-        kQTSSItemLengthOffset = 0,
-            kQTSSItemLengthMask = 0x000000FFUL,
-        kQTSSItemDataOffset = 4,
-    
-        kSupportedCompressedQTSSVersion = 0
-    };
-    
-    //version we support currently
-
-
-};
-
-/****** RTCPqtssPacket is apparently no longer sent by the client ******/
-class RTCPqtssPacket : public RTCPPacket
-{
-public:
-    
-    RTCPqtssPacket() : RTCPPacket(), fRTCPAPPDataBuffer(NULL) {}
-    virtual ~RTCPqtssPacket() {}
-    
-    //Call this before any accessor method. Returns true if successful, false otherwise
-    Bool16 ParseQTSSPacket(UInt8* inPacketBuffer, UInt32 inPacketLength);
-
-    inline UInt32 GetReportSourceID();
-    inline UInt16 GetAppPacketVersion();
-    inline UInt16 GetAppPacketLength(); //In 'UInt32's
-    
-    inline UInt32 GetReceiverBitRate() {return fReceiverBitRate;}
-    inline UInt32 GetAverageLateMilliseconds()  {return fAverageLateMilliseconds;}
-    inline UInt32 GetPercentPacketsLost()   {return fPercentPacketsLost;}
-    inline UInt32 GetAverageBufferDelayMilliseconds()   {return fAverageBufferDelayMilliseconds;}
-    inline Bool16 GetIsGettingBetter()  {return fIsGettingBetter;}
-    inline Bool16 GetIsGettingWorse()   {return fIsGettingWorse;}
-    inline UInt32 GetNumEyes()  {return fNumEyes;}
-    inline UInt32 GetNumEyesActive()    {return fNumEyesActive;}
-    inline UInt32 GetNumEyesPaused()    {return fNumEyesPaused;}
-    
-    //Proposed - are these there yet?
-    inline UInt32 GetTotalPacketReceived()  {return fTotalPacketsReceived;}
-    inline UInt32 GetTotalPacketsDropped()  {return fTotalPacketsDropped;}
-    inline UInt32 GetClientBufferFill() {return fClientBufferFill;}
-    inline UInt32 GetFrameRate()    {return fFrameRate;}
-    inline UInt32 GetExpectedFrameRate()    {return fExpectedFrameRate;}
-    inline UInt32 GetAudioDryCount()    {return fAudioDryCount;}
-
-    
 private:
-    UInt8* fRTCPAPPDataBuffer;  //points into fReceiverPacketBuffer
-
-    void ParseAndStore();
-
-    UInt32 fReportSourceID;
-    UInt16 fAppPacketVersion;
-    UInt16 fAppPacketLength;    //In 'UInt32's
-    
-    UInt32 fReceiverBitRate;
-    UInt32 fAverageLateMilliseconds;
-    UInt32 fPercentPacketsLost;
-    UInt32 fAverageBufferDelayMilliseconds;
-    Bool16 fIsGettingBetter;
-    Bool16 fIsGettingWorse;
-    UInt32 fNumEyes;
-    UInt32 fNumEyesActive;
-    UInt32 fNumEyesPaused;
-    
-    //Proposed - are these there yet?
-    UInt32 fTotalPacketsReceived;
-    UInt32 fTotalPacketsDropped;
-    UInt32 fClientBufferFill;
-    UInt32 fFrameRate;
-    UInt32 fExpectedFrameRate;
-    UInt32 fAudioDryCount;
-    
-    enum
-    {
-        //THESE SHIFTS DO NOT WORK ON LITTLE-ENDIAN PLATFORMS! I HAVEN'T FIXED
-        //THIS BECAUSE THIS PACKET IS NO LONGER USED...
-        
-        kAppNameOffset = 0, //four App identifier           //All are UInt32s
-        kReportSourceIDOffset = 4,  //SSRC for this report
-        kAppPacketVersionOffset = 8,
-            kAppPacketVersionMask = 0xFFFF0000UL,
-            kAppPacketVersionShift = 16,
-        kAppPacketLengthOffset = 8,
-            kAppPacketLengthMask = 0x0000FFFFUL,
-        kQTSSDataOffset = 12,
-    
-        //Individual item offsets/masks
-        kQTSSItemTypeOffset = 0,    //SSRC for this report
-        kQTSSItemVersionOffset = 4,
-            kQTSSItemVersionMask = 0xFFFF0000UL,
-            kQTSSItemVersionShift = 16,
-        kQTSSItemLengthOffset = 4,
-            kQTSSItemLengthMask = 0x0000FFFFUL,
-        kQTSSItemDataOffset = 8,
-
-        //version we support currently
-        kSupportedQTSSVersion = 0
-    };
-    
+    virtual Bool16 ParseAPPPacketHeader(UInt8* inPacketBuffer, UInt32 inPacketLength);
 
 };
 
 
-/****************  RTCPCompressedQTSSPacket inlines *******************************/
-inline UInt32 RTCPCompressedQTSSPacket::GetReportSourceID()
+
+/****************  RTCPAPPPacket inlines *******************************/
+
+inline FourCharCode RTCPAPPPacket::GetAppPacketName(char *outName, UInt32 len)
 {
- return (UInt32) ntohl(*(UInt32*)&fRTCPAPPDataBuffer[kReportSourceIDOffset]) ;
+  
+   UInt32 packetName = (UInt32) (*(UInt32*)&(GetPacketBuffer()[kAppNameOffset]) ) ;
+   
+   if (outName) 
+   {  if (len > 4)
+      {   *((UInt32*)outName) = packetName;
+          outName[4] = 0;   
+      }
+      else if (len > 0)
+             outName[0] = 0;
+   }
+
+   return ntohl(packetName);
 }
 
 
-inline UInt16 RTCPCompressedQTSSPacket::GetAppPacketVersion()
+inline UInt32 RTCPAPPPacket::GetAppPacketSSRC()
 {
- return (UInt16) ( (ntohl(*(UInt32*)&fRTCPAPPDataBuffer[kAppPacketVersionOffset]) & kAppPacketVersionMask) >> kAppPacketVersionShift );
-}
-
-inline FourCharCode RTCPCompressedQTSSPacket::GetAppPacketName()
-{
- return (UInt32) ntohl(*(UInt32*)&fRTCPAPPDataBuffer[kAppNameOffset]) ;
+    return (UInt32) ntohl(*(UInt32*)&(GetPacketBuffer()[kAppSSRCOffset]) ) ;
 }
 
 
-inline UInt16 RTCPCompressedQTSSPacket::GetAppPacketLength()
-{
-    return (UInt16) (ntohl(*(UInt32*)&fRTCPAPPDataBuffer[kAppPacketLengthOffset]) & kAppPacketLengthMask);
-}
-
-/****************  RTCPqtssPacket inlines *******************************/
-inline UInt32 RTCPqtssPacket::GetReportSourceID()
-{
- return (UInt32) ntohl(*(UInt32*)&fRTCPAPPDataBuffer[kReportSourceIDOffset]) ;
-}
 
 
-inline UInt16 RTCPqtssPacket::GetAppPacketVersion()
-{
- return (UInt16) ( (ntohl(*(UInt32*)&fRTCPAPPDataBuffer[kAppPacketVersionOffset]) & kAppPacketVersionMask) >> kAppPacketVersionShift );
-}
-
-inline UInt16 RTCPqtssPacket::GetAppPacketLength()
-{
-    return (UInt16) (ntohl(*(UInt32*)&fRTCPAPPDataBuffer[kAppPacketLengthOffset]) & kAppPacketLengthMask);
-}
 
 /*
 6.6 APP: Application-defined RTCP packet

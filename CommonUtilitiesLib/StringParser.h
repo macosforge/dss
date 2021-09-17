@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -57,7 +57,10 @@ class StringParser
         static UInt8 sWordMask[];       // stop when you hit a word
         static UInt8 sEOLMask[];        // stop when you hit an eol
         static UInt8 sEOLWhitespaceMask[]; // stop when you hit an EOL or whitespace
+        static UInt8 sEOLWhitespaceQueryMask[]; // stop when you hit an EOL, ? or whitespace
+       
         static UInt8 sWhitespaceMask[]; // skip over whitespace
+        
 
         //GetBuffer:
         //Returns a pointer to the string object
@@ -83,7 +86,7 @@ class StringParser
         UInt32          ConsumeInteger(StrPtrLen* outString = NULL);
         Float32         ConsumeFloat();
         Float32         ConsumeNPT();
-
+        
         //Keeps on going until non-whitespace
         void            ConsumeWhitespace()
                             { ConsumeUntil(NULL, sWhitespaceMask); }

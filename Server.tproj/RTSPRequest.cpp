@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -88,7 +88,7 @@ static StrPtrLen    sRealmStr("realm", 5);
 static StrPtrLen    sNonceStr("nonce", 5);
 static StrPtrLen    sUriStr("uri", 3);
 static StrPtrLen    sQopStr("qop", 3);
-static StrPtrLen    sQopAuthStr("auth", 3);
+static StrPtrLen    sQopAuthStr("auth", 4);
 static StrPtrLen    sQopAuthIntStr("auth-int", 8);
 static StrPtrLen    sNonceCountStr("nc", 2);
 static StrPtrLen    sResponseStr("response", 8);
@@ -193,6 +193,7 @@ QTSS_Error RTSPRequest::ParseURI(StringParser &parser)
     }
     
     // don't allow non-aggregate operations indicated by a url/media track=id
+// might need this for rate adapt   if (qtssSetupMethod != fMethod && qtssOptionsMethod != fMethod && qtssSetParameterMethod != fMethod) // any method not a setup, options, or setparameter is not allowed to have a "/trackID=" in the url.
     if (qtssSetupMethod != fMethod) // any method not a setup is not allowed to have a "/trackID=" in the url.
     {
         StrPtrLenDel tempCStr(theAbsURL.GetAsCString()); 
@@ -309,7 +310,6 @@ QTSS_Error RTSPRequest::ParseHeaders(StringParser& parser)
         //and set that dictionary attribute to be whatever is in the body of the header
         
         UInt32 theHeader = RTSPProtocol::GetRequestHeader(theKeyWord);
-
         StrPtrLen theHeaderVal;
 		parser.ConsumeUntil(&theHeaderVal, StringParser::sEOLMask);
 	
@@ -363,8 +363,10 @@ QTSS_Error RTSPRequest::ParseHeaders(StringParser& parser)
             case qtssXTransportOptionsHeader:   ParseTransportOptionsHeader();break;
             case qtssXPreBufferHeader:          ParsePrebufferHeader();break;
 			case qtssXDynamicRateHeader:		ParseDynamicRateHeader(); break;
-			// DJM PROTOTYPE
 			case qtssXRandomDataSizeHeader:		ParseRandomDataSizeHeader(); break;
+			case qtss3GPPAdaptationHeader:      fRequest3GPP.ParseAdpationHeader(&fHeaderDictionary); break;
+			case qtss3GPPLinkCharHeader:        fRequest3GPP.ParseLinkCharHeader(&fHeaderDictionary); break;
+			case qtssBandwidthHeader:           ParseBandwidthHeader(); break;
             default:    break;
         }
     }
@@ -397,9 +399,7 @@ Bool16 RTSPRequest::ParseNetworkModeSubHeader(StrPtrLen* inSubHeader)
     static StrPtrLen sUnicast("unicast");
     static StrPtrLen sMulticast("multiicast");
     Bool16 result = false; // true means header was found
-    
-    StringParser theSubHeaderParser(inSubHeader);
-        
+            
     if (!result && inSubHeader->EqualIgnoreCase(sUnicast))
     {
         fNetworkMode = qtssRTPNetworkModeUnicast;
@@ -791,6 +791,16 @@ void  RTSPRequest::ParseRandomDataSizeHeader()
 	}
 }
 
+void  RTSPRequest::ParseBandwidthHeader()
+{
+    StringParser theContentLenParser(fHeaderDictionary.GetValue(qtssBandwidthHeader));
+    theContentLenParser.ConsumeWhitespace();
+    fBandwidthBits = theContentLenParser.ConsumeInteger(NULL);
+	
+}
+
+
+
 QTSS_Error RTSPRequest::ParseBasicHeader(StringParser *inParsedAuthLinePtr)
 {
     QTSS_Error  theErr = QTSS_NoErr;
@@ -839,7 +849,16 @@ QTSS_Error RTSPRequest::ParseDigestHeader(StringParser *inParsedAuthLinePtr)
     fAuthScheme = qtssAuthDigest;
     
     inParsedAuthLinePtr->ConsumeWhitespace();
-    
+    StrPtrLen   *authLine = inParsedAuthLinePtr->GetStream();
+    if (NULL != authLine)
+    {
+        StringParser digestAuthLine(authLine);
+        digestAuthLine.GetThru(NULL, '=');
+        digestAuthLine.ConsumeWhitespace();
+
+        fAuthDigestResponse.Set(authLine->Ptr, authLine->Len);
+    }
+ 
     while(inParsedAuthLinePtr->GetDataRemaining() != 0) 
     {
         StrPtrLen fieldNameAndValue("");
@@ -976,6 +995,13 @@ QTSS_Error RTSPRequest::SendDigestChallenge(UInt32 qop, StrPtrLen *nonce, StrPtr
     challengeFormatter.PutTerminator();                 // [Digest realm="somerealm", nonce="19723343a9fd75e019723343a9fd75e0"\0]
 
     StrPtrLen challengePtr(challengeFormatter.GetBufPtr(), challengeFormatter.GetBytesWritten() - 1);
+    
+    this->SetValue(qtssRTSPReqDigestChallenge, 0, challengePtr.Ptr, challengePtr.Len, QTSSDictionary::kDontObeyReadOnly);
+    RTSPSessionInterface* thisRTSPSession = this->GetSession();
+    if (thisRTSPSession)
+    {   (void)thisRTSPSession->SetValue(qtssRTSPSesLastDigestChallenge, 0, challengePtr.Ptr, challengePtr.Len,QTSSDictionary::kDontObeyReadOnly);
+    }
+
     fStatus = qtssClientUnAuthorized;
     this->SetResponseKeepAlive(true);
     this->AppendHeader(qtssWWWAuthenticateHeader, &challengePtr);
@@ -1059,7 +1085,7 @@ QTSS_Error RTSPRequest::SendBasicChallenge(void)
             
             memcpy(test,challenge.Ptr,challenge.Len);
             test[challenge.Len] = 0;
-            qtss_printf("the challenge string  =%s len = %ld\n",test, challenge.Len);
+            qtss_printf("the challenge string  =%s len = %"_S32BITARG_"\n",test, challenge.Len);
         }
         #endif
 

@@ -4,7 +4,8 @@
 #
 # @APPLE_LICENSE_HEADER_START@
 #
-# Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
+#
+# Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
 #
 # This file contains Original Code and/or Modifications of Original Code
 # as defined in and that are subject to the Apple Public Source License
@@ -176,6 +177,13 @@ sub WriteRestrictionsToFile {
 	}
 }
 
+sub RemoveRestrictionsFile {
+	my $filepath = $_[0];
+	my $newPath = "$filepath.1";
+	rename $filepath, $newPath;
+}
+
+
 # ParseGroupsFile(groupsfilepath)
 # Returns a ref to a hash table
 # each entry contains a string-delimited list of usernames.
@@ -284,8 +292,8 @@ sub DeleteUser {
 	return $code;
 }
 
-# AddOrEditUser(qtpasswdpath, userfilepath, username, password)
-sub AddOrEditUser {
+# AddOrEditBroadcastUser(qtpasswdpath, userfilepath, username, password)
+sub AddOrEditBroadcastUser {
 	my $qtpasswdpath = $_[0];
 	my $userfilepath = $_[1];
 	my $username = $_[2];
@@ -313,7 +321,11 @@ sub AddOrEditUser {
 	}
 	else
 	{
-		my $programArgs = "\"$qtpasswdpath\" -f \"$userfilepath\" -p \'$password\' \'$username\'";
+	
+		my $initArgs = "\"$qtpasswdpath\" -f \"$userfilepath\" -R broadcaster ";
+		system($initArgs);
+		
+		my $programArgs = "\"$qtpasswdpath\" -f \"$userfilepath\" -p \'$password\' -A broadcaster \'$username\'";
 		if(system($programArgs) == 0) {
 			$code = 200;
 		}

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -235,7 +235,7 @@ OS_Error HTTPClientSocket::Read(void* inBuffer, const UInt32 inLength, UInt32* o
 #if CLIENT_SOCKET_DEBUG
         qtss_printf("HTTPClientSocket::Read: Sending GET\n");
 #endif
-        qtss_sprintf(fSendBuffer.Ptr, "GET %s HTTP/1.0\r\nX-SessionCookie: %lu\r\nAccept: application/x-rtsp-rtp-interleaved\r\nUser-Agent: QTSS/2.0\r\n\r\n", fURL.Ptr, fCookie);
+        qtss_sprintf(fSendBuffer.Ptr, "GET %s HTTP/1.0\r\nX-SessionCookie: %"_U32BITARG_"\r\nAccept: application/x-rtsp-rtp-interleaved\r\nUser-Agent: QTSS/2.0\r\n\r\n", fURL.Ptr, fCookie);
         fSendBuffer.Len = ::strlen(fSendBuffer.Ptr);
         Assert(fSentLength == 0);
     }
@@ -326,7 +326,7 @@ OS_Error HTTPClientSocket::SendV(iovec* inVec, UInt32 inNumVecs)
 #if CLIENT_SOCKET_DEBUG
         qtss_printf("HTTPClientSocket::Send: Sending POST\n");
 #endif
-        qtss_sprintf(fSendBuffer.Ptr, "POST %s HTTP/1.0\r\nX-SessionCookie: %lu\r\nAccept: application/x-rtsp-rtp-interleaved\r\nUser-Agent: QTSS/2.0\r\n\r\n", fURL.Ptr, fCookie);
+        qtss_sprintf(fSendBuffer.Ptr, "POST %s HTTP/1.0\r\nX-SessionCookie: %"_U32BITARG_"\r\nAccept: application/x-rtsp-rtp-interleaved\r\nUser-Agent: QTSS/2.0\r\n\r\n", fURL.Ptr, fCookie);
         fSendBuffer.Len = ::strlen(fSendBuffer.Ptr);
         this->EncodeVec(inVec, inNumVecs);
     }

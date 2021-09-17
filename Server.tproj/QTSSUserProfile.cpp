@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -41,7 +41,10 @@ QTSSAttrInfoDict::AttrInfo  QTSSUserProfile::sAttributes[] =
     /* 0 */ { "qtssUserName",       NULL,   qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModePreempSafe },
     /* 1 */ { "qtssUserPassword",   NULL,   qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
     /* 2 */ { "qtssUserGroups",     NULL,   qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite}, 
-    /* 3 */ { "qtssUserRealm",      NULL,   qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite}
+    /* 3 */ { "qtssUserRealm",      NULL,   qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+    /* 4 */ { "qtssUserRights",      NULL,  qtssAttrDataTypeUInt32,     qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+    /* 5 */ { "qtssUserExtendedRights",      NULL,   qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+    /* 6 */ { "qtssUserQTSSExtendedRights",  NULL,   qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite}
 };
 
 void  QTSSUserProfile::Initialize()
@@ -51,6 +54,8 @@ void  QTSSUserProfile::Initialize()
         QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kQTSSUserProfileDictIndex)->
             SetAttribute(x, sAttributes[x].fAttrName, sAttributes[x].fFuncPtr,
                             sAttributes[x].fAttrDataType, sAttributes[x].fAttrPermission);  
+
+
 }
 
 //CONSTRUCTOR / DESTRUCTOR: very simple stuff
@@ -59,5 +64,7 @@ QTSSUserProfile::QTSSUserProfile()
 {
     this->SetEmptyVal(qtssUserName, &fUserNameBuf[0], kMaxUserProfileNameLen);
     this->SetEmptyVal(qtssUserPassword, &fUserPasswordBuf[0], kMaxUserProfilePasswordLen);
+    this->SetVal(qtssUserRights, &fUserRights, sizeof(fUserRights));
+    this->fUserRights = qtssAttrRightNone;
 }
 

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -42,10 +42,10 @@
 class SDPLine : public StrPtrLen
 {
 public:
-	SDPLine() : fHeaderType('\0') {}
+	SDPLine()  {}
     virtual ~SDPLine() {}
 
-    char    fHeaderType;
+    char    GetHeaderType() {if (Ptr && Len) return this->Ptr[0]; return 0;}
 };
 
 class SDPContainer
@@ -89,7 +89,7 @@ public:
     Bool16      SetSDPBuffer(StrPtrLen *sdpBufferPtr);
     Bool16      IsSDPBufferValid() {return fValid;}
     Bool16      HasReqLines() { return (Bool16) (fReqLines == kAllReq) ; }
-    Bool16      HasLineType( char lineType ) { return (Bool16) (lineType == fFieldStr[lineType]) ; }
+    Bool16      HasLineType( char lineType ) { return (Bool16) (lineType == fFieldStr[ (UInt8) lineType]) ; }
     char*       GetReqLinesArray;
     void        PrintLine(SInt32 lineIndex);
     void        PrintAllLines();
@@ -104,18 +104,22 @@ public:
     UInt16      fReqLines;
 
     char        fFieldStr[kLineTypeArraySize]; // 
-
+    char*       fLineSearchTypeArray;
 };
+
+
 
 class SDPLineSorter {
 
 public:
 	SDPLineSorter(): fSessionLineCount(0),fSDPSessionHeaders(NULL,0), fSDPMediaHeaders(NULL,0) {};
-	SDPLineSorter(SDPContainer *rawSDPContainerPtr, Float32 adjustMediaBandwidthPercent = 1.0);
+	SDPLineSorter(SDPContainer *rawSDPContainerPtr, Float32 adjustMediaBandwidthPercent = 1.0, SDPContainer *insertMediaLinesArray = NULL);
 	
 	StrPtrLen* GetSessionHeaders() { return &fSessionHeaders; }
 	StrPtrLen* GetMediaHeaders() { return &fMediaHeaders; }
 	char* GetSortedSDPCopy();
+	Bool16 ValidateSessionHeader(StrPtrLen *theHeaderLinePtr);
+
 	
 	StrPtrLen fullSDPBuffSPL;
 	SInt32 fSessionLineCount;

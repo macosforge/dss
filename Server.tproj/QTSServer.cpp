@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -70,6 +70,7 @@
 #include "QTSSAdminModule.h"
 #include "QTSSAccessModule.h"
 #include "QTSSMP3StreamingModule.h"
+#include "QTSSDSAuthModule.h"
 #if MEMORY_DEBUGGING
 #include "QTSSWebDebugModule.h"
 #endif
@@ -83,6 +84,9 @@
 #include "RTPStream.h"
 #include "RTCPTask.h"
 #include "QTSSFile.h"
+
+#include "RTPStream3GPP.h"
+#include "RTSPRequest3GPP.h"
 
 // CLASS DEFINITIONS
 
@@ -169,6 +173,11 @@ Bool16 QTSServer::Initialize(XMLPrefsParser* inPrefsSource, PrefsSource* inMessa
     RTSPSession::Initialize();
     QTSSFile::Initialize();
     QTSSUserProfile::Initialize();
+    
+    RTSPRequest3GPP::Initialize();
+    RTPStream3GPP::Initialize();
+    RTPSession3GPP::Initialize();
+    RTSPSession3GPP::Initialize();
     
     //
     // STUB SERVER INITIALIZATION
@@ -581,6 +590,8 @@ Bool16  QTSServer::SwitchPersonality()
     OSCharArrayDeleter runGroupName(fSrvrPrefs->GetRunGroupName());
     OSCharArrayDeleter runUserName(fSrvrPrefs->GetRunUserName());
 
+	int groupID = 0;
+	
     if (::strlen(runGroupName.GetObject()) > 0)
     {
         struct group* gr = ::getgrnam(runGroupName.GetObject());
@@ -592,11 +603,18 @@ Bool16  QTSServer::SwitchPersonality()
                     runGroupName.GetObject(), qtss_strerror(OSThread::GetErrno(), buffer, sizeof(buffer)));
             return false;
         }
+        groupID = gr->gr_gid;
     }
-    
+
     if (::strlen(runUserName.GetObject()) > 0)
     {
         struct passwd* pw = ::getpwnam(runUserName.GetObject());
+
+#if __MacOSX__
+        if (pw != NULL && groupID != 0) //call initgroups before doing a setuid
+            (void) initgroups(runUserName.GetObject(),groupID); 
+#endif  
+
         if (pw == NULL || ::setuid(pw->pw_uid) == -1)
         {
             QTSSModuleUtils::LogError(qtssFatalVerbosity, qtssMsgCannotSetRunUser, 0,
@@ -662,9 +680,14 @@ void    QTSServer::LoadCompiledInModules()
     (void)AddModule(theWebDebug);
 #endif
 
-    QTSSModule* theQTACESSmodule = new QTSSModule("QTSSAccessModule");
-    (void)theQTACESSmodule->SetupModule(&sCallbacks, &QTSSAccessModule_Main);
-    (void)AddModule(theQTACESSmodule);
+    QTSSModule* theQTSSDSAuthModule = new QTSSModule("QTSSDSAuthModule");
+    (void)theQTSSDSAuthModule->SetupModule(&sCallbacks, &QTSSDSAuthModule_Main);
+    (void)AddModule(theQTSSDSAuthModule); 
+
+    QTSSModule* theQTACCESSmodule = new QTSSModule("QTSSAccessModule");
+    (void)theQTACCESSmodule->SetupModule(&sCallbacks, &QTSSAccessModule_Main);
+    (void)AddModule(theQTACCESSmodule);
+
 
 #endif //DSS_DYNAMIC_MODULES_ONLY
 
@@ -1133,7 +1156,7 @@ void RTPSocketPool::SetUDPSocketOptions(UDPSocketPair* inPair)
     if (theRcvBufSize != QTSServerInterface::GetServer()->GetPrefs()->GetRTCPSocketRcvBufSizeinK())
     {
         char theRcvBufSizeStr[20];
-        qtss_sprintf(theRcvBufSizeStr, "%lu", theRcvBufSize);
+        qtss_sprintf(theRcvBufSizeStr, "%"_U32BITARG_"", theRcvBufSize);
         //
         // For now, do not log an error, though we should enable this in the future.
         //QTSSModuleUtils::LogError(qtssWarningVerbosity, qtssMsgSockBufSizesTooLarge, theRcvBufSizeStr);

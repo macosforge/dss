@@ -2,7 +2,8 @@
 # 
 # @APPLE_LICENSE_HEADER_START@
 #
-# Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
+#
+# Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
 #
 # This file contains Original Code and/or Modifications of Original Code
 # as defined in and that are subject to the Apple Public Source License
@@ -146,7 +147,7 @@ if($^O eq "darwin") {
 	  "sslport", 1240,
 	  "root", "/Library/QuickTimeStreaming/AdminHtml",
       "plroot", "/Library/QuickTimeStreaming/Playlists/",
-	  "server", "QTSS 5.5 Admin Server/1.0",
+	  "server", "QTSS 6.0 Admin Server/1.0",
 	  "index_docs", "index.html parse_xml.cgi index.htm index.cgi",
 	  "addtype_html", "text/html",
 	  "addtype_htm", "text/html",
@@ -190,7 +191,7 @@ elsif($^O eq "MSWin32") {
 	  "sslport", 1240,
 	  "root", "C:/Program Files/Darwin Streaming Server/AdminHtml",
 	  "plroot", "C:\\Program Files\\Darwin Streaming Server\\Playlists\\",
-	  "server", "QTSS 5.5 Admin Server/1.0",
+	  "server", "QTSS 6.0 Admin Server/1.0",
 	  "index_docs", "index.html parse_xml.cgi index.htm index.cgi",
 	  "addtype_html", "text/html",
       "addtype_htm", "text/html",
@@ -230,7 +231,7 @@ else {
 	  "sslport", 1240,
 	  "root", "/var/streaming/AdminHtml",
       "plroot", "/var/streaming/playlists/",
-	  "server", "DSS 5.5 Admin Server/1.0",
+	  "server", "DSS 6.0 Admin Server/1.0",
 	  "index_docs", "index.html parse_xml.cgi index.htm index.cgi",
 	  "addtype_html", "text/html",
       "addtype_htm", "text/html",

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -40,7 +40,17 @@
 #include "OSThread.h"
 #include "Task.h"
 #include "OSRef.h"
-#include "ev.h"
+
+#if MACOSXEVENTQUEUE
+    #ifdef AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER
+        #include <sys/ev.h>
+    #else
+        #include "ev.h"
+    #endif
+#else
+    #include "ev.h"
+#endif
+
 
 //enable to trace event context execution and the task associated with the context
 #define EVENTCONTEXT_DEBUG 0
@@ -83,9 +93,9 @@ class EventContext
             if (EVENTCONTEXT_DEBUG)
             {
                 if (fTask== NULL)  
-                    qtss_printf("EventContext::SetTask context=%lu task= NULL\n", (UInt32) this); 
+                    qtss_printf("EventContext::SetTask context=%p task= NULL\n", (void *) this); 
                 else 
-                    qtss_printf("EventContext::SetTask context=%lu task= %lu name=%s\n",(UInt32) this,(UInt32) fTask, fTask->fTaskName); 
+                    qtss_printf("EventContext::SetTask context=%p task= %p name=%s\n",(void *) this,(void *) fTask, fTask->fTaskName); 
             }
         }
         
@@ -119,9 +129,9 @@ class EventContext
             if (EVENTCONTEXT_DEBUG)
             {
                 if (fTask== NULL)  
-                    qtss_printf("EventContext::ProcessEvent context=%lu task=NULL\n",(UInt32) this); 
+                    qtss_printf("EventContext::ProcessEvent context=%p task=NULL\n",(void *) this); 
                 else 
-                    qtss_printf("EventContext::ProcessEvent context=%lu task=%lu TaskName=%s\n",(UInt32)this,(UInt32) fTask, fTask->fTaskName); 
+                    qtss_printf("EventContext::ProcessEvent context=%p task=%p TaskName=%s\n",(void *)this,(void *) fTask, fTask->fTaskName); 
             }
 
             if (fTask != NULL)

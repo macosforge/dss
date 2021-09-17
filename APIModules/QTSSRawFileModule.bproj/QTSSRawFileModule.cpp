@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -273,7 +273,7 @@ QTSS_Error Preprocess(QTSS_StandardRTSP_Params* inParams)
                 theReadOffset += theRecvLen;
                 theOffset += theRecvLen;
 #if RAW_FILE_DEBUGGING
-                qtss_printf("Got %lu bytes back from file read. Now at: %"_64BITARG_"u\n", theRecvLen, theOffset);
+                qtss_printf("Got %"_U32BITARG_" bytes back from file read. Now at: %"_64BITARG_"u\n", theRecvLen, theOffset);
 #endif
                 if (theReadOffset < theBufferSize)
                 {
@@ -314,7 +314,7 @@ QTSS_Error Preprocess(QTSS_StandardRTSP_Params* inParams)
                                     &theWrittenLen);
                 theWriteOffset += theWrittenLen;
 #if RAW_FILE_DEBUGGING
-                qtss_printf("Got %lu bytes back from socket write.\n", theWrittenLen);
+                qtss_printf("Got %"_U32BITARG_" bytes back from socket write.\n", theWrittenLen);
 #endif
                 if (theWriteOffset < theBufferSize)
                 {

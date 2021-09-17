@@ -3,7 +3,8 @@
 #
 # @APPLE_LICENSE_HEADER_START@
 #
-# Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
+#
+# Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
 #
 # This file contains Original Code and/or Modifications of Original Code
 # as defined in and that are subject to the Apple Public Source License
@@ -57,6 +58,7 @@
 #
 # -------------------------------------------------
 sub getNewRelay {
+	$relayIsNew = 1;
 	$relayDestCount = 1;
 	$relayEnabled = 1;
 	$currentRelay = 'untitled';
@@ -418,10 +420,11 @@ sub SaveRelay {
 	my $item2;
 	my @newRelay = ();
 	my $relayDestCount = $query->{'relayDestCount'};
+	my $relayIsNew = $query->{'relayIsNew'};
 	
 	# delete the old relay, if the name changed
 	
-	if ($query->{'currentRelay_shadow'} ne $query->{'currentRelay'}) {
+	if (($query->{'relayIsNew'} ne '1') and ($query->{'currentRelay_shadow'} ne $query->{'currentRelay'})) {
 		my @newrelayarrays = ();
 		foreach $item (@relaylist) {
 			my @currentRelay = @$item;

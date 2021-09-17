@@ -2,9 +2,9 @@
  * Copyright (c) 2003 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -42,12 +42,14 @@
 extern "C" {
 #endif
 
+#include "OSHeaders.h"
+
 /* Get a 64 bit timestamp */
-extern long long timestamp(void);
+extern SInt64 timestamp(void);
 
 struct timescale {
-    long long tsc_numerator;
-    long long tsc_denominator;
+    SInt64 tsc_numerator;
+    SInt64 tsc_denominator;
 };
 
 /*
@@ -56,7 +58,7 @@ struct timescale {
  */
 extern void utimescale(struct timescale *tscp);
 
-extern long long scaledtimestamp(double scale);
+extern SInt64 scaledtimestamp(double scale);
 
 #ifdef __cplusplus
 }

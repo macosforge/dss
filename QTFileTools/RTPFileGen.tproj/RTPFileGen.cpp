@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
         (void)theFile.AddTrack(curTrack->TrackID);
         // Make the cookie be the track ID, so we know what the track ID is when 
         // we are retreiving packets
-        theFile.SetTrackCookies(curTrack->TrackID, (void*)curTrack->TrackID, 0);
+        theFile.SetTrackCookies(curTrack->TrackID, (void*) NULL, curTrack->TrackID);
         
         curTrack = curTrack->NextTrack;
     }
@@ -245,7 +245,7 @@ UInt8* WriteTempFile(QTRTPFile* inQTRTPFile, int inTempFile, UInt32* outNumBlock
             break;
                     
         thePacketHeader.fPacketLength = thePacketLength;
-        thePacketHeader.fTrackID = (UInt32)inQTRTPFile->GetLastPacketTrack()->Cookie1;
+        thePacketHeader.fTrackID = inQTRTPFile->GetLastPacketTrack()->Cookie2;
 
         // Make sure there is enough room in the current block for this
         // packet plus a header for the next packet. If not, move onto the next block
@@ -316,7 +316,7 @@ UInt8* WriteTempFile(QTRTPFile* inQTRTPFile, int inTempFile, UInt32* outNumBlock
         offsetInBlock += thePacketLength + sizeof(thePacketHeader);
     }
     
-    qtss_printf("Finished writing packets. Wrote %lu packets to temp file.\n", theNumPackets);
+    qtss_printf("Finished writing packets. Wrote %"_U32BITARG_" packets to temp file.\n", theNumPackets);
     *outNumBlocks = curBlockMapIndex-1;
     return theBlockMap;
 }

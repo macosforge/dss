@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -117,7 +117,7 @@ char* SDPSourceInfo::GetLocalSDP(UInt32* newSDPLen)
                 //the last "a=" for each m should be the control a=
                 if ((trackIndex > 0) && (!hasControlLine))
                 {
-                    qtss_sprintf(trackIndexBuffer, "a=control:trackID=%ld\r\n",trackIndex);
+                    qtss_sprintf(trackIndexBuffer, "a=control:trackID=%"_S32BITARG_"\r\n",trackIndex);
                     localSDPFormatter.Put(trackIndexBuffer, ::strlen(trackIndexBuffer));
                 }
                 //now write the 'm' line, but strip off the port information
@@ -169,7 +169,7 @@ char* SDPSourceInfo::GetLocalSDP(UInt32* newSDPLen)
     
     if ((trackIndex > 0) && (!hasControlLine))
     {
-        qtss_sprintf(trackIndexBuffer, "a=control:trackID=%ld\r\n",trackIndex);
+        qtss_sprintf(trackIndexBuffer, "a=control:trackID=%"_S32BITARG_"\r\n",trackIndex);
         localSDPFormatter.Put(trackIndexBuffer, ::strlen(trackIndexBuffer));
     }
     *newSDPLen = (UInt32)localSDPFormatter.GetCurrentOffset();
@@ -226,6 +226,7 @@ void SDPSourceInfo::Parse(char* sdpData, UInt32 sdpLen)
     //of an annoying compiler bug...
     
     fStreamArray = NEW StreamInfo[fNumStreams];
+	::memset(fStreamArray, 0, sizeof(StreamInfo) * fNumStreams);
 
     // set the default destination as our default IP address and set the default ttl
     theGlobalStreamInfo.fDestIPAddr = INADDR_ANY;
@@ -345,7 +346,7 @@ void SDPSourceInfo::Parse(char* sdpData, UInt32 sdpLen)
                     {
                         StrPtrLen payloadNameFromParser;
                         (void)aParser.GetThruEOL(&payloadNameFromParser);
-                                                char* temp = payloadNameFromParser.GetAsCString();
+						char* temp = payloadNameFromParser.GetAsCString();
 //                                                qtss_printf("payloadNameFromParser (%x) = %s\n", temp, temp);
                         (fStreamArray[theStreamIndex - 1].fPayloadName).Set(temp, payloadNameFromParser.Len);
 //                                                qtss_printf("%s\n", fStreamArray[theStreamIndex - 1].fPayloadName.Ptr);

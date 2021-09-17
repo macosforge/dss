@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -452,7 +452,7 @@ Bool16 AnnounceBroadcast(PLBroadcastDef *broadcastParms,QTFileBroadcaster   *fil
         }
         
         if (200 != broadcastErr)
-        {   //qtss_printf("broadcastErr = %ld sBroadcasterSession->GetDeathState()=%ld sBroadcasterSession->GetReasonForDying()=%ld\n",broadcastErr,sBroadcasterSession->GetDeathState(),sBroadcasterSession->GetReasonForDying());
+        {   //qtss_printf("broadcastErr = %"_S32BITARG_" sBroadcasterSession->GetDeathState()=%"_S32BITARG_" sBroadcasterSession->GetReasonForDying()=%"_S32BITARG_"\n",broadcastErr,sBroadcasterSession->GetDeathState(),sBroadcasterSession->GetReasonForDying());
             if (sBroadcasterSession->GetDeathState() == BroadcasterSession::kSendingAnnounce && sBroadcasterSession->GetReasonForDying() == BroadcasterSession::kConnectionFailed)
                 ::EvalBroadcasterErr(QTFileBroadcaster::eNetworkConnectionError);
             else if (sBroadcasterSession->GetDeathState() == BroadcasterSession::kSendingAnnounce && sBroadcasterSession->GetReasonForDying() == BroadcasterSession::kBadSDP)
@@ -678,7 +678,7 @@ static void PreFlightOrBroadcast( const char *bcastSetupFilePath, bool preflight
     
     QTFileBroadcaster   fileBroadcaster;
     int     broadcastErr = 0;
-    long    moviePlayCount;
+    SInt32    moviePlayCount;
     char*   thePick = NULL;
     int     numMovieErrors;
 	bool	didAtLeastOneMoviePlay = false;
@@ -772,9 +772,9 @@ static void PreFlightOrBroadcast( const char *bcastSetupFilePath, bool preflight
     if ( preflight )
     {
         if ( picker->mNumToPickFrom == 1 )
-            qtss_printf( "\nThere is (%li) movie in the Playlist.\n\n", (long) picker->mNumToPickFrom );
+            qtss_printf( "\nThere is (%li) movie in the Playlist.\n\n", (SInt32) picker->mNumToPickFrom );
         else
-            qtss_printf( "\nThere are (%li) movies in the Playlist.\n\n", (long) picker->mNumToPickFrom );
+            qtss_printf( "\nThere are (%li) movies in the Playlist.\n\n", (SInt32) picker->mNumToPickFrom );
     }   
     
     if ( !picker->mNumToPickFrom )
@@ -1842,7 +1842,7 @@ static bool DoSDPGen( PLBroadcastDef *broadcastParms, bool preflight, bool overW
             if (sdpResult ==  -2)
                 qtss_printf("- SDP generation failed: Unable to create the SDP File.\n  (path: %s, errno: %d).\n", broadcastParms->mSDPFile, sdpResult);
             else
-                qtss_printf( "- SDP generation failed (error: %li).\n", (long)sdpResult );
+                qtss_printf( "- SDP generation failed (error: %li).\n", (SInt32)sdpResult );
                         
             (*numErrorsPtr)++;
             return sdpFileCreated;
@@ -1916,7 +1916,12 @@ static bool PreFlightSetupFile( const char * bcastSetupFilePath )
         ::usage();
         success = false;
     }
-        else
+    else if (::strlen(bcastSetupFilePath) > PLBroadcastDef::kMaxBufferStringLen)
+    {    qtss_printf("- PlaylistBroadcaster: A broadcast description file path cannot be longer than %d in length.\n",PLBroadcastDef::kMaxBufferStringLen );
+        ::usage();
+        success = false;
+    }
+    else
     {   int     accessError;
     
         accessError = MyAccess(bcastSetupFilePath, R_OK  );
@@ -1982,7 +1987,7 @@ static void ShowPickDistribution( PlaylistPicker *picker )
     
     for ( bucketIndex = 0; bucketIndex < picker->GetNumBuckets(); bucketIndex++ )
     {   
-        qtss_printf( "bucket total for w: %li, (%li)\n", (bucketIndex + 1), (long)picker->mPickCounts[bucketIndex] );
+        qtss_printf( "bucket total for w: %li, (%li)\n", (bucketIndex + 1), (SInt32)picker->mPickCounts[bucketIndex] );
     
     }
 }
@@ -2094,14 +2099,14 @@ struct sigaction act;
     if ( ::signal(SIGTERM, SIG_IGN) != SIG_IGN) 
     {   // from kill...
         if ( ::sigaction(SIGTERM, &act, NULL) != 0 )
-        {   qtss_printf( "- PlaylistBroadcaster: System error (%i).\n", (int)SIG_ERR );
+        {   qtss_printf( "- PlaylistBroadcaster: System error (%"_SPOINTERSIZEARG_").\n", (PointerSizedInt)SIG_ERR );
         }
     }
 
     if ( ::signal(SIGINT, SIG_IGN) != SIG_IGN) 
     {   // ^C signal
         if ( ::sigaction(SIGINT, &act, NULL)  != 0 )
-        {   qtss_printf( "- PlaylistBroadcaster: System error (%i).\n", (int)SIG_ERR );
+        {   qtss_printf( "- PlaylistBroadcaster: System error (%"_SPOINTERSIZEARG_").\n", (PointerSizedInt)SIG_ERR );
         }
         
     }
@@ -2109,7 +2114,7 @@ struct sigaction act;
     if ( ::signal(SIGPIPE, SIG_IGN) != SIG_IGN) 
     {   // broken pipe probably from a failed RTSP session (the server went down?)
         if ( ::sigaction(SIGPIPE, &act, NULL)   != 0 )
-        {   qtss_printf( "- PlaylistBroadcaster: System error (%i).\n", (int)SIG_ERR );
+        {   qtss_printf( "- PlaylistBroadcaster: System error (%"_SPOINTERSIZEARG_").\n", (PointerSizedInt)SIG_ERR );
         }
         
     }
@@ -2117,7 +2122,7 @@ struct sigaction act;
     if ( ::signal(SIGHUP, SIG_IGN) != SIG_IGN) 
     {   // broken pipe probably from a failed RTSP session (the server went down?)
         if ( ::sigaction(SIGHUP, &act, NULL)  != 0)
-        {   qtss_printf( "- PlaylistBroadcaster: System error (%i).\n", (int)SIG_ERR );
+        {   qtss_printf( "- PlaylistBroadcaster: System error (%"_SPOINTERSIZEARG_").\n", (PointerSizedInt)SIG_ERR );
         }
         
     }

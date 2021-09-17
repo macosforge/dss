@@ -62,7 +62,6 @@ if [ "$CLEAN" = "YES" ] ; then
 	rm $OPTIONS /usr/bin/createuserstreamingdir
 	rm $OPTIONS /usr/bin/MP3Broadcaster
 	rm $OPTIONS /usr/bin/PlaylistBroadcaster
-	rm $OPTIONS /usr/bin/MP3BroaStreamingLoadTooldcaster
 	rm $OPTIONS /usr/bin/broadcasterctl
 	rm $OPTIONS /usr/sbin/QuickTimeStreamingServer
 	rm $OPTIONS /usr/sbin/streamingadminserver.pl

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -245,12 +245,12 @@ void RTPBandwidthTracker::UpdateAckTimeout(UInt32 bitsSentInInterval, SInt64 int
     if (rto < fAckTimeout)
         rto = fAckTimeout;
     UInt32 adjustment = (rto - fAckTimeout) / 2;
-    //qtss_printf("UnadjustedTimeout = %lu. rto: %ld. Last ack timeout: %lu. Adjustment = %lu.", unadjustedTimeout, fUnadjustedRTO, fAckTimeout, adjustment);
+    //qtss_printf("UnadjustedTimeout = %"_U32BITARG_". rto: %"_S32BITARG_". Last ack timeout: %"_U32BITARG_". Adjustment = %"_U32BITARG_".", unadjustedTimeout, fUnadjustedRTO, fAckTimeout, adjustment);
     if (adjustment > unadjustedTimeout)
         adjustment = unadjustedTimeout;
     fAckTimeout = unadjustedTimeout - adjustment;
     
-    //qtss_printf("AckTimeout: %lu\n",fAckTimeout);
+    //qtss_printf("AckTimeout: %"_U32BITARG_"\n",fAckTimeout);
     if (fAckTimeout > kMaxAckTimeout)
         fAckTimeout = kMaxAckTimeout;
     else if (fAckTimeout < kMinAckTimeout)

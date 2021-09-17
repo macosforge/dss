@@ -2,7 +2,8 @@
 #
 # @APPLE_LICENSE_HEADER_START@
 #
-# Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
+#
+# Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
 #
 # This file contains Original Code and/or Modifications of Original Code
 # as defined in and that are subject to the Apple Public Source License
@@ -787,7 +788,7 @@ sub ChangeBroadcastPassword {
 			&passwordutils::DeleteUser($qtpasswdpath, $usersFilename, $groupsFilename, $oldBroadcastUser);
 		}
 		if (($query-{'allowUnrestrictedBroadcast'} ne '1') && ($query->{'new_user'} ne '')) {
-			&passwordutils::AddOrEditUser($qtpasswdpath, $usersFilename, $query->{'new_user'}, $query->{'new_password1'});
+			&passwordutils::AddOrEditBroadcastUser($qtpasswdpath, $usersFilename, $query->{'new_user'}, $query->{'new_password1'});
 		}
 	}
 
@@ -798,8 +799,10 @@ sub ChangeBroadcastPassword {
 		$broadcastRestrictionString = "require user " . $query->{'new_user'};
 	}
 	my $viewingRestrictionString = join(' ', @$viewingUsersArrayRef);
-	&passwordutils::WriteRestrictionsToFile($filename, $broadcastRestrictionString, $viewingRestrictionString);
-	
+	#&passwordutils::WriteRestrictionsToFile($filename, $broadcastRestrictionString, $viewingRestrictionString);
+	# RemoveRestrictionsFile is for QTSS to sync with the server admin. Use WriteRestrictionsToFile above on Darwin Web Admins
+	&passwordutils::RemoveRestrictionsFile($filename); 
+
 	$confirmMessage = $messages{'ChMP3PassSavedText'};
 	$filename = 'general_settings.html';
 }
@@ -1362,6 +1365,15 @@ sub SaveBroadcasterSettings {
 	my $restartBroadcaster = 0;
 	my $changedNetworkSetting = 0;
 	my %messages = %$messageHash;
+
+        if (!$broadcasterConn) {
+                RestartBroadcaster();
+                if (!$broadcasterConn) {
+                       $filename = 'start_broadcaster.html';
+                       return false;
+                }
+        }
+
 	if (($broadcasterConn->state != 0) && ($theAction eq 'SaveBroadcasterSettings')) {
 		$restartBroadcaster = 1;
 		$broadcasterConn->stopBroadcast;
@@ -1407,7 +1419,10 @@ sub StartStopBroadcast {
 		SaveBroadcasterSettings();
 	}
 	my %messages = %$messageHash;
-	my $messageName = &broadcasterlib::StartStopBroadcast($broadcasterConn);
+	my $messageName = '';
+	if ($broadcasterConn) {
+		$messageName = &broadcasterlib::StartStopBroadcast($broadcasterConn);
+	}
 	$confirmMessage = $messages{$messageName};
 	if ($messageName eq '') { # couldn't start broadcast
 		$confirmMessage = $messages{'QTBErrBroadcastSettings'};

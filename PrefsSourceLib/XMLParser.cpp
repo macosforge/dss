@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -65,7 +65,7 @@ Bool16 XMLParser::ParseFile(char* errorBuffer, int errorBufferSize)
     if ((fFile.GetLength() == 0) || fFile.IsDir())
     {
         if (errorBuffer != NULL)
-            qtss_sprintf(errorBuffer, "Couldn't read xml file");
+            qtss_snprintf(errorBuffer, errorBufferSize,  "Couldn't read xml file");
         return false;   // we don't have a valid file;
     }
     
@@ -274,7 +274,7 @@ bool XMLTag::ParseTag(StringParser* parser, DTDVerifier* verifier, char* errorBu
         if (!parser->GetThru(NULL, '<'))
         {
             if (errorBuffer != NULL)
-                qtss_sprintf(errorBuffer, "Couldn't find a valid tag");
+                qtss_snprintf(errorBuffer, errorBufferSize, "Couldn't find a valid tag");
             return false;   // couldn't find beginning of tag
         }
             
@@ -282,7 +282,7 @@ bool XMLTag::ParseTag(StringParser* parser, DTDVerifier* verifier, char* errorBu
         if (c == '/')
         {
             if (errorBuffer != NULL)
-                qtss_sprintf(errorBuffer, "End tag with no begin tag on line %d", parser->GetCurrentLineNumber());
+                qtss_snprintf(errorBuffer, errorBufferSize, "End tag with no begin tag on line %d", parser->GetCurrentLineNumber());
             return false;   // we shouldn't be seeing a close tag here
         }
             
@@ -302,9 +302,9 @@ bool XMLTag::ParseTag(StringParser* parser, DTDVerifier* verifier, char* errorBu
         if (errorBuffer != NULL)
         {
             if (parser->GetDataRemaining() == 0)
-                qtss_sprintf(errorBuffer, "Unexpected end of file on line %d", parser->GetCurrentLineNumber());
+                qtss_snprintf(errorBuffer, errorBufferSize, "Unexpected end of file on line %d", parser->GetCurrentLineNumber());
             else
-                qtss_sprintf(errorBuffer, "Unexpected character (%c) on line %d", parser->PeekFast(), parser->GetCurrentLineNumber());
+                qtss_snprintf(errorBuffer,  errorBufferSize,"Unexpected character (%c) on line %d", parser->PeekFast(), parser->GetCurrentLineNumber());
         }
         return false;   // bad file
     }
@@ -323,9 +323,9 @@ bool XMLTag::ParseTag(StringParser* parser, DTDVerifier* verifier, char* errorBu
             if (errorBuffer != NULL)
             {
                 if (parser->GetDataRemaining() == 0)
-                    qtss_sprintf(errorBuffer, "Unexpected end of file on line %d", parser->GetCurrentLineNumber());
+                    qtss_snprintf(errorBuffer,  errorBufferSize, "Unexpected end of file on line %d", parser->GetCurrentLineNumber());
                 else
-                    qtss_sprintf(errorBuffer, "Unexpected character (%c) on line %d", parser->PeekFast(), parser->GetCurrentLineNumber());
+                    qtss_snprintf(errorBuffer,  errorBufferSize,"Unexpected character (%c) on line %d", parser->PeekFast(), parser->GetCurrentLineNumber());
             }
             return false;   // bad file
         }
@@ -335,13 +335,13 @@ bool XMLTag::ParseTag(StringParser* parser, DTDVerifier* verifier, char* errorBu
         if (!parser->Expect('='))
         {
             if (errorBuffer != NULL)
-                qtss_sprintf(errorBuffer, "Missing '=' after attribute %s on line %d", attr->fAttrName, parser->GetCurrentLineNumber());
+                qtss_snprintf(errorBuffer,  errorBufferSize,"Missing '=' after attribute %s on line %d", attr->fAttrName, parser->GetCurrentLineNumber());
             return false;   // bad attribute specification
         }
         if (!parser->Expect('"'))
         {
             if (errorBuffer != NULL)
-                qtss_sprintf(errorBuffer, "Attribute %s value not in quotes on line %d", attr->fAttrName, parser->GetCurrentLineNumber());
+                qtss_snprintf(errorBuffer,  errorBufferSize,"Attribute %s value not in quotes on line %d", attr->fAttrName, parser->GetCurrentLineNumber());
             return false;   // bad attribute specification
         }
             
@@ -350,21 +350,21 @@ bool XMLTag::ParseTag(StringParser* parser, DTDVerifier* verifier, char* errorBu
         if (!parser->Expect('"'))
         {
             if (errorBuffer != NULL)
-                qtss_sprintf(errorBuffer, "Attribute %s value not in quotes on line %d", attr->fAttrName, parser->GetCurrentLineNumber());
+                qtss_snprintf(errorBuffer, errorBufferSize, "Attribute %s value not in quotes on line %d", attr->fAttrName, parser->GetCurrentLineNumber());
             return false;   // bad attribute specification
         }
         
         if (verifier && !verifier->IsValidAttributeName(fTag, attr->fAttrName))
         {
             if (errorBuffer != NULL)
-                qtss_sprintf(errorBuffer, "Attribute %s not allowed in tag %s on line %d", attr->fAttrName, fTag, parser->GetCurrentLineNumber());
+                qtss_snprintf(errorBuffer, errorBufferSize, "Attribute %s not allowed in tag %s on line %d", attr->fAttrName, fTag, parser->GetCurrentLineNumber());
             return false;   // bad attribute specification
         }
 
         if (verifier && !verifier->IsValidAttributeValue(fTag, attr->fAttrName, attr->fAttrValue))
         {
             if (errorBuffer != NULL)
-                qtss_sprintf(errorBuffer, "Bad value for attribute %s on line %d", attr->fAttrName, parser->GetCurrentLineNumber());
+                qtss_snprintf(errorBuffer,  errorBufferSize,"Bad value for attribute %s on line %d", attr->fAttrName, parser->GetCurrentLineNumber());
             return false;   // bad attribute specification
         }
 
@@ -378,7 +378,7 @@ bool XMLTag::ParseTag(StringParser* parser, DTDVerifier* verifier, char* errorBu
         if (!parser->Expect('>'))
         {
             if (errorBuffer != NULL)
-                qtss_sprintf(errorBuffer, "'>' must follow '/' on line %d", parser->GetCurrentLineNumber());
+                qtss_snprintf(errorBuffer,  errorBufferSize,"'>' must follow '/' on line %d", parser->GetCurrentLineNumber());
             return false;   // bad attribute specification
         }
         
@@ -388,7 +388,7 @@ bool XMLTag::ParseTag(StringParser* parser, DTDVerifier* verifier, char* errorBu
     if (!parser->Expect('>'))
     {
         if (errorBuffer != NULL)
-            qtss_sprintf(errorBuffer, "Bad format for tag <%s> on line %d", fTag, parser->GetCurrentLineNumber());
+            qtss_snprintf(errorBuffer,  errorBufferSize,"Bad format for tag <%s> on line %d", fTag, parser->GetCurrentLineNumber());
         return false;   // bad attribute specification
     }
     
@@ -398,7 +398,7 @@ bool XMLTag::ParseTag(StringParser* parser, DTDVerifier* verifier, char* errorBu
         if (parser->GetDataRemaining() < 4)
         {
             if (errorBuffer != NULL)
-                qtss_sprintf(errorBuffer, "Reached end of file without end for tag <%s> declared on line %d", fTag, tagStartLine);
+                qtss_snprintf(errorBuffer, errorBufferSize, "Reached end of file without end for tag <%s> declared on line %d", fTag, tagStartLine);
             return false;
         }
         if ((*parser)[1] == '/')
@@ -416,9 +416,9 @@ bool XMLTag::ParseTag(StringParser* parser, DTDVerifier* verifier, char* errorBu
                     if (errorBuffer)
                     {
                         if (fEmbeddedTags.GetLength() > 0)
-                            qtss_sprintf(errorBuffer, "Unexpected text outside of tag on line %d", tagStartLine);
+                            qtss_snprintf(errorBuffer,  errorBufferSize,"Unexpected text outside of tag on line %d", tagStartLine);
                         else
-                            qtss_sprintf(errorBuffer, "Tag <%s> on line %d not allowed to have data", fTag, tagStartLine);
+                            qtss_snprintf(errorBuffer, errorBufferSize, "Tag <%s> on line %d not allowed to have data", fTag, tagStartLine);
                     }
                 }
             }
@@ -436,7 +436,7 @@ bool XMLTag::ParseTag(StringParser* parser, DTDVerifier* verifier, char* errorBu
             if (verifier && !verifier->IsValidSubtag(fTag, tag->GetTagName()))
             {
                 if (errorBuffer != NULL)
-                    qtss_sprintf(errorBuffer, "Tag %s not allowed in tag %s on line %d", tag->GetTagName(), fTag, parser->GetCurrentLineNumber());
+                    qtss_snprintf(errorBuffer, errorBufferSize, "Tag %s not allowed in tag %s on line %d", tag->GetTagName(), fTag, parser->GetCurrentLineNumber());
                 return false;   // bad attribute specification
             }
         }
@@ -453,7 +453,7 @@ bool XMLTag::ParseTag(StringParser* parser, DTDVerifier* verifier, char* errorBu
     {
         char* newTag = temp.GetAsCString();
         if (errorBuffer != NULL)
-            qtss_sprintf(errorBuffer, "End tag </%s> on line %d doesn't match tag <%s> declared on line %d", newTag, parser->GetCurrentLineNumber(),fTag, tagStartLine);
+            qtss_snprintf(errorBuffer,  errorBufferSize,"End tag </%s> on line %d doesn't match tag <%s> declared on line %d", newTag, parser->GetCurrentLineNumber(),fTag, tagStartLine);
         delete newTag;
         return false;   // bad attribute specification
     }
@@ -461,7 +461,7 @@ bool XMLTag::ParseTag(StringParser* parser, DTDVerifier* verifier, char* errorBu
     if (!parser->GetThru(NULL, '>'))
     {
         if (errorBuffer != NULL)
-            qtss_sprintf(errorBuffer, "Couldn't find end of tag <%s> declared on line %d", fTag, tagStartLine);
+            qtss_snprintf(errorBuffer,  errorBufferSize,"Couldn't find end of tag <%s> declared on line %d", fTag, tagStartLine);
         return false;   // bad attribute specification
     }
     

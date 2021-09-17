@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -353,7 +353,7 @@ private:
     QTSS_RTSPSessionObject  GetSession() { return fMP3Session->GetSession(); }
 
     MP3SessionRef*  fNextHashEntry;
-    SInt32          fHashValue;
+    PointerSizedInt fHashValue;
     MP3Session*     fMP3Session;
     
     friend class MP3SessionRefKey;
@@ -377,7 +377,7 @@ public:
     
 private:
     
-    SInt32          GetHashKey() { return fHashValue; }
+    PointerSizedInt	GetHashKey() { return fHashValue; }
     
     friend int operator ==(const MP3SessionRefKey &key1, const MP3SessionRefKey &key2)
     {
@@ -385,7 +385,7 @@ private:
     }
 
     MP3SessionRef*  fKeyValue;
-    SInt32          fHashValue;
+    PointerSizedInt fHashValue;
     MP3Session*     fMP3Session;
     
     friend class OSHashTable<MP3SessionRef, MP3SessionRefKey>;

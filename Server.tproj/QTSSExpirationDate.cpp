@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -67,7 +67,7 @@ Bool16 QTSSExpirationDate::IsSoftwareExpired()
         return false;
         
     SInt32 expMonth, expDay, expYear;
-    if (EOF == ::sscanf(sExpirationDate, "%ld/%ld/%ld", &expMonth, &expDay, &expYear))
+    if (EOF == ::sscanf(sExpirationDate, "%"_S32BITARG_"/%"_S32BITARG_"/%"_S32BITARG_"", &expMonth, &expDay, &expYear))
     {
         Assert(false);
         return true;

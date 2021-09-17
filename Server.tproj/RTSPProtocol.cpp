@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -132,7 +132,22 @@ StrPtrLen RTSPProtocol::sHeaders[] =
 	StrPtrLen("x-Dynamic-Rate"),
 	StrPtrLen("x-Accept-Dynamic-Rate"),
 	// DJM PROTOTYPE
-	StrPtrLen("x-Random-Data-Size")
+	StrPtrLen("x-Random-Data-Size"),
+	
+	//3gpp release 6 headers
+	StrPtrLen("3GPP-Link-Char"),
+	StrPtrLen("3GPP-Adaptation"),
+	StrPtrLen("3GPP-QoE-Feedback"),
+	StrPtrLen("3GPP-QoE-Metrics"),
+	
+	//Annex G
+	StrPtrLen("x-predecbufsize"),
+	StrPtrLen("x-initpredecbufperiod"),
+	StrPtrLen("x-initpostdecbufperiod"),
+	StrPtrLen("3gpp-videopostdecbufsize")
+	
+	
+	
 };
 
 QTSS_RTSPHeader RTSPProtocol::GetRequestHeader(const StrPtrLen &inHeaderStr)

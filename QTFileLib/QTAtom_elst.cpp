@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -113,7 +113,7 @@ Bool16 QTAtom_elst::Initialize(void)
     //
     // Read in all of the edits.
     if( fNumEdits > 0 ) {
-        DEEP_DEBUG_PRINT(("QTAtom_elst::Initialize ..%lu edits found.\n", fNumEdits));
+        DEEP_DEBUG_PRINT(("QTAtom_elst::Initialize ..%"_U32BITARG_" edits found.\n", fNumEdits));
 
         //
         // Allocate our ref table.
@@ -147,7 +147,7 @@ Bool16 QTAtom_elst::Initialize(void)
                 
             }
 
-            DEEP_DEBUG_PRINT(("QTAtom_elst::Initialize ..Edit #%lu: Duration=%"_64BITARG_"u; MediaTime=%"_64BITARG_"d\n", CurEdit, fEdits[CurEdit].EditDuration, fEdits[CurEdit].StartingMediaTime));
+            DEEP_DEBUG_PRINT(("QTAtom_elst::Initialize ..Edit #%"_U32BITARG_": Duration=%"_64BITARG_"u; MediaTime=%"_64BITARG_"d\n", CurEdit, fEdits[CurEdit].EditDuration, fEdits[CurEdit].StartingMediaTime));
 
             //
             // Adjust our starting media time.
@@ -170,5 +170,5 @@ void QTAtom_elst::DumpAtom(void)
 {
     DEBUG_PRINT(("QTAtom_elst::DumpAtom - Dumping atom.\n"));
     DEBUG_PRINT(("QTAtom_elst::DumpAtom - ..Version: %d.\n", (int) fVersion));
-    DEBUG_PRINT(("QTAtom_elst::DumpAtom - ..Number of edits: %ld\n", fNumEdits));
+    DEBUG_PRINT(("QTAtom_elst::DumpAtom - ..Number of edits: %"_S32BITARG_"\n", fNumEdits));
 }

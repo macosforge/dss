@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -457,7 +457,7 @@ QTSS_Error HandleSourceInfoErr(QTSS_Error rtspSourceInfoErr, QTSS_StandardRTSP_P
     {
         // This happens if the remote host responded with an error.
         char tempBuf[20];
-        qtss_sprintf(tempBuf, "%lu", inClient->GetStatus());
+        qtss_sprintf(tempBuf, "%"_U32BITARG_"", inClient->GetStatus());
         StrPtrLen tempBufPtr(&tempBuf[0]);
         return QTSSModuleUtils::SendErrorResponse(inParams->inRTSPRequest, qtssServerGatewayTimeout,
                                                     sRemoteHostRespondedWithAnErrorErr, &tempBufPtr);

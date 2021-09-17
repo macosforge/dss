@@ -2,9 +2,9 @@
  * Copyright (c) 2003 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -32,7 +32,7 @@
  * The target dependent functions should be defined in tailor.c.
  */
 
-/* $Id: tailor.h,v 1.5 2003/08/15 23:53:06 sbasu Exp $ */
+/* $Id: tailor.h,v 1.1 2006/01/05 13:20:36 murata Exp $ */
 
 #if defined(__MSDOS__) && !defined(MSDOS)
 #  define MSDOS
@@ -162,7 +162,7 @@
      void fcfree (void *ptr);
 #  else /* MSC */
 #    include <malloc.h>
-#    define fcalloc(nitems,itemsize) halloc((long)(nitems),(itemsize))
+#    define fcalloc(nitems,itemsize) halloc((SInt32)(nitems),(itemsize))
 #    define fcfree(ptr) hfree(ptr)
 #  endif
 #else

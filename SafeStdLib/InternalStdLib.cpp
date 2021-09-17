@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -45,13 +45,13 @@
 static UInt64 sTotalChars=0;
 static UInt32 sMaxTotalCharsInK = 100 * 1000;//100MB default
 static int    sMaxFileSizeReached = 0;
-unsigned long qtss_getmaxprintfcharsinK()
+UInt32 qtss_getmaxprintfcharsinK()
 {
     OSMutexLocker locker(OS::GetStdLibMutex());
     return sMaxTotalCharsInK;
 }
 
-void qtss_setmaxprintfcharsinK(unsigned long newMaxCharsInK)
+void qtss_setmaxprintfcharsinK(UInt32 newMaxCharsInK)
 {
     OSMutexLocker locker(OS::GetStdLibMutex());
     sMaxTotalCharsInK = newMaxCharsInK;
@@ -67,7 +67,7 @@ int qtss_maxprintf(const char *fmt,  ...)
     if (sTotalChars > ( (UInt64) sMaxTotalCharsInK * 1024) )
     {	
     	if (sMaxFileSizeReached == 0)
-            printf ("\nReached maximum configured output limit = %luK\n", sMaxTotalCharsInK);
+            printf ("\nReached maximum configured output limit = %"_U32BITARG_"K\n", sMaxTotalCharsInK);
 
     	sMaxFileSizeReached = 1; 
 

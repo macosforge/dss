@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -27,14 +27,6 @@
 #define OSHeaders_H
 #include <limits.h>
 
-#define kSInt16_Max USHRT_MAX
-#define kUInt16_Max USHRT_MAX
-
-#define kSInt32_Max LONG_MAX
-#define kUInt32_Max ULONG_MAX
-
-#define kSInt64_Max LONG_LONG_MAX
-#define kUInt64_Max ULONG_LONG_MAX
 
 
 #ifndef TRUE
@@ -48,10 +40,98 @@
 
 
 /* Platform-specific components */
-#if __linux__ || __linuxppc__ || __FreeBSD__ || __MacOSX__
+#if __MacOSX__
+    
+    /* Defines */
+    #define _64BITARG_ "ll"
+    #define _S64BITARG_ "lld"
+    #define _U64BITARG_ "llu"
+    
+#if __LP64__
+	#define _S32BITARG_ "d"
+	#define _U32BITARG_ "u"
+        #define _SPOINTERSIZEARG_ _S64BITARG_
+        #define _UPOINTERSIZEARG_ _U64BITARG_
+#else
+	#define _S32BITARG_ "ld"
+	#define _U32BITARG_ "lu"
+        #define _SPOINTERSIZEARG_ _S32BITARG_
+        #define _UPOINTERSIZEARG_ _U32BITARG_
+#endif
+
+    /* paths */
+    #define kEOLString "\n"
+    #define kPathDelimiterString "/"
+    #define kPathDelimiterChar '/'
+    #define kPartialPathBeginsWithDelimiter 0
+
+    /* Includes */
+    #include <sys/types.h>
+    
+    /* Constants */
+    #define QT_TIME_TO_LOCAL_TIME   (-2082844800)
+    #define QT_PATH_SEPARATOR       '/'
+
+
+#include "/System/Library/Frameworks/CoreServices.framework/Headers/../Frameworks/CarbonCore.framework/Headers/MacTypes.h"
+
+#define kSInt16_Max (SInt16) SHRT_MAX
+#define kUInt16_Max (UInt16) USHRT_MAX
+
+#define kSInt32_Max (SInt32) LONG_MAX
+#define kUInt32_Max (UInt32) ULONG_MAX
+
+#define kSInt64_Max (SInt64) LONG_LONG_MAX
+#define kUInt64_Max (UInt64) ULONG_LONG_MAX
+
+#if 0 // old defs we are now using MacTypes.h
+    /* Typedefs */
+    typedef unsigned char       UInt8;
+    typedef signed char         SInt8;
+    typedef unsigned short      UInt16;
+    typedef signed short        SInt16;
+    typedef unsigned int        UInt32;
+    typedef signed int          SInt32;
+    typedef signed long long	SInt64;
+    typedef unsigned long long	UInt64;
+    typedef float               Float32;
+    typedef double              Float64;
+    typedef UInt32              FourCharCode;
+    typedef FourCharCode        OSType;
+#endif
+    
+    typedef signed long		    PointerSizedInt;
+    typedef unsigned long       PointerSizedUInt;
+    typedef UInt16              Bool16;
+    typedef UInt8               Bool8;
+    
+
+    #ifdef  FOUR_CHARS_TO_INT
+    #error Conflicting Macro "FOUR_CHARS_TO_INT"
+    #endif
+
+    #define FOUR_CHARS_TO_INT( c1, c2, c3, c4 )  ( c1 << 24 | c2 << 16 | c3 << 8 | c4 )
+
+    #ifdef  TW0_CHARS_TO_INT
+    #error Conflicting Macro "TW0_CHARS_TO_INT"
+    #endif
+        
+    #define TW0_CHARS_TO_INT( c1, c2 )  ( c1 << 8 | c2 )
+
+    
+#elif __linux__ || __linuxppc__ || __FreeBSD__
     
     /* Defines */
     #define _64BITARG_ "q"
+    #define _S64BITARG_ "lld"
+    #define _U64BITARG_ "llu"
+#if __LP64__
+	#define _S32BITARG_ "d"
+	#define _U32BITARG_ "u"
+#else
+	#define _S32BITARG_ "ld"
+	#define _U32BITARG_ "lu"
+#endif
 
     /* paths */
     #define kEOLString "\n"
@@ -67,21 +147,22 @@
     #define QT_PATH_SEPARATOR       '/'
 
     /* Typedefs */
-    typedef unsigned int        PointerSizedInt;
+    typedef signed long         PointerSizedInt;
+    typedef unsigned long       PointerSizedUInt;
     typedef unsigned char       UInt8;
     typedef signed char         SInt8;
     typedef unsigned short      UInt16;
     typedef signed short        SInt16;
-    typedef unsigned long       UInt32;
-    typedef signed long         SInt32;
-    typedef signed long long    SInt64;
-    typedef unsigned long long  UInt64;
+    typedef unsigned int	UInt32;
+    typedef signed int		SInt32;
+    typedef signed int int 	SInt64;
+    typedef unsigned int int 	UInt64;
     typedef float               Float32;
     typedef double              Float64;
     typedef UInt16              Bool16;
     typedef UInt8               Bool8;
     
-    typedef unsigned long       FourCharCode;
+    typedef unsigned int	FourCharCode;
     typedef FourCharCode        OSType;
 
     #ifdef  FOUR_CHARS_TO_INT
@@ -106,6 +187,15 @@
     
     /* Defines */
     #define _64BITARG_ "I64"
+    #define _S64BITARG_ "I64d"
+    #define _U64BITARG_ "I64u"
+#if __LP64__
+	#define _S32BITARG_ "d"
+	#define _U32BITARG_ "u"
+#else
+	#define _S32BITARG_ "ld"
+	#define _U32BITARG_ "lu"
+#endif
 
     /* paths */
     #define kEOLString "\r\n"
@@ -147,7 +237,8 @@
     #define QT_PATH_SEPARATOR       '/'
 
     /* Typedefs */
-    typedef unsigned int        PointerSizedInt;
+    typedef signed long         PointerSizedInt;
+    typedef unsigned long       PointerSizedUInt;
     typedef unsigned char       UInt8;
     typedef signed char         SInt8;
     typedef unsigned short      UInt16;
@@ -191,6 +282,15 @@
 #elif __sgi__
     /* Defines */
     #define _64BITARG_ "ll"
+    #define _S64BITARG_ "lld"
+    #define _U64BITARG_ "llu"
+#if __LP64__
+	#define _S32BITARG_ "d"
+	#define _U32BITARG_ "u"
+#else
+	#define _S32BITARG_ "ld"
+	#define _U32BITARG_ "lu"
+#endif
 
     /* paths */
     #define kPathDelimiterString "/"
@@ -212,7 +312,8 @@
     #define true                1
     #define false               0
 
-    typedef unsigned int        PointerSizedInt;
+    typedef signed long         PointerSizedInt;
+    typedef unsigned long       PointerSizedUInt;
     typedef unsigned char       UInt8;
     typedef signed char         SInt8;
     typedef unsigned short      UInt16;
@@ -252,6 +353,15 @@
 
     /* Defines */
     #define _64BITARG_ "ll"
+    #define _S64BITARG_ "Ild"
+    #define _U64BITARG_ "llu"
+#if __LP64__
+	#define _S32BITARG_ "d"
+	#define _U32BITARG_ "u"
+#else
+	#define _S32BITARG_ "ld"
+	#define _U32BITARG_ "lu"
+#endif
 
     /* paths */
     #define kPathDelimiterString "/"
@@ -272,7 +382,8 @@
     //#define true              1
     //#define false             0
 
-    typedef unsigned int        PointerSizedInt;
+    typedef signed long         PointerSizedInt;
+    typedef unsigned long       PointerSizedUInt;
     typedef unsigned char       UInt8;
     typedef signed char         SInt8;
     typedef unsigned short      UInt16;
@@ -305,6 +416,15 @@
 
     /* Defines */
     #define _64BITARG_ "ll"
+    #define _S64BITARG_ "Ild"
+    #define _U64BITARG_ "llu"
+#if __LP64__
+	#define _S32BITARG_ "d"
+	#define _U32BITARG_ "u"
+#else
+	#define _S32BITARG_ "ld"
+	#define _U32BITARG_ "lu"
+#endif
 
     /* paths */
     #define kPathDelimiterString "/"
@@ -325,7 +445,8 @@
     //#define true              1
     //#define false             0
 
-    typedef unsigned int        PointerSizedInt;
+    typedef signed long         PointerSizedInt;
+    typedef unsigned long       PointerSizedUInt;
     typedef unsigned char       UInt8;
     typedef signed char         SInt8;
     typedef unsigned short      UInt16;
@@ -358,6 +479,15 @@
     
    /* Defines */
     #define _64BITARG_ "l"
+    #define _S64BITARG_ "ld"
+    #define _U64BITARG_ "lu"
+#if __LP64__
+	#define _S32BITARG_ "ld"
+	#define _U32BITARG_ "lu"
+#else
+	#define _S32BITARG_ "d"
+	#define _U32BITARG_ "u"
+#endif
 
     /* paths */
     #define kEOLString "\n"

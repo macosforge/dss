@@ -90,6 +90,10 @@
 	<!-- Path to the folder containing dynamic loadable server modules -->
 	<PREF NAME="module_folder">/usr/local/sbin/StreamingServerModules</PREF>
 
+	<!-- If this is true, the server will allow streaming of files that have invalid hint track references -->
+	<PREF NAME="allow_invalid_hint_track_refs" TYPE="Bool16">false</PREF>
+
+
 	<!-- If the server discovers it is serving more than its -->
 	<!-- allowed maximum bandwidth (using the average bandwidth computation) it -->
 	<!-- will attempt to disconnect the most recently connected clients until the -->
@@ -117,7 +121,7 @@
 	<PREF NAME="bind_ip_addr">0</PREF>
 
 	<!-- Path to the root folder for movies. -->
-	<PREF NAME="movie_folder">/usr/local/movies/</PREF>
+	<PREF NAME="movie_folder">/usr/local/movies</PREF>
 
 	<!-- Maximum amount of bandwidth the server is allowed to serve. -->
 	<!-- value is in kilobits/sec. While this limit is exceeded, new client requests. -->
@@ -342,6 +346,9 @@
 	<!-- These options allow you to enable/disable recording of SDP files for debugging.  -->
     <PREF NAME="record_movie_file_sdp" TYPE="Bool16">false</PREF>
     <PREF NAME="enable_movie_file_sdp" TYPE="Bool16">false</PREF>
+
+    <!-- If this is true, the server will allow streaming of files that have invalid hint track references -->
+    <PREF NAME="allow_invalid_hint_track_refs" TYPE="Bool16">false</PREF>
 </MODULE>
 
 <MODULE NAME="QTSSMP3StreamingModule">

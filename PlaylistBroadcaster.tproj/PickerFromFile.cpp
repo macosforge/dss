@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -223,8 +223,8 @@ int PopulatePickerFromFile( PlaylistPicker* picker, char* fname, const char* bas
     
     if ( !pickErr )
     {
-        long    lineBuffSize = (kMaxPickerPath *2) - 1;
-        long    wordBuffSize = kMaxPickerPath - 1;
+        SInt32  lineBuffSize = (kMaxPickerPath *2) - 1;
+        SInt32  wordBuffSize = kMaxPickerPath - 1;
         
         char    lineBuff[kMaxPickerPath * 2];
         char    wordBuff[kMaxPickerPath];
@@ -414,7 +414,7 @@ int PopulatePickerFromDir( PlaylistPicker* picker, char* dirPath, int weight )
     findResultHandle = ::FindFirstFile( expandedFileName, &findData);
     if ( NULL == findResultHandle || INVALID_HANDLE_VALUE == findResultHandle )
     {
-        //qtss_printf( "FindFirstFile( \"%s\" ): gle = %lu\n", searchPath, GetLastError() );
+        //qtss_printf( "FindFirstFile( \"%s\" ): gle = %"_U32BITARG_"\n", searchPath, GetLastError() );
         return 0;
     }
 

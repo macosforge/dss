@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -31,15 +31,31 @@
     
 */
 
+#include <arpa/inet.h>
+//#include <stdlib.h>
 #include "ClientSession.h"
 #include "OSMemory.h"
-#include <stdlib.h>
 #include "SafeStdLib.h"
+#include "OSHeaders.h"
+#include "OS.h"
+#include "RTPPacket.h"
+#include "RTCPPacket.h"
+#include "RTCPRRPacket.h"
+#include "RTCPAckPacketFmt.h"
+#include "RTCPNADUPacketFmt.h"
+
+//These two parameters governs how the client determines whether an incoming RTP packet is within the range of the sequence number or not.
+enum {
+    kMaxDropOut = 3000,             //The sequence number can be kMaxDropOut ahead of the reference.
+    kMaxMisorder = 100,             //The sequence number can be kMaxMisorder behind of the reference.
+    kMaxUDPPacketSize = 1450
+};
+
 #define CLIENT_SESSION_DEBUG 0
 
 static const SInt64 kMaxWaitTimeInMsec = 5000;
 static const SInt64 kIdleTimeoutInMsec = 20000; // Time out in 20 seconds if nothing's doing
-static const SInt16 kSanitySeqNumDifference = 3000;
+static const SInt16 kSanitySeqNumDifference = 3000; //how large a difference can two sequence number be and still be considered to be in range
 
 UInt32          ClientSession::sActiveConnections = 0;
 UInt32          ClientSession::sPlayingConnections = 0;
@@ -76,18 +92,21 @@ char* ConvertBytesToCHexString( void* inValue, const UInt32 inValueLen)
 ClientSession::ClientSession(   UInt32 inAddr, UInt16 inPort, char* inURL,
                                 ClientType inClientType,
                                 UInt32 inDurationInSec, UInt32 inStartPlayTimeInSec,
-                                UInt32 inRTCPIntervalInSec, UInt32 inOptionsIntervalInSec,
+                                UInt32 inRTCPIntervalInMS, UInt32 inOptionsIntervalInSec,
                                 UInt32 inHTTPCookie, Bool16 inAppendJunkData, UInt32 inReadInterval,
                                 UInt32 inSockRcvBufSize, Float32 inLateTolerance, char* inMetaInfoFields,
-                                Float32 inSpeed, Bool16 inVerbosePrinting, char* inPacketRangePlayHeader, UInt32 inOverbufferWindowSizeInK,
-                                Bool16 sendOptions, Bool16 requestRandomData, SInt32 randomDataSize)
+                                Float32 inSpeed, UInt32 verboseLevel, char* inPacketRangePlayHeader, UInt32 inOverbufferWindowSizeInK,
+                                Bool16 sendOptions, Bool16 requestRandomData, SInt32 randomDataSize, Bool16 enable3GPP,
+                                UInt32 GBW, UInt32 MBW, UInt32 MTD, Bool16 enableForcePlayoutDelay, UInt32 playoutDelay, 
+								UInt32 bandwidth, UInt32 bufferSpace, UInt32 delayTime, UInt32 startPlayDelay,
+                                char *controlID, char *name, char *password)
 :   fSocket(NULL),
     fClient(NULL),
     fTimeoutTask(this, kIdleTimeoutInMsec),
 
     fDurationInSec(inDurationInSec - inStartPlayTimeInSec),
     fStartPlayTimeInSec(inStartPlayTimeInSec),
-    fRTCPIntervalInSec(inRTCPIntervalInSec),
+    fRTCPIntervalInMs(inRTCPIntervalInMS),
     fOptionsIntervalInSec(inOptionsIntervalInSec),
     
     fOptions(sendOptions),
@@ -110,20 +129,42 @@ ClientSession::ClientSession(   UInt32 inAddr, UInt16 inPort, char* inURL,
     
     fSpeed(inSpeed),
     fPacketRangePlayHeader(inPacketRangePlayHeader),
-    fStats(NULL),
+	
+    fGuarenteedBitRate(GBW),
+    fMaxBitRate(MBW),
+    fMaxTransferDelay(MTD),
+	fEnableForcePlayoutDelay(enableForcePlayoutDelay),
+	fPlayoutDelay(playoutDelay),
+    fBandwidth(bandwidth),
+	fBufferSpace(bufferSpace),
+	fDelayTime(delayTime),
+	fStartPlayDelay(startPlayDelay),
+	fEnable3GPP(enable3GPP),
+	
+    //fStats(NULL),
     fOverbufferWindowSizeInK(inOverbufferWindowSizeInK),
     fCurRTCPTrack(0),
-    fNumPacketsReceived(0)
+    fNumPacketsReceived(0),
+	fNumBytesReceived(0),
+    fVerboseLevel(verboseLevel),
+	fPlayerSimulator(verboseLevel)
 {
     this->SetTaskName("RTSPClientLib:ClientSession");
     StrPtrLen theURL(inURL);
 
     if (true == sendOptions)
        fState = kSendingOptions;
-       
+    
 #if CLIENT_SESSION_DEBUG
-    //qtss_printf("Connecting to: %s, port %d\n", inet_ntoa(inAddr), inPort);
-#endif  
+    fVerboseLevel = kUInt32_Max;  //maximum possible unsigned int value in 2's complement
+#endif
+    if ( fVerboseLevel >= 2)
+    {
+        in_addr inAddrStruct;
+        inAddrStruct.s_addr = inAddr;
+        qtss_printf("Connecting to: %s, port %d\n", inet_ntoa(inAddrStruct), inPort);
+    }
+
     //
     // Construct the appropriate ClientSocket type depending on what type of client we are supposed to be
     switch (inClientType)
@@ -174,10 +215,27 @@ ClientSession::ClientSession(   UInt32 inAddr, UInt16 inPort, char* inURL,
     
     //
     // Construct the client object using this socket.
-    fClient = NEW RTSPClient(fSocket, inVerbosePrinting);
+    fClient = NEW RTSPClient(fSocket);
+    fClient->SetVerboseLevel(fVerboseLevel);
     fClient->Set(theURL);
     fClient->SetSetupParams(inLateTolerance, inMetaInfoFields);
+	fClient->SetBandwidth(fBandwidth);
+	if(controlID != NULL)
+		fClient->SetControlID(controlID);
+
+    if (enable3GPP)
+    {
+        fClient->Set3GPPLinkChars(fGuarenteedBitRate, fMaxBitRate, fMaxTransferDelay);
+	    fClient->Set3GPPRateAdaptation(fBufferSpace, fDelayTime);
+    }
     
+    //user name and password
+    if (name != NULL && password != NULL)
+    {
+        fClient->SetName(name);
+        fClient->SetPassword(password);
+    }
+
     //
     // Start the connection process going
     this->Signal(Task::kStartEvent);
@@ -210,6 +268,7 @@ ClientSession::~ClientSession()
     delete [] fUDPSocketArray;
     delete fClient;
     delete fSocket;
+	//delete fStats;
 }
 
 
@@ -221,18 +280,25 @@ SInt64 ClientSession::Run()
     {
         sActiveConnections++;
         sTotalConnectionAttempts++;
-        Assert(theEvents == Task::kStartEvent);
-        //
-        // Determine a random connection interval, and go away until that time comes around.
-        return ::rand() % kMaxWaitTimeInMsec;
+		//Sometimes the clientSession can be told to stop before it has a chance to start the connection
+		if (theEvents & ClientSession::kTeardownEvent)
+			fTeardownImmediately = true;
+		else
+		{
+			Assert(theEvents == Task::kStartEvent);
+			// Determine a random connection interval, and go away until that time comes around.
+			// Next time the event received would be Task::kIdleEvent, and the initial state is kSendingDescribe
+			return ((UInt32) ::rand()) % kMaxWaitTimeInMsec + 1;
+		}
     }
     
     // 
     if (theEvents & Task::kTimeoutEvent)
     {
-#if CLIENT_SESSION_DEBUG
-        qtss_printf("Session timing out.\n");
-#endif
+		if(fState == kDone)
+			return 0;
+		if ( fVerboseLevel >= 2)
+        	qtss_printf("Session timing out.\n");
         fDeathReason = kSessionTimedout;
         fState = kDone;
         return 0;
@@ -242,18 +308,16 @@ SInt64 ClientSession::Run()
     // If we've been told to TEARDOWN, do so.
     if (theEvents & ClientSession::kTeardownEvent)
     {
-#if CLIENT_SESSION_DEBUG
-        qtss_printf("Session tearing down immediately.\n");
-#endif
+		if ( fVerboseLevel >= 2)
+        	qtss_printf("Session tearing down immediately.\n");
         fTeardownImmediately = true;
     }
     
     // We have been told to delete ourselves. Do so... NOW!!!!!!!!!!!!!!!
     if (theEvents & Task::kKillEvent)
     {
-#if CLIENT_SESSION_DEBUG
-        qtss_printf("Session killed.\n");
-#endif
+		if ( fVerboseLevel >= 2)
+        	qtss_printf("Session killed.\n");
         sActiveConnections--;
         return -1;
     }   
@@ -276,9 +340,8 @@ SInt64 ClientSession::Run()
                     else
                         theErr = fClient->SendOptions();
 
-#if CLIENT_SESSION_DEBUG
-                qtss_printf("Sending OPTIONS. Result = %lu. Response code = %lu\n", theErr, fClient->GetStatus());
-#endif              
+					if ( fVerboseLevel >= 3)
+                		qtss_printf("Sent OPTIONS. Result = %"_U32BITARG_". Response code = %"_U32BITARG_"\n", theErr, fClient->GetStatus());
                     if (0 == fTransactionStartTimeMilli) 
                        fTransactionStartTimeMilli = OS::Milliseconds();
 
@@ -293,12 +356,12 @@ SInt64 ClientSession::Run()
                     }
                     else
                     {
-                        if (fClient->IsVerbose())
+						if ( fVerboseLevel >= 3)
                         {
                             qtss_printf("--- Options transaction time ms = %qd  ---\n", (SInt64) ( OS::Milliseconds() - fTransactionStartTimeMilli) );
                             SInt32 receivedLength = (SInt32) fClient->GetContentLength();
                             if (receivedLength != 0)
-                                qtss_printf("--- Options Request Random Data Received requested = %ld received = %ld  ---\n", fOptionsRandomDataSize, receivedLength);
+                                qtss_printf("--- Options Request Random Data Received requested = %"_S32BITARG_" received = %"_S32BITARG_"  ---\n", fOptionsRandomDataSize, receivedLength);
                                 
                             StrPtrLenDel theBody(ConvertBytesToCHexString(fClient->GetContentBody(), receivedLength));
                             theBody.PrintStr("\n");
@@ -312,9 +375,8 @@ SInt64 ClientSession::Run()
             case kSendingDescribe:
             {
                 theErr = fClient->SendDescribe(fAppendJunk);
-#if CLIENT_SESSION_DEBUG
-                qtss_printf("Sending DESCRIBE. Result = %lu. Response code = %lu\n", theErr, fClient->GetStatus());
-#endif              
+				if ( fVerboseLevel >= 3)
+                	qtss_printf("Sent DESCRIBE. Result = %"_U32BITARG_". Response code = %"_U32BITARG_"\n", theErr, fClient->GetStatus());
                 if (theErr == OS_NoErr)
                 {
                     // Check that the DESCRIBE response is a 200 OK. If not, bail
@@ -344,9 +406,14 @@ SInt64 ClientSession::Run()
                             
                         //
                         // Setup client stats
-                        fStats = NEW TrackStats[fSDPParser.GetNumStreams()];
-                        ::memset(fStats, 0, sizeof(TrackStats) * fSDPParser.GetNumStreams());
+						//delete fStats;
+                        //fStats = NEW TrackStats[fSDPParser.GetNumStreams()];
+                        fStats.resize(fSDPParser.GetNumStreams());
+						//::memset(fStats, 0, sizeof(TrackStats) * fSDPParser.GetNumStreams());
+
+
                     }
+					fPlayerSimulator.Setup(fSDPParser.GetNumStreams(), fDelayTime, fStartPlayDelay);
                     fState = kSendingSetup;
                 }
                 break;
@@ -369,9 +436,9 @@ SInt64 ClientSession::Run()
                     theErr = fClient->SendReliableUDPSetup(fSDPParser.GetStreamInfo(fNumSetups)->fTrackID,
                                                 fUDPSocketArray[fNumSetups*2]->GetLocalPort());
                 }
-#if CLIENT_SESSION_DEBUG
-                qtss_printf("Sending SETUP #%lu. Result = %lu. Response code = %lu\n", fNumSetups, theErr, fClient->GetStatus());
-#endif              
+				if ( fVerboseLevel >= 3)
+                	qtss_printf("Sent SETUP #%"_U32BITARG_". Result = %"_U32BITARG_". Response code = %"_U32BITARG_"\n",
+							fNumSetups, theErr, fClient->GetStatus());
                 //
                 // If this SETUP request / response is complete, check for errors, and if
                 // it succeeded, move onto the next SETUP. If we're done setting up all tracks,
@@ -388,6 +455,18 @@ SInt64 ClientSession::Run()
                         // Record the server port for RTCPs.
                         fStats[fNumSetups].fDestRTCPPort = fClient->GetServerPort() + 1;
                         
+						//obtain the sampling rate of this stream
+						StringParser parser = StringParser(&fSDPParser.GetStreamInfo(fNumSetups)->fPayloadName);
+						parser.GetThru(NULL, '/');
+						UInt32 samplingRate = parser.ConsumeInteger(NULL);
+						Assert(samplingRate != 0);
+						
+						//Generates the client SSRC
+						SInt64 ms = OS::Microseconds();
+						UInt32 ssrc = static_cast<UInt32>((ms >> 32) ^ ms) + ::rand();
+						fStats[fNumSetups].fClientSSRC = ssrc + fNumSetups;
+						
+						fPlayerSimulator.SetupTrack(fNumSetups, samplingRate, fBufferSpace);
                         fNumSetups++;
                         if (fNumSetups == fSDPParser.GetNumStreams())
                             fState = kSendingPlay;
@@ -401,9 +480,9 @@ SInt64 ClientSession::Run()
                     theErr = fClient->SendPacketRangePlay(fPacketRangePlayHeader, fSpeed);
                 else
                     theErr = fClient->SendPlay(fStartPlayTimeInSec, fSpeed);
-#if CLIENT_SESSION_DEBUG
-                qtss_printf("Sending PLAY. Result = %lu. Response code = %lu\n", theErr, fClient->GetStatus());
-#endif              
+				if ( fVerboseLevel >= 3)
+                	qtss_printf("Sent PLAY. Result = %"_U32BITARG_". Response code = %"_U32BITARG_"\n", theErr, fClient->GetStatus());
+				//
                 // If this PLAY request / response is complete, then we are done with setting
                 // up all the client crap. Now all we have to do is receive the data until it's
                 // time to send the TEARDOWN
@@ -417,83 +496,90 @@ SInt64 ClientSession::Run()
                         
                     // Mark down the SSRC for each track, if possible. 
                     for (UInt32 ssrcCount = 0; ssrcCount < fSDPParser.GetNumStreams(); ssrcCount++)
-                    {
-                        fStats[ssrcCount].fSSRC = fClient->GetSSRCByTrack(fSDPParser.GetStreamInfo(ssrcCount)->fTrackID);
-                        if (fStats[ssrcCount].fSSRC != 0)
-                            fStats[ssrcCount].fIsSSRCValid = true;
-                    }
+                        fStats[ssrcCount].fServerSSRC = fClient->GetSSRCByTrack(fSDPParser.GetStreamInfo(ssrcCount)->fTrackID);
                     
                     fState = kPlaying;
                     sPlayingConnections++;
                     
                     //
                     // Start our duration timer. Use this to figure out when to send a teardown
-                    fPlayTime = fLastRTCPTime = OS::Milliseconds();     
+                    fPlayTime = fLastRTCPTime = OS::Milliseconds();   
+					
+					if(fVerboseLevel >= 1)
+					{
+						for (UInt32 i = 0; i < fSDPParser.GetNumStreams(); i++)
+						{
+							QTSS_RTPPayloadType type = fSDPParser.GetStreamInfo(i)->fPayloadType;
+							qtss_printf("Receiving track %"_U32BITARG_", trackID=%"_U32BITARG_", %s at time %"_S64BITARG_"\n",
+								i, fSDPParser.GetStreamInfo(i)->fTrackID,
+								type == qtssVideoPayloadType ? "video" : type == qtssAudioPayloadType ? "audio" : "unknown",
+								OS::Milliseconds());
+						}
+					}
                 }
                 break;
             }
             case kPlaying:
             {
-                if (fCurRTCPTrack == fSDPParser.GetNumStreams())
-                    theErr = this->ReadMediaData();
-
-                //
-                // If we've encountered some fatal error, bail.
-                if ((theErr != EINPROGRESS) && (theErr != EAGAIN) && (theErr != OS_NoErr))
-                {
-                    sPlayingConnections--;
-                    break;
-                }
-                theErr = OS_NoErr; // Ignore flow control errors here.
-                    
-                //
-                // Should we send a teardown? We should if either we've been told
-                // to teardown, or if our time has run out
+                // Should we send a teardown? We should if either we've been told to teardown, or if our time has run out
                 SInt64 curTime = OS::Milliseconds();
+                fTotalPlayTime = curTime - fPlayTime;
                 if (((curTime - fPlayTime) > fDurationInSec * 1000) || (fTeardownImmediately))
                 {
                     sPlayingConnections--;
                     fState = kSendingTeardown;
-                    
-                    fTotalPlayTime = curTime - fPlayTime;
+                    break;
                 }
-                else
-                {
-                    if ((curTime - fLastRTCPTime) > (fRTCPIntervalInSec * 1000))
-                    {
-                        //
-                        // If we are using TCP as our media transport, we only need to
-                        // send 1 set of RTCPs to the server, to tell it about overbuffering
-                        if (fTransportType != kTCPTransportType)
-                        {    fCurRTCPTrack = 0;
-                            //(void) fClient->SendSetParameter(); // test for keep alives and error responses
-                            //(void) fClient->SendOptions(); // test for keep alives  and error responses
 
-                        }
-                        fLastRTCPTime = curTime;
-                    }
-                        
+                //Send RTCP if necessary; if we are using TCP for media transport, than 1 set of RTCP total is enough
+				Bool16 sendRTCP = ((curTime - fLastRTCPTime) > fRTCPIntervalInMs) && (fTransportType != kTCPTransportType);
+				sendRTCP |= (fPlayTime == fLastRTCPTime);		//send the first RTCP ASAP.
+                if (sendRTCP)
+                {
+                    //(void) fClient->SendSetParameter(); // test for keep alives and error responses
+                    //(void) fClient->SendOptions(); // test for keep alives  and error responses
                     for ( ; fCurRTCPTrack < fSDPParser.GetNumStreams(); fCurRTCPTrack++)
                     {
-                        if (this->SendReceiverReport(fCurRTCPTrack) != OS_NoErr)
-                            break;
+                        OS_Error err = this->SendRTCPPackets(fCurRTCPTrack);
+						if (fTransportType == kTCPTransportType && err != OS_NoErr)
+						{
+							theErr = err; //if error happens on a TCP RTCP socket, then bail
+							break;
+						}
                     }
-
-                    // If we are supposed to drop the POST side of the HTTP connection,
-                    // do so now, after the 1st set of RTCP packets
-                    if ((fCurRTCPTrack == fSDPParser.GetNumStreams()) && (fControlType == kRTSPHTTPDropPostControlType))
-                        ((HTTPClientSocket*)fSocket)->ClosePost();
-
-                    return fReadInterval;
+					if (theErr != OS_NoErr)
+						break;
+					
+                    //Done sending the RTCP's
+                    fCurRTCPTrack = 0;
+                    fLastRTCPTime = (curTime == fLastRTCPTime) ? curTime + 1 : curTime;
+					
+                    //Drop the POST portion of the HTTP connection after every send
+                    if (fControlType == kRTSPHTTPDropPostControlType)
+						((HTTPClientSocket*)fSocket)->ClosePost();
                 }
-                break;
+                    
+                //Now read the media data
+                theErr = this->ReadMediaData();
+
+                if ((theErr == EINPROGRESS) || (theErr == EAGAIN) || (theErr == OS_NoErr))
+					theErr = OS_NoErr; //ignore control flow errors here
+				else
+				{
+                    sPlayingConnections--;
+					break;
+				}
+				curTime = OS::Milliseconds();
+				SInt64 nextRTCPTime = fLastRTCPTime + fRTCPIntervalInMs;
+                //return curTime < nextRTCPTime ? nextRTCPTime - curTime : fReadInterval;
+				return curTime < nextRTCPTime ? MIN(nextRTCPTime - curTime, fReadInterval) : 1;
             }
+			
             case kSendingTeardown:
             {
                 theErr = fClient->SendTeardown();
-#if CLIENT_SESSION_DEBUG
-                qtss_printf("Sending TEARDOWN. Result = %lu. Response code = %lu\n", theErr, fClient->GetStatus());
-#endif              
+				if ( fVerboseLevel >= 3)
+                	qtss_printf("Sending TEARDOWN. Result = %"_U32BITARG_". Response code = %"_U32BITARG_"\n", theErr, fClient->GetStatus());
                 // Once the TEARDOWN is complete, we are done, so mark ourselves as dead, and wait
                 // for the owner of this object to delete us
                 if (theErr == OS_NoErr)
@@ -527,10 +613,9 @@ SInt64 ClientSession::Run()
         fState = kDone;
     }
 
-#if CLIENT_SESSION_DEBUG
-    if (fState == kDone)
-        qtss_printf("Client connection complete. Death reason = %ul\n", fDeathReason);
-#endif              
+	if ( fVerboseLevel >= 2)
+    	if (fState == kDone)
+        	qtss_printf("Client connection complete. Death reason = %"_U32BITARG_"\n", fDeathReason);
 
     return 0;
 }
@@ -590,18 +675,18 @@ void    ClientSession::SetupUDPSockets()
             }
         }
     }                       
-#if CLIENT_SESSION_DEBUG
-    qtss_printf("Opened UDP sockets for %lu streams\n", fSDPParser.GetNumStreams());
-#endif              
+	if ( fVerboseLevel >= 3)
+    	qtss_printf("Opened UDP sockets for %"_U32BITARG_" streams\n", fSDPParser.GetNumStreams());
 }
 
+//Will keep reading until all the packets buffered up has been read.
 OS_Error    ClientSession::ReadMediaData()
 {
     // For iterating over the array of UDP sockets
     UInt32 theUDPSockIndex = 0;
     OS_Error theErr = OS_NoErr;
-    
-    while (true)
+	
+	while (true)
     {
         //
         // If the media data is being interleaved, get it from the control connection
@@ -631,20 +716,26 @@ OS_Error    ClientSession::ReadMediaData()
                                                                 &theLength);
             if ((theErr != OS_NoErr) || (theLength == 0))
             {
-                if ((fTransportType == kReliableUDPTransportType) &&
-                    (!(theUDPSockIndex & 1)))
+                //Finished processing all the UDP packets that have been buffered up by the lower layer.
+                if ((fTransportType == kReliableUDPTransportType) && (!(theUDPSockIndex & 1)))
                 {
-                    for (UInt32 trackCount = 0; trackCount < fSDPParser.GetNumStreams(); trackCount++)
+					UInt32 trackIndex = TrackID2TrackIndex(fSDPParser.GetStreamInfo(theUDPSockIndex / 2)->fTrackID);
+					SendAckPackets(trackIndex);
+					/*
+                    for (UInt32 trackIndex = 0; trackIndex < fSDPParser.GetNumStreams(); trackIndex++)
                     {
-                        if (fSDPParser.GetStreamInfo(trackCount)->fTrackID == fSDPParser.GetStreamInfo(theUDPSockIndex >> 1)->fTrackID)
+                        if (fSDPParser.GetStreamInfo(trackIndex)->fTrackID == fSDPParser.GetStreamInfo(theUDPSockIndex / 2)->fTrackID)
                         {
-                            if (fStats[trackCount].fHighestSeqNumValid)
+                            SendAckPackets(trackIndex);
+
+                            //if (fStats[trackCount].fHighestSeqNumValid)
                                 // If we are supposed to be sending acks, and we just finished
                                 // receiving all packets for this track that are available at this time,
                                 // send an ACK packet
-                                this->AckPackets(trackCount, 0, false);
+                                //this->AckPackets(trackCount, 0, false);
                         }
                     }
+					*/
                 }
                 
                 theUDPSockIndex++;
@@ -653,338 +744,425 @@ OS_Error    ClientSession::ReadMediaData()
                 continue;
             }
             
-            theTrackID = fSDPParser.GetStreamInfo(theUDPSockIndex >> 1)->fTrackID;
+            theTrackID = fSDPParser.GetStreamInfo(theUDPSockIndex / 2)->fTrackID;
             isRTCP = (theUDPSockIndex & 1);
             thePacket = &thePacketBuf[0];
         }
-        
         //
         // We have a valid packet. Invoke the packet handler function
-        this->ProcessMediaPacket(thePacket, theLength, theTrackID, isRTCP);
+        if (isRTCP)
+			this->ProcessRTCPPacket(thePacket, theLength, theTrackID);
+		else
+            this->ProcessRTPPacket(thePacket, theLength, theTrackID);
     }
     return theErr;
 }
 
-void    ClientSession::ProcessMediaPacket(  char* inPacket, UInt32 inLength,
-                                            UInt32 inTrackID, Bool16 isRTCP)
+void    ClientSession::ProcessRTPPacket(char* inPacket, UInt32 inLength, UInt32 inTrackID)
 {
-    Assert(inLength > 4);
-    
-    // Currently we do nothing with RTCPs.
-    if (isRTCP)
+	UInt32 trackIndex = TrackID2TrackIndex(inTrackID);
+	if (trackIndex == kUInt32_Max)
+	{	if(fVerboseLevel >= 3) 
+			qtss_printf("ClientSession::ProcessRTPPacket fatal packet processing error. unknown track\n");
+		return;
+	}
+	TrackStats &trackStats = fStats[trackIndex];
+	
+	if(fVerboseLevel >= 3)
+	{
+		SInt64 curTime = OS::Milliseconds();
+		qtss_printf("Processing incoming packets at time %"_S64BITARG_"\n", curTime);
+	}
+
+    //first validate the header and check the SSRC
+	Bool16 badPacket = false;
+    RTPPacket rtpPacket = RTPPacket(inPacket, inLength);
+    if (!rtpPacket.HeaderIsValid())
+		badPacket = true;
+	else
+	{
+		if (trackStats.fServerSSRC != 0)
+		{
+			if (rtpPacket.GetSSRC() != trackStats.fServerSSRC)
+				badPacket = true;
+		}
+		else	//obtain the SSRC from the first packet if it's not available
+			trackStats.fServerSSRC = rtpPacket.GetSSRC();
+	}
+		
+	if(badPacket)
+	{
+        trackStats.fNumMalformedPackets++;
+		if (fVerboseLevel >= 1)
+			qtss_printf("TrackID=%"_U32BITARG_", len=%"_U32BITARG_"; malformed packet\n", inTrackID, inLength);
         return;
-    
-    UInt16* theSeqNumP = (UInt16*)inPacket;
-    UInt16 theSeqNum = ntohs(theSeqNumP[1]);
-    
-    //UInt32* theSsrcP = (UInt32*)inPacket;
-    //UInt32 theSSRC = ntohl(theSsrcP[2]);
-    
-    for (UInt32 x = 0; x < fSDPParser.GetNumStreams(); x++)
-    {
-        if (fSDPParser.GetStreamInfo(x)->fTrackID == inTrackID)
-        {
-            // Check if this packet is even for our stream
-            //if (!fStats[x].fIsSSRCValid)
-            //  fStats[x].fSSRC = theSSRC; // If we don't know SSRC yet, just use first one we get
-            //if (theSSRC != fStats[x].fSSRC)
-            //  return;
-            fNumPacketsReceived ++;
-            fStats[x].fNumPacketsReceived++;
-            fStats[x].fNumBytesReceived += inLength;
-            sBytesReceived += inLength;
-            sPacketsReceived ++;
+	}
 
-            // Check if this packet is out of order
-            if (fStats[x].fHighestSeqNumValid)
-            {                       
-                SInt16 theValidationDifference = theSeqNum - fStats[x].fWrapSeqNum;
-                if (theValidationDifference < 0)
-                    theValidationDifference -= 2 * theValidationDifference; // take the absolute value
-                if (theValidationDifference > kSanitySeqNumDifference)
-                {
-                    //
-                    // If this sequence number is really far out of range, then just toss
-                    // the packet and increment our count of crazy packets
-                    fStats[x].fNumThrownAwayPackets++;
-                    return;
-                }
-                
-            
-                SInt16 theSeqNumDifference = theSeqNum - fStats[x].fHighestSeqNum;
+    //Now check the sequence number
+    UInt32 packetSeqNum = kUInt32_Max;
+    if (trackStats.fHighestSeqNum == kUInt32_Max)     //this is the first sequence number received
+        packetSeqNum = trackStats.fBaseSeqNum = trackStats.fHighestSeqNum = static_cast<UInt32>(rtpPacket.GetSeqNum());
+    else
+        packetSeqNum = CalcSeqNum(trackStats.fHighestSeqNum, rtpPacket.GetSeqNum());
 
-                if ((fTransportType == kReliableUDPTransportType) &&
-                    (theSeqNumDifference != 1))
-                    this->AckPackets(x, theSeqNum, true);
-
-                if (theSeqNumDifference > 0)
-                {
-                    fStats[x].fNumOutOfOrderPackets += theSeqNumDifference - 1;
-                    fStats[x].fHighestSeqNum = theSeqNum;
-                }
-            }
-            else
-            {
-                fStats[x].fHighestSeqNumValid = true;
-                fStats[x].fWrapSeqNum = fStats[x].fHighestSeqNum = theSeqNum;
-                fStats[x].fLastAckedSeqNum = theSeqNum - 1;
-            }
-            
-
-            UInt32 debugblah = 0;
-            // Put this sequence number into the map to track packet loss
-            while ( (SInt32)  ( (SInt32) theSeqNum - (SInt32) fStats[x].fWrapSeqNum) > TrackStats::kSeqNumMapSize)
-            {
-                debugblah++;   
-#if CLIENT_SESSION_DEBUG
-                if (debugblah > 10)
-                    printf("theSeqNum= %u fStats[x].fWrapSeqNum =%u debugblah=%lu\n", theSeqNum,fStats[x].fWrapSeqNum,  debugblah);
-#endif              
-                if (debugblah > 100)
-                    break;
-                // We've cycled through the entire map. Calculate packet
-                // loss on the lowest 50 indexes in the map (don't get too
-                // close to where we are lest we mistake out of order packets
-                // as packet loss)
-                UInt32 halfSeqNumMap = TrackStats::kSeqNumMapSize / 2;
-                UInt32 curIndex = (fStats[x].fWrapSeqNum + 1) % TrackStats::kSeqNumMapSize;
-                UInt32 numPackets = 0;
-                
-                for (UInt32 y = 0; y < halfSeqNumMap; y++, curIndex++)
-                {
-                    if (curIndex == TrackStats::kSeqNumMapSize)
-                        curIndex = 0;
-                    
-                    if (fStats[x].fSequenceNumberMap[curIndex] > 0)
-                        numPackets++;
-                    fStats[x].fSequenceNumberMap[curIndex] = 0;
-                }
-                
-                // We've figured out how many lost packets there are in the lower
-                // half of the map. Increment our counters.
-                fStats[x].fNumOutOfOrderPackets -= halfSeqNumMap - numPackets;
-                fStats[x].fNumLostPackets += halfSeqNumMap - numPackets;
-                fStats[x].fWrapSeqNum += halfSeqNumMap;
-
-#if CLIENT_SESSION_DEBUG
-                if ( (fStats[x].fNumOutOfOrderPackets > 0) || (fStats[x].fNumLostPackets > 0) )
-                    qtss_printf("Got %lu packets for trackID %lu. %lu packets lost, %lu packets out of order\n", fStats[x].fNumPacketsReceived, inTrackID, fStats[x].fNumLostPackets, fStats[x].fNumOutOfOrderPackets);
-#endif              
-           
-            }
-           
-            //
-            // Track duplicate packets
-            if (fStats[x].fSequenceNumberMap[theSeqNum % 100])
-                fStats[x].fNumDuplicates++;
-                
-            fStats[x].fSequenceNumberMap[theSeqNum % 100] = 1;
-            theSeqNum = 0;
-
-            RTPMetaInfoPacket::FieldID* theMetaInfoFields = fClient->GetFieldIDArrayByTrack(inTrackID);
-            if (theMetaInfoFields != NULL)
-            {
-                //
-                // This packet is an RTP-Meta-Info packet. Parse it out and print out the results
-                RTPMetaInfoPacket theMetaInfoPacket;
-                if (!theMetaInfoPacket.ParsePacket((UInt8*)inPacket, inLength, theMetaInfoFields))
-                {
-                    qtss_printf("Received invalid RTP-Meta-Info packet\n");
-                }
-                else
-                {
-                    qtss_printf("---\n");
-                    qtss_printf("TrackID: %lu\n", inTrackID);
-                    qtss_printf("Packet transmit time: %"_64BITARG_"d\n", theMetaInfoPacket.GetTransmitTime());
-                    qtss_printf("Frame type: %u\n", theMetaInfoPacket.GetFrameType());
-                    qtss_printf("Packet number: %"_64BITARG_"u\n", theMetaInfoPacket.GetPacketNumber());
-                    qtss_printf("Packet position: %"_64BITARG_"u\n", theMetaInfoPacket.GetPacketPosition());
-                    qtss_printf("Media data length: %lu\n", theMetaInfoPacket.GetMediaDataLen());
-                }
-            }
-        }
-    }
-  //  Assert(theSeqNum == 0); // We should always find a track with this track ID
-}
-
-void ClientSession::AckPackets(UInt32 inTrackIndex, UInt16 inCurSeqNum, Bool16 inCurSeqNumValid)
-{
-    char theRRBuffer[256];
-    UInt32  *theWriterStart = (UInt32*)theRRBuffer;
-    UInt32  *theWriter = (UInt32*)theRRBuffer;
-
-    // APP PACKET - QoS info
-    *(theWriter++) = htonl(0x80CC0000); 
-    //*(ia++) = htonl(trk[i].TrackSSRC);
-    *(theWriter++) = htonl(0);
-    *(theWriter++) = htonl(FOUR_CHARS_TO_INT('q', 't', 'a', 'k'));
-    *(theWriter++) = htonl(0);
-    
-    // Watch out for 16 bit seq num rollover. Dont use SInt32 for theSeqNumDifference, this routine will crash from wrong packet counts after a roll-over. 
-    SInt16 theSeqNumDifference = (SInt16) (inCurSeqNum - fStats[inTrackIndex].fHighestSeqNum);
-    
-    if (!inCurSeqNumValid)
-    {
-        theSeqNumDifference = 1;
-        inCurSeqNum = fStats[inTrackIndex].fHighestSeqNum;
-    }
-#if CLIENT_SESSION_DEBUG
-    qtss_printf("Highest seq num: %d\n", inCurSeqNum);
-#endif
-
-    //
-    // There may be nothing to do here
-    if (inCurSeqNum == fStats[inTrackIndex].fLastAckedSeqNum)
-        return;
-        
-    if (theSeqNumDifference > 0)
-    {
-        *(theWriter++) = htonl(fStats[inTrackIndex].fLastAckedSeqNum + 1);
-#if CLIENT_SESSION_DEBUG
-        qtss_printf("TrackID: %d Acking: %d\n", fSDPParser.GetStreamInfo(inTrackIndex)->fTrackID, fStats[inTrackIndex].fLastAckedSeqNum + 1);
-#endif
-
-        UInt16 maskPosition = fStats[inTrackIndex].fLastAckedSeqNum + 2;
-        SInt16 numPacketsInMask = (inCurSeqNum + 1) - (fStats[inTrackIndex].fLastAckedSeqNum + 2);
-        
-#if CLIENT_SESSION_DEBUG
-        qtss_printf("NumPacketsInMask: %d\n", numPacketsInMask);
-#endif
-        for (SInt32 y = 0; y < numPacketsInMask; y+=32)
-        {
-            UInt32 mask = 0;
-            for (UInt32 x = 0; x < 32; x++)
-            {
-                SInt16 offsetFromHighest = fStats[inTrackIndex].fHighestSeqNum - maskPosition;
-                mask <<= 1;
-    
-                if (offsetFromHighest >= 0)
-                {
-#if CLIENT_SESSION_DEBUG
-                    qtss_printf("TrackID: %d Acking in mask: %d\n", fSDPParser.GetStreamInfo(inTrackIndex)->fTrackID, maskPosition);
-#endif
-                    mask |= 1;
-                }
-                else if (maskPosition == inCurSeqNum)
-                {
-#if CLIENT_SESSION_DEBUG
-                    qtss_printf("TrackID: %d Acking in mask: %d\n", fSDPParser.GetStreamInfo(inTrackIndex)->fTrackID, inCurSeqNum);
-#endif
-                    mask |= 1;
-                }
-
-                maskPosition++;
-            }
-            
-            // We have 1 completed mask. Add it to the packet
-            *(theWriter++) = htonl(mask);
-        }
-        fStats[inTrackIndex].fLastAckedSeqNum = inCurSeqNum;
-    }
+    if (packetSeqNum == kUInt32_Max)            //sequence number is out of range
+	{
+        trackStats.fNumOutOfBoundPackets++;
+		if (fVerboseLevel >= 2)
+			qtss_printf("TrackID=%"_U32BITARG_", len=%"_U32BITARG_", seq=%u"", ref(32)=%"_U32BITARG_"; out of bound packet\n",
+				inTrackID, inLength, rtpPacket.GetSeqNum(), trackStats.fHighestSeqNum);
+	}
     else
     {
-        // Just ack cur seq num, this is an out of order packet
-        *(theWriter++) = htonl(inCurSeqNum);
+		//the packet is good -- update statisics
+		Bool16 packetIsOutOfOrder = false;
+        if (trackStats.fHighestSeqNum <= packetSeqNum)
+            trackStats.fHighestSeqNum = packetSeqNum;
+		else
+			packetIsOutOfOrder = true;
+
+        fNumPacketsReceived++;
+		sPacketsReceived++;
+        trackStats.fNumPacketsReceived++;
+		fNumBytesReceived += inLength;
+		sBytesReceived += inLength;
+        trackStats.fNumBytesReceived += inLength;
+
+		//record this sequence number so that it can be acked later on
+        if (fTransportType == kReliableUDPTransportType)
+            trackStats.fPacketsToAck.push_back(packetSeqNum);
+		
+		if (fVerboseLevel >= 3)
+			qtss_printf("TrackID=%"_U32BITARG_", len=%"_U32BITARG_", seq(32)=%"_U32BITARG_", ref(32)=%"_U32BITARG_"; good packet\n",
+				inTrackID, inLength, packetSeqNum, trackStats.fHighestSeqNum);
+
+        //RTP-Meta-Info
+        RTPMetaInfoPacket::FieldID* theMetaInfoFields = fClient->GetFieldIDArrayByTrack(inTrackID);
+        if (theMetaInfoFields != NULL)
+        {
+            //
+            // This packet is an RTP-Meta-Info packet. Parse it out and print out the results
+            RTPMetaInfoPacket theMetaInfoPacket;
+            Bool16 packetOK = theMetaInfoPacket.ParsePacket((UInt8*)inPacket, inLength, theMetaInfoFields);
+            if (!packetOK)
+            {
+                if( fVerboseLevel >= 2)
+                    qtss_printf("Received invalid RTP-Meta-Info packet\n");
+            }
+            else if( fVerboseLevel >= 2)
+            {
+                qtss_printf("---\n");
+                qtss_printf("TrackID: %"_U32BITARG_"\n", inTrackID);
+                qtss_printf("Packet transmit time: %"_64BITARG_"d\n", theMetaInfoPacket.GetTransmitTime());
+                qtss_printf("Frame type: %u\n", theMetaInfoPacket.GetFrameType());
+                qtss_printf("Packet number: %"_64BITARG_"u\n", theMetaInfoPacket.GetPacketNumber());
+                qtss_printf("Packet position: %"_64BITARG_"u\n", theMetaInfoPacket.GetPacketPosition());
+                qtss_printf("Media data length: %"_U32BITARG_"\n", theMetaInfoPacket.GetMediaDataLen());
+            }
+        }
+
+
+        if (fEnable3GPP)
+        {
+            UInt32 timeStamp = rtpPacket.GetTimeStamp();
+            Bool16 packetIsDuplicate = fPlayerSimulator.ProcessRTPPacket(trackIndex, inLength, rtpPacket.GetBody().Len, packetSeqNum, timeStamp);
+            if(packetIsOutOfOrder && !packetIsDuplicate)
+                trackStats.fNumOutOfOrderPackets++;
+        }
     }
-
-    //
-    // Set the packet length
-    UInt16* lenP = (UInt16*)theRRBuffer;
-    lenP[1] = htons((theWriter - theWriterStart) - 1); //length in octets - 1
-    
-    // Send the packet
-    Assert(fStats[inTrackIndex].fDestRTCPPort != 0);
-    fUDPSocketArray[(inTrackIndex*2)+1]->SendTo(fSocket->GetHostAddr(), fStats[inTrackIndex].fDestRTCPPort, theRRBuffer,
-                                                (theWriter - theWriterStart) * sizeof(UInt32));
-
-    //
-    // Update the stats for this track
-    fStats[inTrackIndex].fNumAcks++;
 }
 
 
-OS_Error ClientSession::SendReceiverReport(UInt32 inTrackID)
+void    ClientSession::ProcessRTCPPacket(char* inPacket, UInt32 inLength, UInt32 inTrackID)
 {
-    //
-    // build the RTCP receiver report.
-    char theRRBuffer[256];
-    UInt32  *theWriterStart = (UInt32*)theRRBuffer;
-    UInt32  *theWriter = (UInt32*)theRRBuffer;
+	UInt32 trackIndex = TrackID2TrackIndex(inTrackID);
+	if (trackIndex == kUInt32_Max)
+	{			
+		if (fVerboseLevel >= 3) 
+			qtss_printf("ClientSession::ProcessRTCPPacket fatal packet processing error. unknown track\n");
+		return;
+	}
+	TrackStats &trackStats = fStats[trackIndex];
+	
+	SInt64 curTime = OS::Milliseconds();
+	if(fVerboseLevel >= 2)
+		qtss_printf("Processing incoming RTCP packets on track %"_U32BITARG_" at time %"_S64BITARG_"\n", trackIndex, curTime);
+
+    //first validate the header and check the SSRC
+	RTCPSenderReportPacket packet;
+	Bool16 badPacket = !packet.ParseReport(reinterpret_cast<UInt8 *>(inPacket), inLength);
+	if (!badPacket)
+	{
+		if (trackStats.fServerSSRC != 0)
+		{
+			if (packet.GetPacketSSRC() != trackStats.fServerSSRC)
+				badPacket = true;
+		}
+		else	//obtain the SSRC from the first packet if it's not available
+			trackStats.fServerSSRC = packet.GetPacketSSRC();
+	}
+		
+	if(badPacket)
+	{
+		if (fVerboseLevel >= 1)
+			qtss_printf("TrackID=%"_U32BITARG_", len=%"_U32BITARG_"; malformed RTCP packet\n", inTrackID, inLength);
+        return;
+	}
+
+	//Now obtains the NTP timestamp and the current time -- we'll need it for the LSR field of the receiver report
+	trackStats.fLastSenderReportNTPTime = packet.GetNTPTimeStamp();
+	trackStats.fLastSenderReportLocalTime = curTime;
+}
+
+
+void ClientSession::SendAckPackets(UInt32 inTrackIndex)
+{
+	TrackStats &trackStats = fStats[inTrackIndex];
+
+	if (trackStats.fPacketsToAck.empty())
+		return;
+    trackStats.fNumAcks++;
+
+	if(fVerboseLevel >= 3)
+	{
+		SInt64 curTime = OS::Milliseconds();
+		qtss_printf("Sending %"_U32BITARG_" acks at time %"_S64BITARG_" on track %"_U32BITARG_"\n",
+			trackStats.fPacketsToAck.size(), curTime, inTrackIndex);
+	}
+		
+    char sendBuffer[kMaxUDPPacketSize];
+	
+    //First send an empty Receivor Report
+    RTCPRRPacket RRPacket = RTCPRRPacket(sendBuffer, kMaxUDPPacketSize);
+    RRPacket.SetSSRC(trackStats.fClientSSRC);
+    StrPtrLen buffer = RRPacket.GetBufferRemaining();
+
+    //Now send the Ack packets
+    RTCPAckPacketFmt ackPacket = RTCPAckPacketFmt(buffer);
+    ackPacket.SetSSRC(trackStats.fClientSSRC);
+    ackPacket.SetAcks(trackStats.fPacketsToAck, trackStats.fServerSSRC);
+    trackStats.fPacketsToAck.clear();
+
+    UInt32 packetLength = RRPacket.GetPacketLen() + ackPacket.GetPacketLen();
+
+    // Send the packet
+    Assert(trackStats.fDestRTCPPort != 0);
+    fUDPSocketArray[(inTrackIndex*2)+1]->SendTo(fSocket->GetHostAddr(), trackStats.fDestRTCPPort, sendBuffer, packetLength);
+}
+
+OS_Error ClientSession::SendRTCPPackets(UInt32 trackIndex)
+{
+	TrackStats &trackStats = fStats[trackIndex];
+
+	char buffer[kMaxUDPPacketSize];
+	//::memset(buffer, 0, kMaxUDPPacketSize);
+
+    //First send the RTCP Receiver Report packet
+    RTCPRRPacket RRPacket = RTCPRRPacket(buffer, kMaxUDPPacketSize);
+    RRPacket.SetSSRC(trackStats.fClientSSRC);
+
+	UInt8 fracLost = 0;
+	SInt32 cumLostPackets = 0;
+	UInt32 lsr = 0;
+	UInt32 dlsr = 0;
+	SInt64 curTime = OS::Milliseconds();
+	if (trackStats.fHighestSeqNum != kUInt32_Max)
+	{
+		CalcRTCPRRPacketsLost(trackIndex, fracLost, cumLostPackets);
+
+		//Now get the middle 32 bits of the NTP time stamp and send it as the LSR
+		lsr = static_cast<UInt32>(trackStats.fLastSenderReportNTPTime >> 16);
+
+		//Get the time difference expressed as units of 1/65536 seconds
+		if (trackStats.fLastSenderReportLocalTime != 0)
+			dlsr = static_cast<UInt32>(OS::TimeMilli_To_Fixed64Secs(curTime - trackStats.fLastSenderReportLocalTime) >> 16);
+
+		RRPacket.AddReportBlock(trackStats.fServerSSRC, fracLost, cumLostPackets, trackStats.fHighestSeqNum, lsr, dlsr);
+	}
+
+    StrPtrLen remainingBuf = RRPacket.GetBufferRemaining();
+	UInt32 *theWriter = reinterpret_cast<UInt32 *>(remainingBuf.Ptr);
 
     // RECEIVER REPORT
+	/*
     *(theWriter++) = htonl(0x81c90007);     // 1 src RR packet
-    //*(theWriter++) = htonl(trk[i].rcvrSSRC);
     *(theWriter++) = htonl(0);
-    //*(theWriter++) = htonl(trk[i].TrackSSRC);
     *(theWriter++) = htonl(0);
-    //if (trk[i].rtp_num_received > 0)
-    //  t = ((float)trk[i].rtp_num_lost / (float)trk[i].rtp_num_received) * 256;
-    //else
-    //  t = 0.0;
-    //temp = t;
-    //temp = (temp & 0xff) << 24;
-    //temp |= (trk[i].rtp_num_received & 0x00ffffff);
     *(theWriter++) = htonl(0);
-    //temp = (trk[i].seq_num_cycles & 0xffff0000) | (trk[i].last_seq_num & 0x0000ffff);
-    //*(ia++) = toBigEndian_ulong(temp);
-    *(theWriter++) = htonl(0);
+    *(theWriter++) = htonl(trackStats.fHighestSeqNum == kUInt32_Max ? 0 : trackStats.fHighestSeqNum);				//EHSN
     *(theWriter++) = 0;                         // don't do jitter yet.
     *(theWriter++) = 0;                         // don't do last SR timestamp
     *(theWriter++) = 0;                         // don't do delay since last SR
+	*/
 
-    // APP PACKET - QoS info
-    *(theWriter++) = htonl(0x80CC000C); 
-    //*(ia++) = htonl(trk[i].TrackSSRC);
-    *(theWriter++) = htonl(0);
-// this QTSS changes after beta to 'qtss'
-    *(theWriter++) = htonl(FOUR_CHARS_TO_INT('Q', 'T', 'S', 'S'));
-    //*(ia++) = toBigEndian_ulong(trk[i].rcvrSSRC);
-    *(theWriter++) = htonl(0);
-    *(theWriter++) = htonl(8);          // number of 4-byte quants below
-#define RR 0x72720004
-#define PR 0x70720004
-#define PD 0x70640002
-#define OB 0x6F620004
-    *(theWriter++) = htonl(RR);
-    //unsigned int now, secs;
-    //now = microseconds();
-    //secs = now - trk[i].last_rtcp_packet_sent_us / USEC_PER_SEC;
-    //if (secs)
-    //  temp = trk[i].bytes_received_since_last_rtcp / secs;
-    //else
-    //  temp = 0;
-    //*(ia++) = htonl(temp);
-    *(theWriter++) = htonl(0);
-    *(theWriter++) = htonl(PR);
-    //*(ia++) = htonl(trk[i].rtp_num_received);
-    *(theWriter++) = htonl(0);
-    //*(theWriter++) = htonl(PL);
-    //*(ia++) = htonl(trk[i].rtp_num_lost);
-    //*(theWriter++) = htonl(0);
-    *(theWriter++) = htonl(OB);
-    *(theWriter++) = htonl(fOverbufferWindowSizeInK * 1024);
-    *(theWriter++) = htonl(PD);
-    *(theWriter++) = htonl(0);      // should be a short, but we need to pad to a long for the entire RTCP app packet
+	//The implementation should be sending an SDES to conform to the standard...but its not done.
+	
+	if(fTransportType == kRTSPReliableUDPClientType)
+	{
+		// APP PACKET - QoS info
+		*(theWriter++) = htonl(0x80CC000C); 
+		//*(ia++) = htonl(trk[i].TrackSSRC);
+		*(theWriter++) = htonl(trackStats.fClientSSRC);
+	// this QTSS changes after beta to 'qtss'
+		*(theWriter++) = htonl(FOUR_CHARS_TO_INT('Q', 'T', 'S', 'S'));
+		//*(ia++) = toBigEndian_ulong(trk[i].rcvrSSRC);
+		*(theWriter++) = htonl(trackStats.fServerSSRC);
+		*(theWriter++) = htonl(8);          // number of 4-byte quants below
+	#define RR 0x72720004
+	#define PR 0x70720004
+	#define PD 0x70640002
+	#define OB 0x6F620004
+		*(theWriter++) = htonl(RR);
+		//unsigned int now, secs;
+		//now = microseconds();
+		//secs = now - trk[i].last_rtcp_packet_sent_us / USEC_PER_SEC;
+		//if (secs)
+		//  temp = trk[i].bytes_received_since_last_rtcp / secs;
+		//else
+		//  temp = 0;
+		//*(ia++) = htonl(temp);
+		*(theWriter++) = htonl(0);
+		*(theWriter++) = htonl(PR);
+		//*(ia++) = htonl(trk[i].rtp_num_received);
+		*(theWriter++) = htonl(0);
+		//*(theWriter++) = htonl(PL);
+		//*(ia++) = htonl(trk[i].rtp_num_lost);
+		//*(theWriter++) = htonl(0);
+		*(theWriter++) = htonl(OB);
+		*(theWriter++) = htonl(fOverbufferWindowSizeInK * 1024);
+		*(theWriter++) = htonl(PD);
+		*(theWriter++) = htonl(0);      // should be a short, but we need to pad to a long for the entire RTCP app packet
+	}
 
-#if CLIENT_SESSION_DEBUG
-    qtss_printf("Sending receiver reports.\n");
-#endif
+	char *buf = reinterpret_cast<char *>(theWriter);
+	UInt32 packetLen = buf - buffer;
+	UInt32 playoutDelay = 0;
+
+	if (fEnable3GPP && trackStats.fHighestSeqNum != kUInt32_Max)
+	{
+		//now add the RTCP NADU packet
+		RTCPNADUPacketFmt nadu = RTCPNADUPacketFmt(buf, kMaxUDPPacketSize - packetLen);
+		nadu.SetSSRC(trackStats.fClientSSRC);
+		
+		//If there is no packet in the buffer, use the extended highest sequence number received + 1
+		UInt32 seqNum = fPlayerSimulator.GetNextSeqNumToDecode(trackIndex);
+		if(seqNum == kUInt32_Max)
+			seqNum = trackStats.fHighestSeqNum + 1;
+			
+		if (fEnableForcePlayoutDelay)
+			playoutDelay = fPlayoutDelay;
+		else
+			playoutDelay = fPlayerSimulator.GetPlayoutDelay(trackIndex);
+
+		nadu.AddNADUBlock(0, seqNum, 0, fPlayerSimulator.GetFreeBufferSpace(trackIndex), playoutDelay); 
+
+		packetLen += nadu.GetPacketLen();
+	}
+	
+	if(fVerboseLevel >= 2)
+	{
+		qtss_printf("Sending receiver report at time %"_S64BITARG_" on track %"_U32BITARG_"; lostFrac=%u, lost=%"_S32BITARG_
+			", FBS=%"_U32BITARG_", delay=%"_U32BITARG_", lsr=%"_U32BITARG_", dlsr=%"_U32BITARG_"\n",
+			curTime, trackIndex, fracLost, cumLostPackets,
+			fPlayerSimulator.GetFreeBufferSpace(trackIndex),
+			playoutDelay,
+			lsr, dlsr);
+	}
+		
     // Send the packet
     if (fUDPSocketArray != NULL)
     {
-        Assert(fStats[inTrackID].fDestRTCPPort != 0);
-        fUDPSocketArray[(inTrackID*2)+1]->SendTo(fSocket->GetHostAddr(), fStats[inTrackID].fDestRTCPPort, theRRBuffer,
-                                                            (theWriter - theWriterStart) * sizeof(UInt32));
+        Assert(trackStats.fDestRTCPPort != 0);
+        fUDPSocketArray[(trackIndex*2)+1]->SendTo(fSocket->GetHostAddr(), trackStats.fDestRTCPPort, buffer, packetLen);
     }
     else
     {
-        OS_Error theErr = fClient->PutMediaPacket(fSDPParser.GetStreamInfo(inTrackID)->fTrackID,
-                                        true,
-                                        theRRBuffer,
-                                        (theWriter - theWriterStart) * sizeof(UInt32));
+        OS_Error theErr = fClient->PutMediaPacket(fSDPParser.GetStreamInfo(trackIndex)->fTrackID, true, buffer, packetLen);
         if (theErr != OS_NoErr)
             return theErr;
 
     }
     return OS_NoErr;
+}
+
+
+//The lost packets in the RTCP RR are defined differently then the GetNumPacketsLost function. See  RFC 3550 6.4.1 and A.3
+void ClientSession::CalcRTCPRRPacketsLost(UInt32 trackIndex, UInt8 &outFracLost, SInt32 &outCumLostPackets)
+{
+	TrackStats &trackStats = fStats[trackIndex];
+
+	if (trackStats.fHighestSeqNum == kUInt32_Max)
+	{
+		outFracLost = 0;
+		outCumLostPackets = 0;
+		return;
+	}
+
+	UInt32 expected = trackStats.fHighestSeqNum - trackStats.fBaseSeqNum + 1;
+	UInt32 expectedInterval = expected - trackStats.fExpectedPrior;
+	UInt32 receivedInterval = trackStats.fNumPacketsReceived - trackStats.fReceivedPrior;
+
+	trackStats.fExpectedPrior = expected;
+	trackStats.fReceivedPrior = trackStats.fNumPacketsReceived;
+
+	if (expectedInterval == 0 || expectedInterval < receivedInterval)
+		outFracLost = 0;
+	else
+	{
+		UInt32 lostInterval = expectedInterval - receivedInterval;
+		outFracLost = static_cast<UInt8>((lostInterval << 8) / expectedInterval);
+	}
+	outCumLostPackets = expected - trackStats.fNumPacketsReceived;
+}
+
+//If newSeqNum is no more than kMaxMisorder behind and kMaxDropOut ahead of referenceSeqNum(modulo 2^16), returns the corresponding
+//32 bit sequence number.  Otherwise returns kUInt32_Max
+UInt32 ClientSession::CalcSeqNum(UInt32 referenceSeqNum, UInt16 newSeqNum)
+{
+		
+    UInt16 refSeqNum16 = static_cast<UInt16>(referenceSeqNum);
+    UInt32 refSeqNumHighBits = referenceSeqNum >> 16;
+
+	if (static_cast<UInt16>(newSeqNum - refSeqNum16) <= kMaxDropOut)
+	{
+		//new sequence number is ahead and is in range
+		if (newSeqNum >= refSeqNum16)
+			return (refSeqNumHighBits << 16) | newSeqNum;			//no wrap-around
+		else
+			return ((refSeqNumHighBits + 1) << 16) | newSeqNum;		//wrapped-around
+	}
+	else if (static_cast<UInt16>(refSeqNum16 - newSeqNum) < kMaxMisorder)
+	{
+		//new sequence number is behind and is in range
+		if (newSeqNum < refSeqNum16)
+			return (refSeqNumHighBits << 16) | newSeqNum;			//no wrap-around
+		else if (refSeqNumHighBits != 0)
+			return ((refSeqNumHighBits - 1) << 16) | newSeqNum;		//wrapped-around
+	}
+	return kUInt32_Max;												//bad sequence number(out of range)
+	/*
+    if (refSeqNum16 <= newSeqNum)
+    {
+        UInt16 diff = newSeqNum - refSeqNum16;
+        if (diff <= kMaxDropOut)                                    //new sequence number is ahead and is in range, no overflow
+            return (refSeqNumHighBits << 16) | newSeqNum;
+
+        diff = kUInt16_Max - newSeqNum;
+        diff += refSeqNum16 + 1;
+        if (diff <= kMaxMisorder && refSeqNumHighBits != 0)         //new sequence number is behind, underflow
+            return ((refSeqNumHighBits - 1) << 16) | newSeqNum;
+    }
+    else
+    {
+        UInt16 diff = refSeqNum16 - newSeqNum;
+        if (diff <= kMaxMisorder)                                   //new sequence number is behind and is in range, no underflow
+            return (refSeqNumHighBits << 16) | newSeqNum;
+
+        diff = kUInt16_Max - refSeqNum16;
+        diff += newSeqNum + 1;
+        if (diff <= kMaxDropOut)                                    //new sequence number is ahead and is in range, overflow
+            return ((refSeqNumHighBits + 1) << 16) | newSeqNum;
+    }
+    return kUInt32_Max;                                             //Bad sequence number
+	*/
 }

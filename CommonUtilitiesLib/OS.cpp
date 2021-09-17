@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -98,6 +98,7 @@ void OS::Initialize()
 {
     Assert (sInitialMsec == 0);  // do only once
     if (sInitialMsec != 0) return;
+    ::tzset();
 
     //setup t0 value for msec since 1900
 
@@ -114,7 +115,6 @@ void OS::Initialize()
     sMsecSince1970 = ::time(NULL);  // POSIX time always returns seconds since 1970
     sMsecSince1970 *= 1000;         // Convert to msec
     
-
 
 #if DEBUG || __Win32__ 
     sLastMillisMutex = NEW OSMutex();
@@ -166,8 +166,7 @@ SInt64 OS::Milliseconds()
     return (curTimeMilli - sInitialMsec) + sMsecSince1970; // convert to application time
 #else
     struct timeval t;
-    struct timezone tz;
-    int theErr = ::gettimeofday(&t, &tz);
+    int theErr = ::gettimeofday(&t, NULL);
     Assert(theErr == 0);
 
     SInt64 curTime;
@@ -192,14 +191,13 @@ SInt64 OS::Microseconds()
     return theMillis;
 */
 #if __Win32__
-    SInt64 curTime = (SInt64) ::timeGetTime(); // unsigned long system time in milliseconds
+    SInt64 curTime = (SInt64) ::timeGetTime(); //  system time in milliseconds
     curTime -= sInitialMsec; // convert to application time
     curTime *= 1000; // convert to microseconds                   
     return curTime;
 #else
     struct timeval t;
-    struct timezone tz;
-    int theErr = ::gettimeofday(&t, &tz);
+    int theErr = ::gettimeofday(&t, NULL);
     Assert(theErr == 0);
 
     SInt64 curTime;
@@ -221,14 +219,13 @@ SInt32 OS::GetGMTOffset()
     
     return ((tzInfo.Bias / 60) * -1);
 #else
-    struct timeval  tv;
-    struct timezone tz;
-
-    int err = ::gettimeofday(&tv, &tz);
-    if (err != 0)
+      
+    time_t clock;
+    struct tm  *tmptr= localtime(&clock);
+    if (tmptr == NULL)
         return 0;
         
-    return ((tz.tz_minuteswest / 60) * -1);//return hours before or after GMT
+     return tmptr->tm_gmtoff / 3600;//convert seconds to  hours before or after GMT
 #endif
 }
 
@@ -337,7 +334,7 @@ Bool16 OS::ThreadSafe()
 			*endMajor = 0;
 			
 		if (::strlen(releaseStr) > 0) //convert to an int
-			::sscanf(releaseStr, "%lu", &majorVers);
+			::sscanf(releaseStr, "%"_U32BITARG_"", &majorVers);
 	}
 	if (majorVers < 7) // less than OS X Panther 10.3 
 		return false; // force 1 worker thread because < 10.3 means std c lib is not thread safe.
@@ -431,7 +428,7 @@ UInt32  OS::GetNumProcessors()
             lineParser.ConsumeWhitespace();  //skip over leading whitespace
             lineParser.ConsumeUntilWhitespace(&word); //read the number of cpus
             if (word.Len > 0)
-                ::sscanf(word.Ptr, "%lu", &numCPUs);
+                ::sscanf(word.Ptr, "%"_U32BITARG_"", &numCPUs);
 
             break;
         }

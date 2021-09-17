@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -34,11 +34,13 @@
 #define _INTERNAL_STDLIB_H_
 
 #include <time.h>
+#include "OSHeaders.h"
+
 #define kTimeStrSize 32
 #define kErrorStrSize 256
 	extern int qtss_maxprintf(const char *fmt, ...);
-    extern void qtss_setmaxprintfcharsinK(unsigned long newMaxCharsInK);
-    extern unsigned long qtss_getmaxprintfcharsinK();
+    extern void qtss_setmaxprintfcharsinK(UInt32 newMaxCharsInK);
+    extern UInt32 qtss_getmaxprintfcharsinK();
 
 #ifndef USE_DEFAULT_STD_LIB
 

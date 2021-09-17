@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -583,13 +583,13 @@ int QTFileBroadcaster::Play(char *mTimeFile)
         memset (&start,0, sizeof(start));
 
         SInt64 timenow = OS::Milliseconds();
-        start.tv_sec = (long) OS::TimeMilli_To_UnixTimeSecs(timenow);
-        start.tv_usec = (long) ((OS::TimeMilli_To_UnixTimeMilli(timenow) - (start.tv_sec * 1000)) * 1000);
+        start.tv_sec = (SInt32) OS::TimeMilli_To_UnixTimeSecs(timenow);
+        start.tv_usec = (SInt32) ((OS::TimeMilli_To_UnixTimeMilli(timenow) - (start.tv_sec * 1000)) * 1000);
 
-        dur.tv_sec = (long)fMovieDuration;
-        dur.tv_usec = (long)((fMovieDuration - dur.tv_sec) * 1000000);
+        dur.tv_sec = (SInt32)fMovieDuration;
+        dur.tv_usec = (SInt32)((fMovieDuration - dur.tv_sec) * 1000000);
         
-        end.tv_sec = start.tv_sec + dur.tv_sec + (long)((start.tv_usec + dur.tv_usec) / 1000000);
+        end.tv_sec = start.tv_sec + dur.tv_sec + (SInt32)((start.tv_usec + dur.tv_usec) / 1000000);
         end.tv_usec = (start.tv_usec + dur.tv_usec) % 1000000;
                 time_t startSecs = start.tv_sec;
                 time_t endSecs = end.tv_sec;
@@ -642,9 +642,9 @@ int QTFileBroadcaster::Play(char *mTimeFile)
             time_t endTime = (time_t) end.tv_sec;
             char buffer[kTimeStrSize];
             char *timestringStart = qtss_ctime(&startTime, buffer, sizeof(buffer));
-            qtss_fprintf(fTimeFile,"b=%02d:%02d:%02d:%06d %ld %s", (int) tm_start.tm_hour, (int) tm_start.tm_min, (int) tm_start.tm_sec, (int)start.tv_usec, (long int) startTime, timestringStart);
+            qtss_fprintf(fTimeFile,"b=%02d:%02d:%02d:%06d %"_S32BITARG_" %s", (int) tm_start.tm_hour, (int) tm_start.tm_min, (int) tm_start.tm_sec, (int)start.tv_usec, (SInt32) startTime, timestringStart);
             char *timestringEnd = qtss_ctime(&endTime, buffer, sizeof(buffer));
-            qtss_fprintf(fTimeFile,"e=%02d:%02d:%02d:%06d %ld %s", (int)tm_end.tm_hour, (int) tm_end.tm_min,(int)  tm_end.tm_sec, (int) end.tv_usec,(long int) endTime, timestringEnd);
+            qtss_fprintf(fTimeFile,"e=%02d:%02d:%02d:%06d %"_S32BITARG_" %s", (int)tm_end.tm_hour, (int) tm_end.tm_min,(int)  tm_end.tm_sec, (int) end.tv_usec,(SInt32) endTime, timestringEnd);
             qtss_fprintf(fTimeFile,"d=%02d:%02d:%02d:%06d %d \n", (int) tm_dur.tm_hour, (int) tm_dur.tm_min,(int)  tm_dur.tm_sec, (int) dur.tv_usec, (int)dur.tv_sec);
 
             fclose(fTimeFile);
@@ -660,13 +660,13 @@ int QTFileBroadcaster::Play(char *mTimeFile)
             thePacketQLen = fBroadcastDefPtr->mTheSession->GetPacketQLen();
             SInt64 maxSleep = PlayListUtils::Milliseconds() + 1000; 
             if (thePacketQLen > eMaxPacketQLen)
-            {   //qtss_printf("PacketQ too big = %lu \n", (UInt32) thePacketQLen);
+            {   //qtss_printf("PacketQ too big = %"_U32BITARG_" \n", (UInt32) thePacketQLen);
                 while ( (eMaxPacketQLen/2) < fBroadcastDefPtr->mTheSession->GetPacketQLen())
                 {   this->SleepInterval(100.0);
                     if (maxSleep < PlayListUtils::Milliseconds())
                         break;
                 }
-                //qtss_printf("PacketQ after sleep = %lu \n", (UInt32) fBroadcastDefPtr->mTheSession->GetPacketQLen());
+                //qtss_printf("PacketQ after sleep = %"_U32BITARG_" \n", (UInt32) fBroadcastDefPtr->mTheSession->GetPacketQLen());
                 continue;
             }
         }

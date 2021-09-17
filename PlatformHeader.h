@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -35,15 +35,15 @@
 #else
     #define PLATFORM_SERVER_BIN_NAME "DarwinStreamingServer"
     #define PLATFORM_SERVER_TEXT_NAME "Darwin Streaming Server"
+	#define MMAP_TABLES 0
 #endif
-
 
 
 // Platform-specific switches
 #if __MacOSX__
 
 #define USE_ATOMICLIB 0
-#define MACOSXEVENTQUEUE 1
+//#define MACOSXEVENTQUEUE 1
 #define __PTHREADS__    1
 #define __PTHREADS_MUTEXES__    1
 
@@ -63,6 +63,23 @@
 #define EXPORT
 #define MACOSX_PUBLICBETA 0
 #define USE_DEFAULT_STD_LIB 1
+
+#ifdef __LP64__
+	#define MACOSXEVENTQUEUE 1
+	#define EVENTS_KQUEUE 0  // future
+	#define EVENTS_SELECT 0 // future
+	#define EVENTS_OSXEVENTQUEUE 0 // future
+	#define SET_SELECT_SIZE 1024
+	#define MMAP_TABLES 0
+#else
+    #define MACOSXEVENTQUEUE 1
+	#define EVENTS_KQUEUE 0
+	#define EVENTS_SELECT 0
+	#define EVENTS_OSXEVENTQUEUE 1
+	#define SET_SELECT_SIZE 0
+	#define MMAP_TABLES 0
+#endif
+
 
 #elif __Win32__
 

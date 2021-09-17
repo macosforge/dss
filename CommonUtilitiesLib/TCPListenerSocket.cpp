@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -36,8 +36,9 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <unistd.h>
-
-#include "QTSSModuleUtils.h"
+#ifndef __Win32__
+	#include "QTSSModuleUtils.h"
+#endif
 
 #endif
 
@@ -186,6 +187,8 @@ void TCPListenerSocket::ProcessEvent(int /*eventBits*/)
         theSocket->InitNonBlocking(osSocket);
         theSocket->SetTask(theTask);
         theSocket->RequestEvent(EV_RE);
+        
+        theTask->SetThreadPicker(Task::GetBlockingTaskThreadPicker()); //The RTSP Task processing threads
     }
     
 

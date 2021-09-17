@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -418,6 +418,7 @@ static void usage(void)
     exit(1);
 }
 
+/* unused routine
 static char* SetTempPath(char* bufferToSet, int bufferLen, char* base, int baseLen, char id)
 {
     if (bufferLen > 0 && bufferToSet != NULL)
@@ -432,6 +433,8 @@ static char* SetTempPath(char* bufferToSet, int bufferLen, char* base, int baseL
   
     return bufferToSet;
 }
+*/
+
 
 static void AddOrDeleteUserFromGroup(int add, char *userName, char *groupName, char *inGroupsFilePath, char *inTempGroupsFilePath)
 {
@@ -1245,7 +1248,7 @@ void SetPrivileges(char *filePath)
 
     
 #if __MacOSX__
-    if (owner == -1) // force user 76 on OS X.
+    if (owner ==  (uid_t) -1) // force user 76 on OS X.
         owner = 76;
         
     result = ::chown(filePath,owner,80);//default is owner qtss, group admin

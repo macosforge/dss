@@ -23,8 +23,8 @@ if [ $USERID = 0 ]; then
 	fi
 
 	if [ `uname` = "Linux" ]; then
-		ps -ax | awk '{print $1" " $5}' | awk '/DarwinStreamingServer/ {print $1}' | xargs -r kill -9  
-		ps -ax | awk '/streamingadminserver.pl/ {print $1}' | xargs -r kill -9  
+		ps ax | awk '{print $1" " $5}' | awk '/DarwinStreamingServer/ {print $1}' | xargs -r kill -9  
+		ps ax | awk '/streamingadminserver.pl/ {print $1}' | xargs -r kill -9  
 	fi
 
 	if [ `uname` = "SunOS" -o `uname` = "IRIX" -o `uname` = "IRIX64" ]; then
@@ -191,8 +191,10 @@ fi
 # Add the unprivileged user qtss as the server's run user
 	echo "Creating unprivileged user to run the server = \"qtss\"."
     if [ $INSTALL_OS = "Linux" ]; then
+        /usr/sbin/groupadd qtss > /dev/null 2>&1
         /usr/sbin/useradd -M qtss > /dev/null 2>&1
     else
+        /usr/sbin/groupadd qtss > /dev/null 2>&1
         /usr/sbin/useradd qtss > /dev/null 2>&1
     fi
 	

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -77,7 +77,7 @@ int select_modwatch(struct eventreq *req, int which)
     // Convert EV_RE and EV_WR to the proper WSA event codes.
     // WSA event codes are more specific than what POSIX provides, so
     // just wait on any kind of read related event for EV_RE, same for EV_WR
-    long theEvent = 0;
+    SInt32 theEvent = 0;
     
     if (which & EV_RE)
         theEvent |= FD_READ | FD_ACCEPT | FD_CLOSE;

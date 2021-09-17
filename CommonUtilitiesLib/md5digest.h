@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -72,7 +72,7 @@ void CalcRequestDigest( StrPtrLen* hA1,
                       );
 
 
-void to64(register char *s, register long v, register int n);
+void to64(register char *s, register SInt32 v, register int n);
 
 // Doesn't allocate any memory. The size of the result buffer should be nbytes
 void MD5Encode( char *pw, char *salt, char *result, int nbytes);

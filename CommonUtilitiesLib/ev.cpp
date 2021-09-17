@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -32,7 +32,15 @@
 
 */
 
+#if !MACOSXEVENTQUEUE
+
 #define EV_DEBUGGING 0 //Enables a lot of printfs
+
+#if SET_SELECT_SIZE
+	#ifndef FD_SETSIZE
+		#define FD_SETSIZE SET_SELECT_SIZE
+	#endif 
+#endif
 
     #include <sys/time.h>
     #include <sys/types.h>
@@ -82,6 +90,7 @@ void select_startevents()
     FD_ZERO(&sReturnedReadSet);
     FD_ZERO(&sReturnedWriteSet);
 
+    //qtss_printf("FD_SETSIZE=%d sizeof(fd_set) * 8 ==%ld\n", FD_SETSIZE, sizeof(fd_set) * 8);
     //We need to associate cookies (void*)'s with our file descriptors.
     //We do so by storing cookies in this cookie array. Because an fd_set is
     //a big array of bits, we should have as many entries in the array as
@@ -224,9 +233,16 @@ int select_modwatch(struct eventreq *req, int which)
 
 int constructeventreq(struct eventreq* req, int fd, int event)
 {
+    Assert(fd < (int)(sizeof(fd_set) * 8));
+    if (fd >=(int)(sizeof(fd_set) * 8) )
+    {
+        #if EV_DEBUGGING
+                qtss_printf("constructeventreq: invalid fd=%d\n", fd);
+        #endif
+        return 0;
+    }        
     req->er_handle = fd;
     req->er_eventbits = event;
-    Assert(fd < (int)(sizeof(fd_set) * 8));
     req->er_data = sCookieArray[fd];
     sCurrentFDPos++;
     sNumFDsProcessed++;
@@ -374,7 +390,7 @@ int select_waitevent(struct eventreq *req, void* /*onlyForMacOSX*/)
         
         if ( yieldDur > 1 )
         {
-            qtss_printf( "select_waitevent time in OSThread::Yield() %i, numZeroYields %i\n", (long)yieldDur, (long)numZeroYields );
+            qtss_printf( "select_waitevent time in OSThread::Yield() %i, numZeroYields %i\n", (SInt32)yieldDur, (SInt32)numZeroYields );
             numZeroYields = 0;
         }
         else
@@ -454,4 +470,6 @@ bool selecthasdata()
     else
         return true;//we've gotten a real event, return that to the caller
 }
+
+#endif //!MACOSXEVENTQUEUE
 

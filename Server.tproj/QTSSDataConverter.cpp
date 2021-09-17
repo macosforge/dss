@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -188,14 +188,14 @@ QTSS_Error QTSSDataConverter::StringToValue(    char* inValueAsString,
         case qtssAttrDataTypeSInt32:
         {
             theBufSize = sizeof(SInt32);
-            theFormat = "%ld";
+            theFormat = "%d";
         }
         break;
         
         case qtssAttrDataTypeUInt32:
         {
             theBufSize = sizeof(UInt32);
-            theFormat = "%lu";
+            theFormat = "%u";
         }
         break;
         
@@ -267,9 +267,9 @@ QTSS_Error QTSSDataConverter::ConvertCHexStringToBytes(  char* inValueAsString,
     UInt8 char1, char2;
     while (*inValueAsString)
     {   
-        char1 = sCharToNums[*inValueAsString++] * 16;
+        char1 = sCharToNums[(UInt8) (*inValueAsString++) ] * 16;
         if (*inValueAsString != 0)
-            char2 = sCharToNums[*inValueAsString++];
+            char2 = sCharToNums[(UInt8) (*inValueAsString++)];
         else 
             char2 = 0;
         *dataPtr++ = char1 + char2;
@@ -340,11 +340,11 @@ char* QTSSDataConverter::ValueToString( void* inValue,
             break;
         
         case qtssAttrDataTypeSInt32:
-            qtss_sprintf(theString, "%ld", *( SInt32*)inValue);
+            qtss_sprintf(theString, "%"_S32BITARG_, *( SInt32*)inValue);
             break;
         
         case qtssAttrDataTypeUInt32:
-            qtss_sprintf(theString, "%lu", *( UInt32*)inValue);
+            qtss_sprintf(theString, "%"_U32BITARG_, *( UInt32*)inValue);
             break;
         
         case qtssAttrDataTypeSInt64:

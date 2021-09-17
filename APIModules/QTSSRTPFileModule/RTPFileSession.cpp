@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -30,6 +30,8 @@
     
     
 */
+
+#define RTPFILESESSIONDEBUG 0
 
 #include "RTPFileSession.h"
 #include "OSMemory.h"
@@ -299,6 +301,10 @@ Float64 RTPFileSession::GetNextPacket(UInt8** outPacket, UInt32* outPacketLength
         {
             if (fCurrentPosition == fFileLength)
             {
+            
+#if RTPFILESESSIONDEBUG
+                qtss_printf("RTPFileSession::GetNextPacket fCurrentPosition == fFileLength quit\n");
+#endif
                 *outPacket = NULL;
                 return -1;
             }
@@ -383,7 +389,7 @@ void RTPFileSession::ReadAndAdvise()
     // Read the next block. There should always be at least one packet
     // here, as we have a valid block in the block table.
 #if RTPFILESESSIONDEBUG
-    qtss_printf("Moving onto next block. File loc: %qd\n",fFileSource.GetCurOffset());
+    //qtss_printf("Moving onto next block. File loc: %qd\n",fFileSource.GetCurOffset());
 #endif
     fDataBufferLen = 0;
     //(void)fFileSource.Read(fDataBuffer, fDataBufferSize, &fDataBufferLen);

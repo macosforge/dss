@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -237,6 +237,10 @@ class ReflectorSocketPool : public UDPSocketPool
         
         virtual UDPSocketPair*  ConstructUDPSocketPair();
         virtual void            DestructUDPSocketPair(UDPSocketPair *inPair);
+        virtual void            SetUDPSocketOptions(UDPSocketPair* inPair);
+        void                    DestructUDPSocket( ReflectorSocket* socket);
+        
+        
 };
 
 class ReflectorSender : public UDPDemuxerTask
@@ -264,7 +268,7 @@ class ReflectorSender : public UDPDemuxerTask
     //this is the old way of doing reflect packets. It is only here until the relay code can be cleaned up.
     void        ReflectRelayPackets(SInt64* ioWakeupTime, OSQueue* inFreeQueue);
     
-    OSQueueElem*    SendPacketsToOutput(ReflectorOutput* theOutput, OSQueueElem* currentPacket, SInt64 currentTime,  SInt64  bucketDelay);
+    OSQueueElem*    SendPacketsToOutput(ReflectorOutput* theOutput, OSQueueElem* currentPacket, SInt64 currentTime,  SInt64  bucketDelay, Bool16 firstPacket);
 
     UInt32      GetOldestPacketRTPTime(Bool16 *foundPtr);          
     UInt16      GetFirstPacketRTPSeqNum(Bool16 *foundPtr);             
@@ -286,6 +290,11 @@ class ReflectorSender : public UDPDemuxerTask
     
     //these serve as an optimization, keeping track of when this
     //sender needs to run so it doesn't run unnecessarily
+
+   inline void SetNextTimeToRun(SInt64 nextTime) { fNextTimeToRun = nextTime;
+                                                    //qtss_printf("SetNextTimeToRun =%"_64BITARG_"d\n", fNextTimeToRun);
+                                                  }
+
     Bool16      fHasNewPackets;
     SInt64      fNextTimeToRun;
             
@@ -454,7 +463,7 @@ inline  void                    UpdateBitRate(SInt64 currentTime);
         // Used for calculating average bit rate
         UInt32              fCurrentBitRate;
         SInt64              fLastBitRateSample;
-        unsigned int        fBytesSentInThisInterval;// unsigned long because we need to atomic_add it
+        unsigned int        fBytesSentInThisInterval;// unsigned int because we need to atomic_add 
 
         // If incoming data is RTSP interleaved
         SInt16              fRTPChannel; //These will be -1 if not set to anything

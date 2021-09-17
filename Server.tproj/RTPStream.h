@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -53,6 +53,19 @@
 #include "RTPPacketResender.h"
 #include "QTSServerInterface.h"
 
+#include "RTPStream3gpp.h"
+
+#include "RTCPPacket.h"
+
+#include "RTSPRequest3gpp.h"
+
+#ifndef MIN
+#define	MIN(a,b) (((a)<(b))?(a):(b))
+#endif /* MIN */
+#ifndef MAX
+#define	MAX(a,b) (((a)>(b))?(a):(b))
+#endif	/* MAX */
+
 class RTPStream : public QTSSDictionary, public UDPDemuxerTask
 {
     public:
@@ -76,7 +89,9 @@ class RTPStream : public QTSSDictionary, public UDPDemuxerTask
         QTSS_RTPTransportType GetTransportType() { return fTransportType; }
         UInt32      GetStalePacketsDropped()    { return fStalePacketsDropped; }
         UInt32      GetTotalPacketsRecv()       { return fTotalPacketsRecv; }
-
+        UInt32      GetSDPStreamID()            { return fTrackID; } //streamID is trackID
+		RTPSessionInterface &GetSession()		{ return *fSession; }
+        
         // Setup uses the info in the RTSPRequestInterface to associate
         // all the necessary resources, ports, sockets, etc, etc, with this
         // stream.
@@ -112,6 +127,15 @@ class RTPStream : public QTSSDictionary, public UDPDemuxerTask
         //to process the packet right now!
         void ProcessIncomingRTCPPacket(StrPtrLen* inPacket);
 
+        //Process the incoming ack RTCP packet
+        Bool16 ProcessAckPacket(RTCPPacket &rtcpPacket, SInt64 &curTime);
+
+        //Process the incoming qtss app RTCP packet
+        Bool16 ProcessCompressedQTSSPacket(RTCPPacket &rtcpPacket, SInt64 &curTime, StrPtrLen &currentPtr);
+        
+        Bool16 ProcessNADUPacket(RTCPPacket &rtcpPacket, SInt64 &curTime, StrPtrLen &currentPtr, UInt32 highestSeqNum);
+
+
         // Send a RTCP SR on this stream. Pass in true if this SR should also have a BYE
         void SendRTCPSR(const SInt64& inTime, Bool16 inAppendBye = false);
         
@@ -134,6 +158,33 @@ class RTPStream : public QTSSDictionary, public UDPDemuxerTask
 		void EnableSSRC() { fEnableSSRC = true; }
 		void DisableSSRC() { fEnableSSRC = false; }
 		
+		void SetRateAdaptData(RateAdapationStreamDataFields *rateAdaptStreamData);
+		void SetBitRateData(UInt32 movieBitRate) { fStream3GPP->SetBitRateData(movieBitRate); }
+		
+		//Tells the stream that it has been paused; the next Write will restart the stream.
+		void Pause()		{ fStream3GPP->Pause(); }
+		
+        void            SetMinQuality() { SetQualityLevel(fNumQualityLevels); }
+        void            SetMaxQuality() { SetQualityLevel(kMaxQualityLevel); }
+        SInt32          GetQualityLevel();
+        void            SetQualityLevel(SInt32 level);
+		void			HalveQualityLevel()
+		{
+			UInt32 minLevel = fNumQualityLevels - 1;
+			SetQualityLevel(minLevel - (minLevel - GetQualityLevel()) / 2);
+		}
+		void			SetMaxQualityLevelLimit(SInt32 newMaxLimit) //Changes what is the best quality level possible
+		{
+			SInt32 minLevel = MAX(0, (SInt32) fNumQualityLevels - 2); //do not drop down  to key frames
+			fMaxQualityLevel = MAX(MIN(minLevel, newMaxLimit), 0);
+			SetQualityLevel(GetQualityLevel());
+		}
+
+		SInt32			GetMaxQualityLevelLimit() { return fMaxQualityLevel; }
+		
+		UInt32          GetNumQualityLevels() { return fNumQualityLevels; } 
+		QTSS_RTPPayloadType GetPayLoadType() { return fPayloadType; }
+		
     private:
         
         enum
@@ -142,7 +193,11 @@ class RTPStream : public QTSSDictionary, public UDPDemuxerTask
             kMaxStreamURLSizeInBytes    = 32,
             kDefaultPayloadBufSize      = 32,
             kSenderReportIntervalInSecs = 7,
+			kSenderReportInterval3GPPInSecs = 1,
             kNumPrebuiltChNums          = 10,
+            kMaxQualityLevel            = 0,
+            kIsRTCPPacket                 = TRUE,
+            kIsRTPPacket                  = FALSE
         };
     
         SInt64 fLastQualityChange;
@@ -169,7 +224,10 @@ class RTPStream : public QTSSDictionary, public UDPDemuxerTask
         UInt16      fRemoteRTPPort;
         UInt16      fRemoteRTCPPort;
         UInt16      fLocalRTPPort;
-        
+		UInt32	    fMonitorAddr;
+		int         fMonitorSocket;
+		UInt32      fPlayerToMonitorAddr;
+
         //RTCP stuff 
         SInt64      fLastSenderReportTime;
         UInt32      fPacketCount;
@@ -205,6 +263,8 @@ class RTPStream : public QTSSDictionary, public UDPDemuxerTask
         UInt32      fNumQualityLevels;
         
         UInt32      fLastRTPTimestamp;
+		SInt64		fLastNTPTimeStamp;
+		UInt32		fEstRTT;				//The estimated RTT calculated from RTCP's DLSR and LSR fields
         
         // RTCP data
         UInt32      fFractionLostPackets;
@@ -283,12 +343,29 @@ class RTPStream : public QTSSDictionary, public UDPDemuxerTask
         QTSS_RTPNetworkMode     fNetworkMode;
         
         SInt64  fStreamStartTimeOSms;
+        
+		RTPStream3GPP*			fStream3GPP;
+        
+        SInt32 fLastQualityLevel;
+        SInt32 fLastRateLevel;
+       
+        Bool16 fDisableThinning;
+        SInt64 fLastQualityUpdate;
+        UInt32 fDefaultQualityLevel;
+        SInt32 fMaxQualityLevel;
+		Bool16 fInitialMaxQualityLevelIsSet;
+		Bool16 fUDPMonitorEnabled;
+		UInt16 fMonitorVideoDestPort;
+		UInt16 fMonitorAudioDestPort;
+        
+        //-----------------------------------------------------------
         // acutally write the data out that way
         QTSS_Error  InterleavedWrite(void* inBuffer, UInt32 inLen, UInt32* outLenWritten, unsigned char channel );
 
         // implements the ReliableRTP protocol
         QTSS_Error  ReliableRTPWrite(void* inBuffer, UInt32 inLen, const SInt64& curPacketDelay);
 
+         
         void        SetTCPThinningParams();
         QTSS_Error  TCPWrite(void* inBuffer, UInt32 inLen, UInt32* outLenWritten, UInt32 inFlags);
 
@@ -304,8 +381,10 @@ class RTPStream : public QTSSDictionary, public UDPDemuxerTask
         Bool16 UpdateQualityLevel(const SInt64& inTransmitTime, const SInt64& inCurrentPacketDelay,
                                         const SInt64& inCurrentTime, UInt32 inPacketSize);
         
-        SInt32          GetQualityLevel();
-        void            SetQualityLevel(SInt32 level);
+        void            DisableThinning() { fDisableThinning = true; }
+        void            Update3GPPQualityLevels(QTSS_PacketStruct* thePacket, SInt64 theTime);
+        Bool16          Supports3GPPQualityLevels();
+		void			SetInitialMaxQualityLevel();
         
         char *GetStreamTypeStr();
         enum { rtp = 0, rtcpSR = 1, rtcpRR = 2, rtcpACK = 3, rtcpAPP = 4 };
@@ -316,6 +395,11 @@ class RTPStream : public QTSSDictionary, public UDPDemuxerTask
 inline  void PrintPacketPrefEnabled(char *inBuffer,UInt32 inLen, SInt32 inType) { if (QTSServerInterface::GetServer()->GetPrefs()->PacketHeaderPrintfsEnabled() ) this->PrintPacket(inBuffer,inLen, inType); }
 
         void SetOverBufferState(RTSPRequestInterface* request);
+        
+        Bool16 TestRTCPPackets(StrPtrLen* inPacketPtr, UInt32 itemName);
+        
+        void UDPMonitorWrite(void* thePacketData, UInt32 inLen, Bool16 isRTCP);
+
 
 };
 

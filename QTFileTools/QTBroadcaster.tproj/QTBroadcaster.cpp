@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
                 exit(1);
         }
 
-        RTPFile->SetTrackCookies(atoi(*argv), (char *)CurPort, 0);
+        RTPFile->SetTrackCookies(atoi(*argv), NULL, (UInt32 )CurPort);
         CurPort += 2;
 
         (void)RTPFile->GetSeekTimestamp(atoi(*argv));
@@ -201,7 +201,10 @@ int main(int argc, char *argv[]) {
         // Send the packet.
         memset(&sin, 0, sizeof(struct sockaddr_in));
         sin.sin_family = AF_INET;
-        sin.sin_port = htons( (int)  RTPFile->GetLastPacketTrack()->Cookie1   );
+        UInt32 value = RTPFile->GetLastPacketTrack()->Cookie2;
+
+        in_port_t cookievalue = value;
+        sin.sin_port = htons( cookievalue  );
         sin.sin_addr.s_addr = inet_addr(IPAddress);
         sendto(s, Packet, PacketLength, 0, (struct sockaddr *)&sin, sizeof(struct sockaddr));
     }

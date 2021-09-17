@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -37,6 +37,12 @@
 
 #include "MyAssert.h"
 #include "OSHeaders.h"
+
+/*
+T must have a fNextHashEntry field, and key(T) must returns the key of type K.
+K must have a method GetHashKey() that returns an UInt32 bit hash value.
+Will the hash table can contain duplicate keys, the Map function will return only the first one.
+*/
 
 template<class T, class K>
 class OSHashTable {

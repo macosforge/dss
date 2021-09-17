@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -106,7 +106,7 @@ class QTSServerPrefs : public QTSSPrefs
         UInt32  GetMaxErrorLogBytes()           { return fErrorLogBytes; }
         UInt32  GetErrorRollIntervalInDays()    { return fErrorRollIntervalInDays; }
         UInt32  GetErrorLogVerbosity()          { return fErrorLogVerbosity; }
-        void	SetErrorLogVerbosity(UInt32 verbosity)		{ fErrorLogVerbosity = verbosity; }
+        void    SetErrorLogVerbosity(UInt32 verbosity)        { fErrorLogVerbosity = verbosity; }
         Bool16  GetAppendSrcAddrInTransport()   { return fAppendSrcAddrInTransport; }
         
         //
@@ -123,14 +123,14 @@ class QTSServerPrefs : public QTSSPrefs
         Bool16  GetRTSPDebugPrintfs()           { return fEnableRTSPDebugPrintfs; }
         Bool16  GetRTSPServerInfoEnabled()      { return fEnableRTSPServerInfo; }
         
-		Float32	GetOverbufferRate()				{ return fOverbufferRate; }
-		
+        Float32    GetOverbufferRate()                { return fOverbufferRate; }
+        
         // RUDP window size
         UInt32  GetSmallWindowSizeInK()         { return fSmallWindowSizeInK; }
-		UInt32	GetMediumWindowSizeInK()		{ return fMediumWindowSizeInK; }
+        UInt32    GetMediumWindowSizeInK()        { return fMediumWindowSizeInK; }
         UInt32  GetLargeWindowSizeInK()         { return fLargeWindowSizeInK; }
         UInt32  GetWindowSizeThreshold()        { return fWindowSizeThreshold; }
- 		UInt32	GetWindowSizeMaxThreshold()		{ return fWindowSizeMaxThreshold; }
+         UInt32    GetWindowSizeMaxThreshold()        { return fWindowSizeMaxThreshold; }
        
         //
         // force logs to close after each write (true or false)
@@ -169,8 +169,8 @@ class QTSServerPrefs : public QTSSPrefs
         char*   GetRunGroupName()
             { return this->GetStringPref(qtssPrefsRunGroupName); }
 
-		char*   GetPidFilePath()
-			{ return this->GetStringPref(qtssPrefsPidFile); }
+        char*   GetPidFilePath()
+            { return this->GetStringPref(qtssPrefsPidFile); }
 
         char*   GetStatsMonitorFileName()
             { return this->GetStringPref(qtssPrefsMonitorStatsFileName); }
@@ -184,14 +184,33 @@ class QTSServerPrefs : public QTSSPrefs
         Bool16 PrintRTPHeaders()    { return (Bool16) (fPacketHeaderPrintfOptions & kRTPALL); }
         Bool16 PrintSRHeaders()     { return (Bool16) (fPacketHeaderPrintfOptions & kRTCPSR); }
         Bool16 PrintRRHeaders()     { return (Bool16) (fPacketHeaderPrintfOptions & kRTCPRR); }
-        Bool16 PrintAPPHeaders()     { return (Bool16) (fPacketHeaderPrintfOptions & kRTCPAPP); }
-        Bool16 PrintACKHeaders()     { return (Bool16) (fPacketHeaderPrintfOptions & kRTCPACK); }
+        Bool16 PrintAPPHeaders()    { return (Bool16) (fPacketHeaderPrintfOptions & kRTCPAPP); }
+        Bool16 PrintACKHeaders()    { return (Bool16) (fPacketHeaderPrintfOptions & kRTCPACK); }
 
-        UInt32 DeleteSDPFilesInterval()     { return fsdp_file_delete_interval_seconds; }
+        UInt32 DeleteSDPFilesInterval()           { return fsdp_file_delete_interval_seconds; }
                 
-        UInt32  GetNumThreads()             { return fNumThreads; }
+        UInt32  GetNumThreads()                   { return fNumThreads; } //short tasks threads
+        UInt32  GetNumBlockingThreads()           { return fNumRTSPThreads; } //return the number of threads that long tasks will be scheduled on -- RTSP processing for example.
         
-        Bool16  DisableThinning()           { return fDisableThinning; }
+        Bool16  GetDisableThinning()              { return fDisableThinning; }
+        
+        Bool16  Get3GPPEnabled()                  { return f3gppProtocolEnabled; }
+        Bool16  Get3GPPRateAdaptationEnabled()    { return f3gppProtocolRateAdaptationEnabled; }
+        UInt16  Get3GPPRateAdaptReportFrequency() { return f3gppProtocolRateAdaptationReportFrequency; }
+        UInt16  GetDefaultStreamQuality()         { return fDefaultStreamQuality; }       
+        Bool16  Get3GPPDebugPrintfs()             { return f3gppDebugPrintfsEnabled; }
+        Bool16  GetUDPMonitorEnabled()            { return fUDPMonitorEnabled; }
+        UInt16  GetUDPMonitorVideoPort()          { return fUDPMonitorVideoPort; }       
+        UInt16  GetUDPMonitorAudioPort()          { return fUDPMonitorAudioPort; }       
+            
+        char* GetMonitorDestIP()    { return this->GetStringPref(qtssPrefsUDPMonitorDestIPAddr); }
+        
+        char* GetMonitorSrcIP()     { return this->GetStringPref(qtssPrefsUDPMonitorSourceIPAddr); }
+       
+        Bool16 GetAllowGuestDefault()               { return fAllowGuestAuthorizeDefault; }
+        
+        UInt32 Get3GPPForcedTargetTime()            {return f3GPPRateAdaptTargetTime; }
+        
     private:
 
         UInt32      fRTSPTimeoutInSecs;
@@ -232,10 +251,10 @@ class QTSServerPrefs : public QTSSPrefs
         Bool16  fAppendSrcAddrInTransport;
 
         UInt32  fSmallWindowSizeInK;
-		UInt32	fMediumWindowSizeInK;
+        UInt32  fMediumWindowSizeInK;
         UInt32  fLargeWindowSizeInK;
         UInt32  fWindowSizeThreshold;
-		UInt32	fWindowSizeMaxThreshold;
+        UInt32  fWindowSizeMaxThreshold;
 
         UInt32  fMaxRetransDelayInMsec;
         Bool16  fIsAckLoggingEnabled;
@@ -254,16 +273,32 @@ class QTSServerPrefs : public QTSSPrefs
         Bool16  fEnableRTSPDebugPrintfs;
         Bool16  fEnableRTSPServerInfo;
         UInt32  fNumThreads;
+        UInt32  fNumRTSPThreads;
+        UInt32 f3GPPRateAdaptTargetTime;
+        
         Bool16  fEnableMonitorStatsFile;
         UInt32  fStatsFileIntervalSeconds;
-	
-		Float32	fOverbufferRate;
-		
+    
+        Float32    fOverbufferRate;
+        
         Bool16  fEnablePacketHeaderPrintfs;
         UInt32  fPacketHeaderPrintfOptions;
         Bool16  fCloseLogsOnWrite;
         
         Bool16 fDisableThinning;
+        
+        Bool16 f3gppProtocolEnabled;
+        Bool16 f3gppProtocolRateAdaptationEnabled;
+        UInt16 f3gppProtocolRateAdaptationReportFrequency;
+        UInt16 fDefaultStreamQuality;
+        Bool16 f3gppDebugPrintfsEnabled;
+        Bool16 fUDPMonitorEnabled;
+        UInt16 fUDPMonitorVideoPort;    
+        UInt16 fUDPMonitorAudioPort;     
+        char   fUDPMonitorDestAddr[20];
+        char   fUDPMonitorSrcAddr[20];
+        Bool16 fAllowGuestAuthorizeDefault;
+
         enum //fPacketHeaderPrintfOptions
         {
             kRTPALL = 1 << 0,
@@ -306,7 +341,10 @@ class QTSServerPrefs : public QTSSPrefs
         static char*    sAdjust_Bandwidth_Players[];
         static char*    sNo_Adjust_Pause_Time_Players[];
         static char*    sNo_Pause_Time_Adjustment_Players[];
-        
+        static char*    sRTP_Start_Time_Players[];
+        static char*    sDisable_Rate_Adapt_Players[];
+        static char*    sFixed_Target_Time_Players[];
+        static char*    sDisable_Thinning_Players[];
        
 };
 #endif //__QTSSPREFS_H__

@@ -8,7 +8,7 @@ my $PACKAGE_VERSION_FILE    = "release_version";
 my $INSTALLED_SERVER	    = "$TARGET_VOLUME"."/usr/sbin/QuickTimeStreamingServer";
 my $INSTALLED_SERVER_OS_VERS = "$TARGET_VOLUME"."/System/Library/CoreServices/ServerVersion.plist";
 my $INSTALLED_OS_VERS		= "$TARGET_VOLUME"."/System/Library/CoreServices/SystemVersion.plist";
-my $REQUIRED_OS_VERS		= "10.2.8";
+my $REQUIRED_OS_VERS		= "10.5.0";
 my $THIS_FILE_PATH          = $0;
 my $THIS_PACKGE_VERSION     = GetThisVersion( $THIS_FILE_PATH );
 my $INSTALLED_VERSION       = GetInstalledVersion( $INSTALLED_SERVER );
@@ -203,8 +203,7 @@ sub ReleaseVersCheck
         $operator = "==";
     }
 
-    @noAlphaVersion = split(/[A-z]|[' ']/, $InstalledVersion);
-    @installedVersionArray = split(/\./, $noAlphaVersion[0]);
+    @installedVersionArray = split(/\./, $InstalledVersion);
     @newInstallArray = split(/\./, $newVersion);
 
     if ($debug ) {

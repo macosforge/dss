@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -47,6 +47,7 @@
 #include "QTSServerInterface.h"
 #include "OSMutex.h"
 #include "atomic.h"
+#include "RTPSession3GPP.h"
 
 class RTSPRequestInterface;
 
@@ -130,7 +131,7 @@ class RTPSessionInterface : public QTSSDictionary, public Task
         void            UpdatePacketsSent(UInt32 packetsSent) { fPacketsSent += packetsSent; }
                                         
         void            UpdateCurrentBitRate(const SInt64& curTime)
-            { if (curTime > (fLastBitRateUpdateTime + 10000)) this->UpdateBitRateInternal(curTime); }
+            { if (curTime > (fLastBitRateUpdateTime + 3000)) this->UpdateBitRateInternal(curTime); }
 
         void            SetAllTracksInterleaved(Bool16 newValue) { fAllTracksInterleaved = newValue; }      
         //
@@ -190,7 +191,16 @@ class RTPSessionInterface : public QTSSDictionary, public Task
         void            IncrTotalRTCPBytesRecv(UInt16 cnt) { fTotalRTCPBytesRecv += cnt; }
         UInt32          GetTotalRTCPBytesRecv()            { return fTotalRTCPBytesRecv; }
 
+        UInt32          GetLastRTSPBandwithBits()          { return fLastRTSPBandwidthHeaderBits; }
+        UInt32          GetCurrentMovieBitRate()           { return fMovieCurrentBitRate; }
+        
+        UInt32          GetMaxBandwidthBits() { UInt32 maxRTSP = GetLastRTSPBandwithBits(); UInt32 maxLink =  fRTPSession3GPP.GetLinkCharMaxKBits()* 1000;  return (maxRTSP > maxLink) ? maxRTSP : maxLink; }
+
+        void            SetIs3GPPSession(Bool16 is3GPP) { fIs3GPPSession = is3GPP; }
+
     protected:
+    
+        RTPSession3GPP* Get3GPPSessPtr() { return fRTPSession3GPPPtr; }
     
         // These variables are setup by the derived RTPSession object when
         // Play and Pause get called
@@ -229,6 +239,9 @@ class RTPSessionInterface : public QTSSDictionary, public Task
         // an RTP session, we store a pointer to the RTSP session used in
         // the last RTSP request.
         RTSPSessionInterface* fRTSPSession;
+        
+        
+        
     private:
     
         //
@@ -329,7 +342,12 @@ class RTPSessionInterface : public QTSSDictionary, public Task
         UInt32                      fQualityUpdate;
         
         UInt32                      fFramesSkipped;
-        Bool16                      fOverBufferEnabled;
+
+		RTPSession3GPP			fRTPSession3GPP;
+		RTPSession3GPP*			fRTPSession3GPPPtr;
+		UInt32                  fLastRTSPBandwidthHeaderBits;
+		Bool16                  fIs3GPPSession;
+
 };
 
 #endif //_RTPSESSIONINTERFACE_H_

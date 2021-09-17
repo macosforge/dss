@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -35,6 +35,7 @@ class AssertLogger
     public:
         // An interface so the MyAssert function can write a message
         virtual void LogAssert(char* inMessage) = 0;
+		virtual ~AssertLogger(){};
 };
 
 // If a logger is provided, asserts will be logged. Otherwise, asserts will cause a bus error

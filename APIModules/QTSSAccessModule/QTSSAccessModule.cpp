@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -69,8 +69,8 @@
 static StrPtrLen    sSDPSuffix(".sdp");
 static OSMutex*     sUserMutex              = NULL;
 
-//static Bool16         sDefaultAuthenticationEnabled   = true;
-//static Bool16         sAuthenticationEnabled          = true;
+static Bool16         sDefaultAuthenticationEnabled   = true;
+static Bool16         sAuthenticationEnabled          = true;
 
 static char* sDefaultUsersFilePath  = DEFAULTPATHS_ETC_DIR "qtusers";
 static char* sUsersFilePath = NULL;
@@ -95,6 +95,8 @@ static AccessChecker**          sAccessCheckers;
 static UInt32                   sNumAccessCheckers = 0;
 static UInt32                   sAccessCheckerArraySize = 0;
 
+static Bool16                   sAllowGuestDefaultEnabled = true;
+static Bool16                   sDefaultGuestEnabled = true;
 
 // FUNCTION PROTOTYPES
 
@@ -133,12 +135,12 @@ QTSS_Error  QTSSAccessModuleDispatch(QTSS_Role inRole, QTSS_RoleParamPtr inParam
         break;
         
         case QTSS_RTSPAuthenticate_Role:
-//          if (sAuthenticationEnabled)
+              if (sAuthenticationEnabled)
                 return AuthenticateRTSPRequest(&inParams->rtspAthnParams);
         break;
         
         case QTSS_RTSPAuthorize_Role:
-//          if (sAuthenticationEnabled)
+              if (sAuthenticationEnabled)
                 return AccessAuthorizeRTSPRequest(&inParams->rtspRequestParams);
         break;
             
@@ -261,8 +263,8 @@ QTSS_Error RereadPrefs()
     
     //
     // Use the standard GetAttribute routine to retrieve the correct values for our preferences
-    //QTSSModuleUtils::GetAttribute(sPrefs, MODPREFIX_"enabled",    qtssAttrDataTypeBool16,
-    //                      &sAuthenticationEnabled, &sDefaultAuthenticationEnabled, sizeof(sAuthenticationEnabled));
+    QTSSModuleUtils::GetAttribute(sPrefs, MODPREFIX_"enabled",    qtssAttrDataTypeBool16,
+                          &sAuthenticationEnabled, &sDefaultAuthenticationEnabled, sizeof(sAuthenticationEnabled));
     
     //if(sUsersFilePath != sDefaultUsersFilePath)
     // sUsersFilePath is assigned by a call to QTSSModuleUtils::GetStringAttribute which always
@@ -301,7 +303,11 @@ QTSS_Error RereadPrefs()
         else if(err & AccessChecker::kBadGroupsFileErr)
             QTSSModuleUtils::LogError(qtssWarningVerbosity,sBadGroupsFileMessageAttrID, 0, sGroupsFilePath, NULL);
     }
-    
+
+   QTSSModuleUtils::GetAttribute(sServerPrefs,"enable_allow_guest_default", qtssAttrDataTypeBool16, 
+                                           &sAllowGuestDefaultEnabled,(void *)&sDefaultGuestEnabled, sizeof(sAllowGuestDefaultEnabled));
+                                           
+
     return QTSS_NoErr;
 }
 
@@ -358,10 +364,13 @@ QTSS_Error AuthenticateRTSPRequest(QTSS_RTSPAuth_Params* inParams)
         defaultPaths = false;
         
     if(usersFilePath == NULL)
-        usersFilePath = sUsersFilePath;
+        usersFilePath = strdup(sUsersFilePath);
         
     if(groupsFilePath == NULL)
-        groupsFilePath = sGroupsFilePath;
+        groupsFilePath = strdup(sGroupsFilePath);
+    
+    OSCharArrayDeleter userPathDeleter(usersFilePath);
+    OSCharArrayDeleter groupPathDeleter(groupsFilePath);
         
     AccessChecker* currentChecker = NULL;
     UInt32 index;
@@ -414,17 +423,6 @@ QTSS_Error AuthenticateRTSPRequest(QTSS_RTSPAuth_Params* inParams)
             sNumAccessCheckers++;
         }
         
-        // If the usersFilePath is the same as the main users file path, no new memory is allocated
-        // because QTAccessFile::FindUsersAndGroupsFilesAndAuthScheme returned NULL, and we just copied the pointer
-        // Otherwise, delete the memory allocated
-        if(strcmp(usersFilePath, sUsersFilePath) != 0)  
-            delete usersFilePath;
-        
-        // If the groupsFilePath is the same as the main groups file path, no new memory is allocated
-        // because QTAccessFile::FindUsersAndGroupsFilesAndAuthScheme returned NULL, and we just copied the pointer
-        // Otherwise, delete the memory allocated
-        if(strcmp(groupsFilePath, sGroupsFilePath) != 0)    
-            delete groupsFilePath;
     }
     else
     {
@@ -528,9 +526,11 @@ QTSS_Error AuthenticateRTSPRequest(QTSS_RTSPAuth_Params* inParams)
 
 QTSS_Error AccessAuthorizeRTSPRequest(QTSS_StandardRTSP_Params* inParams)
 {   
-    Bool16 allowNoAccessFiles = true;
-    QTSS_ActionFlags noAction = qtssActionFlagsWrite;
-    QTSS_ActionFlags authorizeAction = qtssActionFlagsRead;
-
-    return  QTAccessFile::AuthorizeRequest(inParams,allowNoAccessFiles, noAction, authorizeAction);
+    Bool16 allowNoAccessFiles =  sAllowGuestDefaultEnabled; //no access files allowed means allowing guest access (unknown users)
+    QTSS_ActionFlags noAction = ~qtssActionFlagsRead; // allow any action
+    QTSS_ActionFlags authorizeAction =  QTSSModuleUtils::GetRequestActions(inParams->inRTSPRequest);
+    Bool16 authorized =false;
+    Bool16 allowAnyUser = false;
+    QTAccessFile accessFile;
+    return  accessFile.AuthorizeRequest(inParams,allowNoAccessFiles, noAction, authorizeAction, &authorized, &allowAnyUser);
 }

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -299,12 +299,12 @@ Bool16 MP3Broadcaster::ConfigSetter( const char* paramName, const char* paramVal
         if ( !paramValue[0] || !::strlen(paramValue[0]) )
              return true;
 			
-        unsigned long setvalue = kSInt32_Max;
+        UInt32 setvalue = kSInt32_Max;
         int maxValue = ::atoi( paramValue[0] );
         if (maxValue >= 0)
-            setvalue = (unsigned long) maxValue;
+            setvalue = (UInt32) maxValue;
 		
-        qtss_setmaxprintfcharsinK( (unsigned long) setvalue);
+        qtss_setmaxprintfcharsinK( (UInt32) setvalue);
         return false;
     }
     
@@ -492,9 +492,9 @@ void MP3Broadcaster::PreFlightOrBroadcast( bool preflight, bool daemonize, bool 
     MP3FileBroadcaster  fileBroadcaster(&mSocket, mBitRate, mFrequency);
     MP3MetaInfoUpdater* metaInfoUpdater = NULL;
     
-    long                moviePlayCount;
+    SInt32                moviePlayCount;
     char*               thePick = NULL;
-    long                numMovieErrors;
+    SInt32                numMovieErrors;
    	bool				didAtLeastOneMoviePlay = false;
     int err;
         
@@ -521,7 +521,7 @@ void MP3Broadcaster::PreFlightOrBroadcast( bool preflight, bool daemonize, bool 
         if ( picker->mNumToPickFrom == 1 )
             qtss_printf( "\nThere is one movie in the Playlist.\n\n" );
         else
-            qtss_printf( "\nThere are (%li) movies in the Playlist.\n\n", (long) picker->mNumToPickFrom );
+            qtss_printf( "\nThere are (%li) movies in the Playlist.\n\n", (SInt32) picker->mNumToPickFrom );
     }   
     
     if ( picker->mNumToPickFrom == 0 )
@@ -973,7 +973,7 @@ void MP3Broadcaster::ShowSetupParams()
     qtss_printf( "broadcast_genre \"%s\"\n", mGenre);
     qtss_printf( "broadcast_mount_point \"%s\"\n", mMountPoint);
     qtss_printf( "broadcast_password \"XXXXX\"\n");
-    qtss_printf( "max_err_file_k_size %lu\n", qtss_getmaxprintfcharsinK());
+    qtss_printf( "max_err_file_k_size %"_U32BITARG_"\n", qtss_getmaxprintfcharsinK());
     qtss_printf( "\n" );
 }
 
@@ -1025,13 +1025,13 @@ void MP3Broadcaster::Cleanup(bool signalHandler)
         
         if (mPreflight)
     {
-        qtss_printf("Warnings: %ld\n", mNumWarnings);
-        qtss_printf("Errors: %ld\n", mNumErrors);
+        qtss_printf("Warnings: %"_S32BITARG_"\n", mNumWarnings);
+        qtss_printf("Errors: %"_S32BITARG_"\n", mNumErrors);
     }
         else
         {
-            qtss_printf("Broadcast Warnings: %ld\n", mNumWarnings);
-            qtss_printf("Broadcast Errors: %ld\n", mNumErrors);
+            qtss_printf("Broadcast Warnings: %"_S32BITARG_"\n", mNumWarnings);
+            qtss_printf("Broadcast Errors: %"_S32BITARG_"\n", mNumErrors);
         }
     
     RemoveFiles();

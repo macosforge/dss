@@ -1,42 +1,31 @@
 #!/bin/sh
 
 #Darwin BuildTarball script
-if [ "$1" = "" ] ; then
-    echo "buildproxytarballx [ version ]"
-    echo "example: buildproxytarballx 1.0.1"
-    exit 1
-fi
-
 
 PLAT=`uname`
 
-echo removing StreamingProxy-$1-MacOSX.tar.gz
-if rm -f StreamingProxy-$1-MacOSX.tar.gz; 
+echo removing StreamingProxy-5.0.x-MacOSX.tar.gz
+if rm -f StreamingProxy-5.0.x-MacOSX.tar.gz; 
 then :
 fi
 
-echo removing StreamingProxy-$1-MacOSX
-if rm -rf StreamingProxy-$1-MacOSX; 
+echo removing StreamingProxy-5.0.x-MacOSX
+if rm -rf StreamingProxy-5.0.x-MacOSX; 
 then :
 fi
 
 #cvs -q up
-./Buildit $2
-
-BUILDDIR="build/Development/StreamingProxy"
-
-if [ -e build/Default/StreamingProxy ] ; then
-   BUILDDIR="build/Default/StreamingProxy"
+./Buildit
+if [ -e build/StreamingProxy ] ; then
+    cp build/StreamingProxy StreamingProxy.tproj/
 fi
 
-if [ -e build/Deployment/StreamingProxy ] ; then
-   BUILDDIR="build/Deployment/StreamingProxy"
+if [ -e build/Development/StreamingProxy ] ; then
+    cp build/Development/StreamingProxy StreamingProxy.tproj/
 fi
 
-cp $BUILDDIR StreamingProxy.tproj/
-
-./DSS_MakeProxyRoot StreamingProxy-$1-MacOSX
-tar cvf StreamingProxy-$1-MacOSX.tar StreamingProxy-$1-MacOSX
-gzip StreamingProxy-$1-MacOSX.tar
+./DSS_MakeProxyRoot StreamingProxy-5.0.x-MacOSX
+tar cvf StreamingProxy-5.0.x-MacOSX.tar StreamingProxy-5.0.x-MacOSX
+gzip StreamingProxy-5.0.x-MacOSX.tar
 
 echo Done!

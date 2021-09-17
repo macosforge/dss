@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -139,6 +139,7 @@ class QTSServerInterface : public QTSSDictionary
            { OSMutexLocker locker(&fMutex); fTotalQuality = 0;  }
      
 
+		void 			InitNumThreads(UInt32 numThreads) {  fNumThreads = numThreads; }
         //
         // ACCESSORS
         
@@ -174,6 +175,7 @@ class QTSServerInterface : public QTSSDictionary
         SInt64          GetCurrentMaxLate()         { return fCurrentMaxLate; };
         SInt64          GetTotalQuality()           { return fTotalQuality; };
         SInt32          GetNumThinned()             { return fNumThinned; };
+        UInt32          GetNumThreads()             { return fNumThreads; };
 
         //
         //
@@ -234,6 +236,12 @@ class QTSServerInterface : public QTSSDictionary
         static QTSSModule*  GetModule(QTSSModule::RoleIndex inRole, UInt32 inIndex)
                                 {   Assert(inRole < QTSSModule::kNumRoles);
                                     Assert(inIndex < sNumModulesInRole[inRole]);
+                                    if (inRole >= QTSSModule::kNumRoles) //index out of bounds, shouldn't happen
+                                    {    return NULL;
+                                    }
+                                    if (inIndex >= sNumModulesInRole[inRole]) //index out of bounds, shouldn't happen
+                                    {   return NULL;
+                                    }
                                     return sModuleArray[inRole][inIndex];
                                 }
 
@@ -381,7 +389,8 @@ class QTSServerInterface : public QTSSDictionary
         SInt64          fCurrentMaxLate;
         SInt64          fTotalQuality;
         SInt32          fNumThinned;
-
+        UInt32          fNumThreads;
+ 
         // Param retrieval functions
         static void* CurrentUnixTimeMilli(QTSSDictionary* inServer, UInt32* outLen);
         static void* GetTotalUDPSockets(QTSSDictionary* inServer, UInt32* outLen);

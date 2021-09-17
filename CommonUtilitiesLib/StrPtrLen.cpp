@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -140,7 +140,7 @@ Bool16 StrPtrLen::NumEqualIgnoreCase(const char* compare, const UInt32 len) cons
     if (len <= Len)
     {
         for (UInt32 x = 0; x < len; x++)
-            if (sCaseInsensitiveMask[Ptr[x]] != sCaseInsensitiveMask[compare[x]])
+            if (sCaseInsensitiveMask[ (UInt8) Ptr[x]] != sCaseInsensitiveMask[(UInt8) compare[x]])
                 return false;
         return true;
     }
@@ -153,7 +153,7 @@ Bool16 StrPtrLen::EqualIgnoreCase(const char* compare, const UInt32 len) const
     if (len == Len)
     {
         for (UInt32 x = 0; x < len; x++)
-            if (sCaseInsensitiveMask[Ptr[x]] != sCaseInsensitiveMask[compare[x]])
+            if (sCaseInsensitiveMask[(UInt8) Ptr[x]] != sCaseInsensitiveMask[(UInt8) compare[x]])
                 return false;
         return true;
     }
@@ -303,7 +303,7 @@ void StrPtrLen::PrintStr()
     UInt32 i = 0;
     for (; i < Len; i ++) 
     { 
-       if (StrPtrLen::sNonPrintChars[Ptr[i]]) 
+       if (StrPtrLen::sNonPrintChars[(UInt8) Ptr[i]]) 
        {   thestr[i] = 0;
            break;
        }
@@ -324,6 +324,18 @@ void StrPtrLen::PrintStr(char *appendStr)
         qtss_printf(appendStr);
 }
 
+void StrPtrLen::PrintStr(char* prependStr, char *appendStr)
+{
+    if (prependStr != NULL)
+        qtss_printf(prependStr);
+        
+    StrPtrLen::PrintStr();
+    
+    if (appendStr != NULL)
+        qtss_printf(appendStr);
+}
+
+
 void StrPtrLen::PrintStrEOL(char* stopStr, char *appendStr)
 {
            
@@ -333,7 +345,7 @@ void StrPtrLen::PrintStrEOL(char* stopStr, char *appendStr)
     SInt32 i = 0;
     for (; i < (SInt32) Len; i ++) 
     { 
-       if (StrPtrLen::sNonPrintChars[Ptr[i]]) 
+       if (StrPtrLen::sNonPrintChars[(UInt8) Ptr[i]]) 
        {   thestr[i] = 0;
            break;
        }

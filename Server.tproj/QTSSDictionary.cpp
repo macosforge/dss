@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -754,11 +754,10 @@ QTSS_Error QTSSDictionary::GetAttrInfoByIndex(UInt32 inIndex, QTSSAttrInfoDict**
     
     if ( (numStaticValues > 0)  && (inIndex < numStaticValues) )
         return fMap->GetAttrInfoByIndex(inIndex, outAttrInfoDict);
-    else
-    {
-        Assert(fInstanceMap != NULL);
-        return fInstanceMap->GetAttrInfoByIndex(inIndex - numStaticValues, outAttrInfoDict);
-    }
+
+	Assert(fInstanceMap != NULL);
+	return fInstanceMap->GetAttrInfoByIndex(inIndex - numStaticValues, outAttrInfoDict);
+
 }
 
 QTSS_Error QTSSDictionary::GetAttrInfoByID(QTSS_AttributeID inAttrID, QTSSAttrInfoDict** outAttrInfoDict)
@@ -856,6 +855,11 @@ void QTSSDictionaryMap::Initialize()
     sDictionaryMaps[kModulePrefsDictIndex]  = new QTSSDictionaryMap(0, QTSSDictionaryMap::kInstanceAttrsAllowed | QTSSDictionaryMap::kCompleteFunctionsAllowed);
     sDictionaryMaps[kQTSSUserProfileDictIndex] = new QTSSDictionaryMap(qtssUserNumParams);
     sDictionaryMaps[kQTSSConnectedUserDictIndex] = new QTSSDictionaryMap(qtssConnectionNumParams);
+    sDictionaryMaps[k3GPPRequestDictIndex] = new QTSSDictionaryMap(qtss3GPPRequestNumParams);
+    sDictionaryMaps[k3GPPStreamDictIndex] = new QTSSDictionaryMap(qtss3GPPStreamNumParams);
+    sDictionaryMaps[k3GPPClientSessionDictIndex] = new QTSSDictionaryMap(qtss3GPPCliSesNumParams);
+    sDictionaryMaps[k3GPPRTSPSessionDictIndex] = new QTSSDictionaryMap(qtss3GPPRTSPSessNumParams);
+
 }
 
 QTSSDictionaryMap::QTSSDictionaryMap(UInt32 inNumReservedAttrs, UInt32 inFlags)
@@ -982,7 +986,7 @@ QTSS_Error  QTSSDictionaryMap::RemoveAttribute(QTSS_AttributeID inAttrID)
     if (!(fFlags & kAllowRemoval))
         return QTSS_BadArgument;
     
-    //qtss_printf("QTSSDictionaryMap::RemoveAttribute arraySize=%lu numNonRemove= %lu fAttrArray[%lu]->fAttrInfo.fAttrName=%s\n",this->GetNumAttrs(), this->GetNumNonRemovedAttrs(), theIndex,fAttrArray[theIndex]->fAttrInfo.fAttrName);
+    //qtss_printf("QTSSDictionaryMap::RemoveAttribute arraySize=%"_U32BITARG_" numNonRemove= %"_U32BITARG_" fAttrArray[%"_U32BITARG_"]->fAttrInfo.fAttrName=%s\n",this->GetNumAttrs(), this->GetNumNonRemovedAttrs(), theIndex,fAttrArray[theIndex]->fAttrInfo.fAttrName);
     //
     // Don't actually touch the attribute or anything. Just flag the
     // it as removed.
@@ -1070,7 +1074,7 @@ QTSS_Error  QTSSDictionaryMap::GetAttrInfoByIndex(UInt32 inIndex, QTSSAttrInfoDi
             actualIndex++;
         }
     }
-    //qtss_printf("QTSSDictionaryMap::GetAttrInfoByIndex arraySize=%lu numNonRemove= %lu fAttrArray[%lu]->fAttrInfo.fAttrName=%s\n",this->GetNumAttrs(), this->GetNumNonRemovedAttrs(), actualIndex,fAttrArray[actualIndex]->fAttrInfo.fAttrName);
+    //qtss_printf("QTSSDictionaryMap::GetAttrInfoByIndex arraySize=%"_U32BITARG_" numNonRemove= %"_U32BITARG_" fAttrArray[%"_U32BITARG_"]->fAttrInfo.fAttrName=%s\n",this->GetNumAttrs(), this->GetNumNonRemovedAttrs(), actualIndex,fAttrArray[actualIndex]->fAttrInfo.fAttrName);
     Assert(actualIndex < fNextAvailableID);
     Assert(!(fAttrArray[actualIndex]->fAttrInfo.fAttrPermission & qtssPrivateAttrModeRemoved));
     *outAttrInfoObject = fAttrArray[actualIndex];
@@ -1111,6 +1115,13 @@ UInt32  QTSSDictionaryMap::GetMapIndex(QTSS_ObjectType inType)
         case qtssAttrInfoObjectType:        return kAttrInfoDictIndex;
         case qtssUserProfileObjectType:     return kQTSSUserProfileDictIndex;
         case qtssConnectedUserObjectType:   return kQTSSConnectedUserDictIndex;
+        
+        case qtss3GPPStreamObjectType:          return k3GPPStreamDictIndex;
+        case qtss3GPPClientSessionObjectType:   return k3GPPClientSessionDictIndex;
+        case qtss3GPPRTSPObjectType:            return k3GPPRTSPSessionDictIndex;
+        case qtss3GPPRequestObjectType:         return k3GPPRequestDictIndex;
+ 
+       
         default:                            return kIllegalDictionary;
      }
      return kIllegalDictionary;

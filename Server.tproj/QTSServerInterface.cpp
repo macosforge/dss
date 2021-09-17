@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -140,7 +140,9 @@ QTSSAttrInfoDict::AttrInfo  QTSServerInterface::sAttributes[] =
     /* 38  */ { "qtssSvrServerBuild",           NULL,   qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModePreempSafe },
     /* 39  */ { "qtssSvrServerPlatform",        NULL,   qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModePreempSafe },
     /* 40  */ { "qtssSvrRTSPServerComment",     NULL,   qtssAttrDataTypeCharArray,  qtssAttrModeRead | qtssAttrModePreempSafe },
-    /* 41  */ { "qtssSvrNumThinned",            NULL,   qtssAttrDataTypeSInt32,     qtssAttrModeRead | qtssAttrModeWrite  }
+	/* 41  */ { "qtssSvrNumThinned",            NULL,   qtssAttrDataTypeSInt32,     qtssAttrModeRead | qtssAttrModePreempSafe },
+    /* 42  */ { "qtssSvrNumThreads",            NULL,   qtssAttrDataTypeUInt32,     qtssAttrModeRead | qtssAttrModePreempSafe }
+    
 };
 
 void    QTSServerInterface::Initialize()
@@ -227,7 +229,8 @@ QTSServerInterface::QTSServerInterface()
     fTotalLate(0),
     fCurrentMaxLate(0),
     fTotalQuality(0),
-    fNumThinned(0)
+    fNumThinned(0),
+    fNumThreads(0)
 {
     for (UInt32 y = 0; y < QTSSModule::kNumRoles; y++)
     {
@@ -265,6 +268,7 @@ QTSServerInterface::QTSServerInterface()
     this->SetVal(qtssSvrServerPlatform,     sServerPlatformStr.Ptr, sServerPlatformStr.Len);
 
     this->SetVal(qtssSvrNumThinned,         &fNumThinned,               sizeof(fNumThinned));
+    this->SetVal(qtssSvrNumThreads,         &fNumThreads,               sizeof(fNumThreads));
     
 
     sServer = this;
@@ -414,8 +418,8 @@ SInt64 RTPStatsUpdaterTask::Run()
         Assert(curTime > fLastBandwidthTime);
         UInt32 delta = (UInt32)(curTime - fLastBandwidthTime);
 		// Prevent divide by zero errror
-        if (delta < 1000) {
-            WarnV(delta >= 1000, "delta < 1000");
+		if (delta < 1000) {
+			WarnV(delta >= 1000, "delta < 1000");
 			(void)this->GetEvents();//we must clear the event mask!
 			return theServer->GetPrefs()->GetTotalBytesUpdateTimeInSecs() * 1000;
 		}

@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -143,6 +143,7 @@ class HTTPClientSocket : public ClientSocket
         //
         // Implements the ClientSocket Send and Receive interface for an RTSP / HTTP connection
         virtual OS_Error    SendV(iovec* inVec, UInt32 inNumVecs);
+		// Both SendV and Read use the fSendBuffer; so you cannot have both operations be running at the same time.
         virtual OS_Error    Read(void* inBuffer, const UInt32 inLength, UInt32* outRcvLen);
 
         virtual UInt32  GetLocalAddr() { return fGetSocket.GetLocalAddr();  }

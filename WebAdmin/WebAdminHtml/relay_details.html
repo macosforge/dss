@@ -13,6 +13,8 @@
 	<qtssobject name=scriptTag>
 		//<script language=javascript>
 		
+		var allRelays = new Array();
+
 		function clickedDeleteRelayDest(relayToDelete) {
 			document.forms[0].elements['action'].value = 'DeleteRelayDest';
 			document.forms[0].elements['currentDest'].value = relayToDelete;
@@ -40,6 +42,17 @@
 		}
 				
 		function validateFormData() {
+			var relayNameOK = true;
+			if (document.forms[0].elements['currentRelay'].value != document.forms[0].elements['currentRelay_shadow'].value) {
+				for (var i = 0; i < allRelays.length; i++) {
+					if (allRelays[i] == document.forms[0].elements['currentRelay'].value) relayNameOK = false;
+				}
+			}
+			if (!relayNameOK) {
+				entityAlert("<qtssstring name=RelayErrNameConflict/>");
+				document.forms[0].elements['currentRelay'].value = document.forms[0].elements['currentRelay_shadow'].value;
+				return false;
+			}
 			if (document.forms[0].elements['currentRelay'].value == '') {
 				entityAlert("<qtssstring name=RelayErrNoName/>");
 				document.forms[0].elements['currentRelay'].value = document.forms[0].elements['currentRelay_shadow'].value;
@@ -51,15 +64,38 @@
 				return false;
 			}
 			for (var i = 0; i < document.forms[0].elements['relayDestCount'].value; i++) {
+				// check to see that TTL is a number (if it's filled in)
 				var fieldValue = document.forms[0].elements['relayDestTTL'+i].value;
 				if ((fieldValue != '') && ((fieldValue < 1) || (fieldValue > 255) || (fieldValue.match('[^0-9]') != null))) {
 					entityAlert("<qtssstring name=RelayErrMulticastTTLIncorrect/>");
 					document.forms[0].elements['relayDestTTL'+i].value = document.forms[0].elements['relayDestTTL'+i+'_shadow'].value
 					return false;
 				}
+				// check the destinations for empty fields based on dest type
+				var currentRelayDestTypeRadios = document.forms[0].elements['relayDestType'+i];
+				if (currentRelayDestTypeRadios[0].checked) { // announced
+					if (document.forms[0].elements['relayDestMountPoint'+i].value == '') {
+						entityAlert("<qtssstring name=RelayErrNoDestMountpoint />");
+						return false;
+					}
+				}
+				else if (currentRelayDestTypeRadios[1].checked) { // unannounced
+					if (document.forms[0].elements['relayDestPort'+i].value == '') {
+						entityAlert("<qtssstring name=RelayErrNoDestBasePort />");
+						return false;
+					}
+				}
+				else { // no type selected
+					entityAlert("<qtssstring name=RelayErrNoDestType />");
+					return false;
+				}
 			}
 			return true;
 		}
+		
+		<qtssrepeater name=relaynames>
+			allRelays[allRelays.length] = '<qtssobject name=qtssRelayName/>';
+		</qtssrepeater>
 		
 	</script>
 </head>
@@ -67,6 +103,7 @@
 <qtssobject type=validatedform>
 	<qtssobject type=hidden name="relayDestCount"/>
 	<qtssobject type=hidden name="qtssSvrDefaultDNSName"/>
+	<qtssobject type=hidden name="relayIsNew"/>
 	<input type=hidden name=action value="">
 	<input type=hidden name=filename value="relay.html">
 	<input type=hidden name="currentDest" value="">

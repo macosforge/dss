@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -36,6 +36,11 @@
 #include "SafeStdLib.h"
 #include <string.h>
 #include <errno.h>
+
+#ifdef __MacOSX__
+#include <mach/mach_types.h>
+#include <mach/mach_time.h>
+#endif
 
 #ifndef __Win32__
     #if __PTHREADS__
@@ -197,22 +202,25 @@ void OSThread::Sleep(UInt32 inMsec)
     SInt64 startTime = OS::Milliseconds();
     SInt64 timeLeft = inMsec;
     SInt64 timeSlept = 0;
+    UInt64 utimeLeft = 0;    
 
-    do {
-        //qtss_printf("OSThread::Sleep = %qd request sleep=%qd\n",timeSlept, timeLeft);
+    do { // loop in case we leave the sleep early
+        //qtss_printf("OSThread::Sleep time slept= %qd request sleep=%qd\n",timeSlept, timeLeft);
         timeLeft = inMsec - timeSlept;
         if (timeLeft < 1)
             break;
-            
-        ::usleep(timeLeft * 1000);
-
+        
+        utimeLeft = timeLeft * 1000;    
+        //qtss_printf("OSThread::Sleep usleep=%qd\n", utimeLeft);
+        ::usleep(utimeLeft);
+        
         timeSlept = (OS::Milliseconds() - startTime);
         if (timeSlept < 0) // system time set backwards
             break;
             
     } while (timeSlept < inMsec);
 
-	//qtss_printf("total sleep = %qd request sleep=%lu\n", timeSlept,inMsec);
+    //qtss_printf("total sleep = %qd request sleep=%"_U32BITARG_"\n", timeSlept,inMsec);
 
 #elif defined(__osf__) || defined(__hpux__)
     if (inMsec < 1000)
@@ -264,11 +272,11 @@ Bool16  OSThread::SwitchPersonality()
         struct group* gr = ::getgrnam(sGroup);
         if (gr == NULL || ::setgid(gr->gr_gid) == -1)
         {
-            //qtss_printf("thread %lu setgid  to group=%s FAILED \n", (UInt32) this, sGroup);
+            //qtss_printf("thread %"_U32BITARG_" setgid  to group=%s FAILED \n", (UInt32) this, sGroup);
             return false;
         }
         
-        //qtss_printf("thread %lu setgid  to group=%s \n", (UInt32) this, sGroup);
+        //qtss_printf("thread %"_U32BITARG_" setgid  to group=%s \n", (UInt32) this, sGroup);
     }
     
         
@@ -277,11 +285,11 @@ Bool16  OSThread::SwitchPersonality()
         struct passwd* pw = ::getpwnam(sUser);
         if (pw == NULL || ::setuid(pw->pw_uid) == -1)
         {
-            //qtss_printf("thread %lu setuid  to user=%s FAILED \n", (UInt32) this, sUser);
+            //qtss_printf("thread %"_U32BITARG_" setuid  to user=%s FAILED \n", (UInt32) this, sUser);
             return false;
         }
 
-        //qtss_printf("thread %lu setuid  to user=%s \n", (UInt32) this, sUser);
+        //qtss_printf("thread %"_U32BITARG_" setuid  to user=%s \n", (UInt32) this, sUser);
    }
 #endif
 

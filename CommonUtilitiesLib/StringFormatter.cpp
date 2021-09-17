@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -33,6 +33,7 @@
 */
 
 #include <string.h>
+#include <stdarg.h>
 #include "StringFormatter.h"
 #include "MyAssert.h"
 
@@ -42,12 +43,13 @@ UInt32  StringFormatter::sEOLLen = 2;
 void StringFormatter::Put(const SInt32 num)
 {
     char buff[32];
-    qtss_sprintf(buff, "%ld", num);
+    qtss_sprintf(buff, "%"_S32BITARG_"", num);
     Put(buff);
 }
 
 void StringFormatter::Put(char* buffer, UInt32 bufferSize)
 {
+	//optimization for writing 1 character
     if((bufferSize == 1) && (fCurrentPut != fEndPut)) {
         *(fCurrentPut++) = *buffer;
         fBytesWritten++;
@@ -64,6 +66,7 @@ void StringFormatter::Put(char* buffer, UInt32 bufferSize)
     {
         if (spaceLeft > 0)
         {
+			//copy as much as possible; truncating the result
             ::memcpy(fCurrentPut, buffer, spaceInBuffer);
             fCurrentPut += spaceInBuffer;
             fBytesWritten += spaceInBuffer;
@@ -85,5 +88,39 @@ void StringFormatter::Put(char* buffer, UInt32 bufferSize)
     fCurrentPut += bufferSize;
     fBytesWritten += bufferSize;
     
+}
+
+//Puts a printf-style formatted string; except that the NUL terminator is not written.  If the buffer is too small, returns false and does not
+//Alter the buffer.  Will not count the '\0' terminator as among the bytes written
+Bool16 StringFormatter::PutFmtStr(const char *fmt,  ...)
+{
+	Assert(fmt != NULL);
+
+    va_list args;
+	for(;;)
+	{
+		va_start(args,fmt);
+		int length = ::vsnprintf(fCurrentPut, this->GetSpaceLeft(), fmt, args);
+		va_end(args);
+		
+		if (length < 0)
+			return false;
+		if (static_cast<UInt32>(length) >= this->GetSpaceLeft()) //was not able to write all the output
+		{
+			if (this->BufferIsFull(fStartPut, this->GetCurrentOffset()))
+				continue;
+			//can only output a portion of the string
+			UInt32 bytesWritten = fEndPut - fCurrentPut - 1; //We don't want to include the NUL terminator
+			fBytesWritten += bytesWritten;
+			fCurrentPut += bytesWritten;
+			return false;
+		}
+		else
+		{
+			fBytesWritten += length;
+			fCurrentPut += length;
+		}
+		return true;
+	}
 }
 

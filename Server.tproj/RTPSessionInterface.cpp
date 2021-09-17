@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -86,7 +86,11 @@ QTSSAttrInfoDict::AttrInfo  RTPSessionInterface::sAttributes[] =
 	/* 33 */ { "qtssCliSesOverBufferEnabled",       NULL, 	qtssAttrDataTypeBool16,		qtssAttrModeRead | qtssAttrModeWrite | qtssAttrModePreempSafe },
     /* 34 */ { "qtssCliSesRTCPPacketsRecv",         NULL,   qtssAttrDataTypeUInt32,         qtssAttrModeRead | qtssAttrModePreempSafe },
     /* 35 */ { "qtssCliSesRTCPBytesRecv",           NULL,   qtssAttrDataTypeUInt32,         qtssAttrModeRead | qtssAttrModePreempSafe },
-	/* 36 */ { "qtssCliSesStartedThinning",         NULL, 	qtssAttrDataTypeBool16,		qtssAttrModeRead | qtssAttrModeWrite  | qtssAttrModePreempSafe }
+	/* 36 */ { "qtssCliSesStartedThinning",         NULL, 	qtssAttrDataTypeBool16,		qtssAttrModeRead | qtssAttrModeWrite  | qtssAttrModePreempSafe },
+	/* 37 */ { "qtssCliSes3GPPObject",              NULL, 	qtssAttrDataTypeQTSS_Object,		qtssAttrModeRead | qtssAttrModePreempSafe },
+	/* 38 */ { "qtssCliSessLastRTSPBandwidth",      NULL, 	qtssAttrDataTypeUInt32,		qtssAttrModeRead | qtssAttrModePreempSafe },
+	/* 39 */ { "qtssCliSessIs3GPPSession",          NULL, 	qtssAttrDataTypeBool16,		qtssAttrModeRead | qtssAttrModePreempSafe }
+	
     
 };
 
@@ -138,7 +142,11 @@ QTSServerInterface::GetServer()->GetPrefs()->GetOverbufferRate()),
     fAuthScheme(QTSServerInterface::GetServer()->GetPrefs()->GetAuthScheme()),
     fAuthQop(RTSPSessionInterface::kNoQop),
     fAuthNonceCount(0),
-    fFramesSkipped(0)
+    fFramesSkipped(0),
+    fRTPSession3GPP(QTSServerInterface::GetServer()->GetPrefs()->Get3GPPEnabled() ),
+    fRTPSession3GPPPtr(&fRTPSession3GPP),
+    fLastRTSPBandwidthHeaderBits(0),
+    fIs3GPPSession(false)
 {
     //don't actually setup the fTimeoutTask until the session has been bound!
     //(we don't want to get timeouts before the session gets bound)
@@ -195,7 +203,12 @@ QTSServerInterface::GetServer()->GetPrefs()->GetOverbufferRate()),
 	
 	this->SetVal(qtssCliSesOverBufferEnabled, this->GetOverbufferWindow()->OverbufferingEnabledPtr(), sizeof(Bool16));
 	this->SetVal(qtssCliSesStartedThinning, &fStartedThinning, sizeof(Bool16));
+	this->SetVal(qtssCliSes3GPPObject, &fRTPSession3GPPPtr, sizeof(fRTPSession3GPPPtr));
 	
+    this->SetVal(qtssCliSessLastRTSPBandwidth, &fLastRTSPBandwidthHeaderBits, sizeof(fLastRTSPBandwidthHeaderBits));
+    this->SetVal(qtssCliSessIs3GPPSession, &fIs3GPPSession, sizeof(fIs3GPPSession));
+    
+    
 }
 
 void RTPSessionInterface::SetValueComplete(UInt32 inAttrIndex, QTSSDictionaryMap* inMap,
@@ -268,7 +281,7 @@ void RTPSessionInterface::UpdateBitRateInternal(const SInt64& curTime)
         fLastBitRateBytes = fBytesSent;
         fLastBitRateUpdateTime = curTime;
     }
-    //qtss_printf("fMovieCurrentBitRate=%lu\n",fMovieCurrentBitRate);
+    //qtss_printf("fMovieCurrentBitRate=%"_U32BITARG_"\n",fMovieCurrentBitRate);
     //qtss_printf("Cur bandwidth: %d. Cur ack timeout: %d.\n",fTracker.GetCurrentBandwidthInBps(), fTracker.RecommendedClientAckTimeout());
 }
 
@@ -309,12 +322,12 @@ void* RTPSessionInterface::PacketLossPercent(QTSSDictionary* inSession, UInt32* 
             UInt32 streamCurPacketsLost = 0;
             theLen = sizeof(UInt32);
             (void) theStream->GetValue(qtssRTPStrCurPacketsLostInRTCPInterval,0, &streamCurPacketsLost, &theLen);
-            //qtss_printf("stream = %d streamCurPacketsLost = %lu \n",x, streamCurPacketsLost);
+            //qtss_printf("stream = %d streamCurPacketsLost = %"_U32BITARG_" \n",x, streamCurPacketsLost);
             
             UInt32 streamCurPackets = 0;
             theLen = sizeof(UInt32);
             (void) theStream->GetValue(qtssRTPStrPacketCountInRTCPInterval,0, &streamCurPackets, &theLen);
-            //qtss_printf("stream = %d streamCurPackets = %lu \n",x, streamCurPackets);
+            //qtss_printf("stream = %d streamCurPackets = %"_U32BITARG_" \n",x, streamCurPackets);
                 
             packetsSent += (SInt64)  streamCurPackets;
             packetsLost += (SInt64) streamCurPacketsLost;
@@ -392,7 +405,7 @@ void RTPSessionInterface::SetChallengeParams(QTSS_AuthScheme scheme, UInt32 qop,
             ::srand((unsigned int)theMicroseconds);
             UInt32 randomNum = ::rand();
             char* randomNumStr = NEW char[128];
-            qtss_sprintf(randomNumStr, "%lu", randomNum);
+            qtss_sprintf(randomNumStr, "%"_U32BITARG_"", randomNum);
             int len = ::strlen(randomNumStr);
             fAuthOpaque.Len = Base64encode_len(len);
             char *opaqueStr = NEW char[fAuthOpaque.Len];
@@ -428,7 +441,7 @@ void RTPSessionInterface::UpdateDigestAuthChallengeParams(Bool16 newNonce, Bool1
         ::srand((unsigned int)theMicroseconds);
         UInt32 randomNum = ::rand();
         char* randomNumStr = NEW char[128];
-        qtss_sprintf(randomNumStr, "%lu", randomNum);
+        qtss_sprintf(randomNumStr, "%"_U32BITARG_"", randomNum);
         int len = ::strlen(randomNumStr);
         fAuthOpaque.Len = Base64encode_len(len);
         char *opaqueStr = NEW char[fAuthOpaque.Len];

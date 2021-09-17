@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -54,6 +54,36 @@ QTSSAttrInfoDict::AttrInfo  QTSSModule::sAttributes[] =
     /* 5 */ { "qtssModAttributes",      NULL,                   qtssAttrDataTypeQTSS_Object, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeInstanceAttrAllowed }
 };
 
+char*    QTSSModule::sRoleNames[] = 
+{   
+           "InitializeRole"           , 
+           "ShutdownRole"             , 
+           "RTSPFilterRole"           ,
+           "RTSPRouteRole"            ,
+           "RTSPAthnRole"             ,         
+           "RTSPAuthRole"             ,
+           "RTSPPreProcessorRole"     ,
+           "RTSPRequestRole"          ,
+           "RTSPPostProcessorRole"    ,
+           "RTSPSessionClosingRole"   ,
+           "RTPSendPacketsRole"       ,
+           "ClientSessionClosingRole" ,
+           "RTCPProcessRole"          ,
+           "ErrorLogRole"             ,
+           "RereadPrefsRole"          ,
+           "OpenFileRole"             ,
+           "OpenFilePreProcessRole"   ,
+           "AdviseFileRole"           ,
+           "ReadFileRole"             ,
+           "CloseFileRole"            ,
+           "RequestEventFileRole"     ,
+           "RTSPIncomingDataRole"     ,
+           "StateChangeRole"          ,
+           "TimedIntervalRole"        ,
+           ""
+};
+
+
 void QTSSModule::Initialize()
 {
     //Setup all the dictionary stuff
@@ -72,6 +102,7 @@ QTSSModule::QTSSModule(char* inName, char* inPath)
     fPrefs(NULL),
     fAttributes(NULL)
 {
+
     fQueueElem.SetEnclosingObject(this);
     this->SetTaskName("QTSSModule");
     if ((inPath != NULL) && (inPath[0] != '\0'))
@@ -190,6 +221,44 @@ QTSS_Error QTSSModule::LoadFromDisk(QTSS_MainEntryPointPtr* outEntrypoint)
     return QTSS_NoErr;
 }
 
+
+SInt32 QTSSModule::GetPrivateRoleIndex(QTSS_Role apiRole)
+{
+
+    switch (apiRole)
+    {
+        // Map actual QTSS Role names to our private enum values. Turn on the proper one
+        // in the role array
+        case QTSS_Initialize_Role:          return kInitializeRole          ;
+        case QTSS_Shutdown_Role:            return kShutdownRole            ;
+        case QTSS_RTSPFilter_Role:          return kRTSPFilterRole          ;
+        case QTSS_RTSPRoute_Role:           return kRTSPRouteRole           ;
+        case QTSS_RTSPAuthenticate_Role:    return kRTSPAthnRole            ;
+        case QTSS_RTSPAuthorize_Role:       return kRTSPAuthRole            ;
+        case QTSS_RTSPPreProcessor_Role:    return kRTSPPreProcessorRole    ;
+        case QTSS_RTSPRequest_Role:         return kRTSPRequestRole         ;
+        case QTSS_RTSPPostProcessor_Role:   return kRTSPPostProcessorRole   ;
+        case QTSS_RTSPSessionClosing_Role:  return kRTSPSessionClosingRole  ;
+        case QTSS_RTPSendPackets_Role:      return kRTPSendPacketsRole      ;
+        case QTSS_ClientSessionClosing_Role:return kClientSessionClosingRole;
+        case QTSS_RTCPProcess_Role:         return kRTCPProcessRole         ;
+        case QTSS_ErrorLog_Role:            return kErrorLogRole            ;
+        case QTSS_RereadPrefs_Role:         return kRereadPrefsRole         ;
+        case QTSS_OpenFile_Role:            return kOpenFileRole            ;
+        case QTSS_OpenFilePreProcess_Role:  return kOpenFilePreProcessRole  ;
+        case QTSS_AdviseFile_Role:          return kAdviseFileRole          ;
+        case QTSS_ReadFile_Role:            return kReadFileRole            ;
+        case QTSS_CloseFile_Role:           return kCloseFileRole           ;
+        case QTSS_RequestEventFile_Role:    return kRequestEventFileRole    ;
+        case QTSS_RTSPIncomingData_Role:    return kRTSPIncomingDataRole    ;      
+        case QTSS_StateChange_Role:         return kStateChangeRole         ;      
+        case QTSS_Interval_Role:            return kTimedIntervalRole       ;      
+        default:
+            return -1;
+    }
+}
+
+
 QTSS_Error  QTSSModule::AddRole(QTSS_Role inRole)
 {
     // There can only be one QTSS_RTSPRequest processing module
@@ -197,10 +266,20 @@ QTSS_Error  QTSSModule::AddRole(QTSS_Role inRole)
         return QTSS_RequestFailed;
     if ((inRole == QTSS_OpenFilePreProcess_Role) && (sHasOpenFileModule))
         return QTSS_RequestFailed;
-    // There can be only one module registered for QTSS_RTSPAuthenticate_Role 
-    if ((inRole == QTSS_RTSPAuthenticate_Role) && (sHasRTSPAuthenticateModule))
-        return QTSS_RequestFailed;
+        
+#if 0// Allow multiple modules in QTSS v6.0. Enabling forces the first auth module There can be only one module registered for QTSS_RTSPAuthenticate_Role 
+   if ((inRole == QTSS_RTSPAuthenticate_Role) && (sHasRTSPAuthenticateModule))
+       return QTSS_RequestFailed;
+#endif
 
+
+    SInt32 arrayID = GetPrivateRoleIndex(inRole);
+    if (arrayID < 0)
+         return QTSS_BadArgument;
+      
+   fRoleArray[arrayID] = true;
+
+/*  
     switch (inRole)
     {
         // Map actual QTSS Role names to our private enum values. Turn on the proper one
@@ -232,7 +311,8 @@ QTSS_Error  QTSSModule::AddRole(QTSS_Role inRole)
         default:
             return QTSS_BadArgument;
     }
-    
+*/
+
     if (inRole == QTSS_RTSPRequest_Role)
         sHasRTSPRequestModule = true;
     if (inRole == QTSS_OpenFile_Role)

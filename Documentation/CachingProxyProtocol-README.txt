@@ -36,7 +36,7 @@ included in this document as Appendix A.
 3. RTP-Meta-Info RTP Payload
 
 Streaming Server 3 fully supports the RTP-Meta-Info RTP payload
-format, described separately in an Internet Draft (FIXME: NEED NAME).
+format, described separately in an Internet Draft (draft-serenyi-avt-rtp-meta-00).
 RTP packets of this payload type include important information such as
 the packet transmission time, unique packet number, and video frame
 type. Caching proxies can use this information to provide the same
@@ -71,7 +71,7 @@ the requested arguments, or some don't apply to the RTP stream
 specified by the SETUP. The server may also modify the values of any
 arguments it returns.
 
-There is currently only one possible argument for the x-RTP-Options
+There is currently only one possible argument for the X-Transport-Options
 header. More arguments may be added later in the event that more
 fine-grain control is required for the RTSP server's RTP streams.
 
@@ -112,7 +112,7 @@ The body of this header contains a start and stop packet number for
 this PLAY request. The specified packet numbers must be based on the
 packet number RTP-Meta-Info field. For information on how to request
 packet numbers as part of the RTP stream, see the RTP-Meta-Info
-payload format Internet Draft (FIXME!!).
+payload format Internet Draft (draft-serenyi-avt-rtp-meta-00).
 
 The header format consists of two semi-colon delimited arguments. The
 first argument must be the packet number range, with the start and

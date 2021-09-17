@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -78,7 +78,7 @@ inline  Bool16          SetBookMarkPacket(OSQueueElem* thePacketElemPtr);
         // packetLateness is how many MSec's late this packet is in being delivered ( will be < 0 if its early )
         // If this function returns QTSS_WouldBlock, timeToSendThisPacketAgain will
         // be set to # of msec in which the packet can be sent, or -1 if unknown
-        virtual QTSS_Error  WritePacket(StrPtrLen* inPacket, void* inStreamCookie, UInt32 inFlags, SInt64 packetLatenessInMSec, SInt64* timeToSendThisPacketAgain, UInt64* packetIDPtr, SInt64* arrivalTimeMSec ) = 0;
+        virtual QTSS_Error  WritePacket(StrPtrLen* inPacket, void* inStreamCookie, UInt32 inFlags, SInt64 packetLatenessInMSec, SInt64* timeToSendThisPacketAgain, UInt64* packetIDPtr, SInt64* arrivalTimeMSec, Bool16 firstPacket ) = 0;
     
         virtual void        TearDown() = 0;
         virtual Bool16      IsUDP() = 0;

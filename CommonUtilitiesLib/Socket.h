@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -63,7 +63,7 @@ class Socket : public EventContext
         
         //Binds the socket to the following address.
         //Returns: QTSS_FileNotOpen, QTSS_NoErr, or POSIX errorcode.
-        OS_Error    Bind(UInt32 addr, UInt16 port);
+        OS_Error    Bind(UInt32 addr, UInt16 port,Bool16 test = false);
         //The same. but in reverse
         void            Unbind();   
         

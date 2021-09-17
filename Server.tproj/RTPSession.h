@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -89,12 +89,18 @@ class RTPSession : public RTPSessionInterface
 		//Reset the thinning params for all streams using the late tolerance value
 		void SetStreamThinningParams(Float32 inLateTolerance);
 		
+		//Find the appropriate stream and set the rate adaptation stream data
+		void Set3GPPRateAdaptionData(RateAdapationStreamDataFields *rateAdaptStreamData);
+		
+		// Store the Session Interface's Link Char values
+		void Set3GPPLinkCharData(LinkCharDataFields *linkCharData);
+
         //Begins playing all streams. Currently must be associated with an RTSP Play
         //request, and the request interface must be provided.
         QTSS_Error  Play(RTSPRequestInterface* request, QTSS_PlayFlags inFlags);
         
         //Pauses all streams.
-        void            Pause() { fState = qtssPausedState; }
+        void            Pause();
         
         // Tears down the session. This will cause QTSS_SessionClosing_Role to run
         void            Teardown();
@@ -110,6 +116,8 @@ class RTPSession : public RTPSessionInterface
                                     
         SInt32          GetQualityLevel();
         void            SetQualityLevel(SInt32 level);
+        
+        void            SetMovieBitRateData();
 
     private:
     

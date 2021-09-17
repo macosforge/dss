@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -215,6 +215,35 @@ UInt8 StringParser::sEOLWhitespaceMask[] =
 };
 
 
+UInt8 StringParser::sEOLWhitespaceQueryMask[] =
+{
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, //0-9     // \t is a stop
+    1, 1, 1, 1, 0, 0, 0, 0, 0, 0, //10-19    //'\r' & '\n' are stop conditions
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //20-29
+    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, //30-39   ' '  is a stop
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //40-49
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //50-59
+    0, 0, 0, 1, 0, 0, 0, 0, 0, 0, //60-69  ? is a stop
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //70-79
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //80-89
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //90-99
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //100-109
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //110-119
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //120-129
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //130-139
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //140-149
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //150-159
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //160-169
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //170-179
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //180-189
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //190-199
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //200-209
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //210-219
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //220-229
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //230-239
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //240-249
+    0, 0, 0, 0, 0, 0             //250-255
+};
 
 void StringParser::ConsumeUntil(StrPtrLen* outString, char inStop)
 {
@@ -240,7 +269,7 @@ void StringParser::ConsumeUntil(StrPtrLen* outString, UInt8 *inMask)
         
     char *originalStartGet = fStartGet;
 
-    while ((fStartGet < fEndGet) && (!inMask[(unsigned char) (*fStartGet)]))
+    while ((fStartGet < fEndGet) && (!inMask[(unsigned char) (*fStartGet)]))//make sure inMask is indexed with an unsigned char
         AdvanceMark();
 
     if (outString != NULL)
@@ -359,6 +388,8 @@ Float32 StringParser::ConsumeNPT()
     else
         return (valArray[0] * 3600) + (valArray[1] * 60) + valArray[2] + (valArray[3] / divArray[3]);
 }
+
+
 Bool16  StringParser::Expect(char stopChar)
 {
     if (this->ParserIsEmpty(NULL))

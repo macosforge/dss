@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -37,6 +37,7 @@
 #include <assert.h>
 
 #include "util.h"
+static char to_lower(int c);
 
 /**********************************************/
 static char ip_string_buffer[20];
@@ -48,7 +49,7 @@ char *ip_to_string(int ip) {
 }
 
 /**********************************************/
-static char to_lower(char c)
+static char to_lower(int c)
 {
     if (c >= 'A' && c <= 'Z')
         return ((c - 'A') + 'a');
@@ -81,7 +82,7 @@ int strn_casecmp(char *str1, char *str2, int l)
 {
     int ret;
     
-    ret = to_lower(*str1) - to_lower(*str2);
+    ret = to_lower( (char) *str1) - to_lower((char) *str2);
     while (l-- && to_lower(*str1) && to_lower(*str2) && ((ret = to_lower(*str1++) - to_lower(*str2++)) == 0))
         ;
     return ret;
@@ -103,7 +104,7 @@ char* get_line_str( char* strBuff, char *input, int buffSize)
         
         assert( strBuff != NULL && input != NULL && buffSize > 0);
     
-        memset(strBuff, 0, buffSize);
+        memset(strBuff, 0, (size_t) buffSize);
     while( *p )
     {
         assert( buffSize > 0 );

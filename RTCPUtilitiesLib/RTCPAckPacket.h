@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -35,13 +35,14 @@
 #define _RTCPACKPACKET_H_
 
 #include "OSHeaders.h"
+#include "RTCPAPPPacket.h"
 #include <stdlib.h>
 #include "SafeStdLib.h"
 #ifndef __Win32__
 #include <netinet/in.h>
 #endif
 
-class RTCPAckPacket
+class RTCPAckPacket  : public RTCPAPPPacket
 {
     public:
     
@@ -66,34 +67,43 @@ class RTCPAckPacket
         RTCPAckPacket() : fRTCPAckBuffer(NULL), fAckMaskSize(0) {}
         virtual ~RTCPAckPacket() {}
         
+        // Call to parse if you don't know what kind of packet this is
         // Returns true if this is an Ack packet, false otherwise.
         // Assumes that inPacketBuffer is a pointer to a valid RTCP packet header.
-        Bool16 ParseAckPacket(UInt8* inPacketBuffer, UInt32 inPacketLen);
+        Bool16  ParseAckPacket(UInt8* inPacketBuffer, UInt32 inPacketLength);
+
+        virtual Bool16 ParseAPPData(UInt8* inPacketBuffer, UInt32 inPacketLength);
 
         inline UInt16 GetAckSeqNum();
         inline UInt32 GetAckMaskSizeInBits() { return fAckMaskSize * 8; }
         inline Bool16 IsNthBitEnabled(UInt32 inBitNumber);
         inline UInt16 GetPacketLength();
         void   Dump();
+        static void GetTestPacket(StrPtrLen* resultPtr) {} //todo
+        
+        enum
+        {
+            kAckPacketName = FOUR_CHARS_TO_INT('q', 't', 'a', 'k'), // 'qtak'  documented Apple reliable UDP packet type
+            kAckPacketAlternateName = FOUR_CHARS_TO_INT('a', 'c', 'k', ' '), // 'ack ' required by QT 5 and earlier
+        };                  
     private:
     
         UInt8* fRTCPAckBuffer;
         UInt32 fAckMaskSize;
 
         Bool16 IsAckPacketType();
-        
+       
         enum
         {
-            kAckPacketType = FOUR_CHARS_TO_INT('q', 't', 'a', 'k'), // 'qtak'  documented Apple reliable UDP packet type
-            kOldAckPacketType = FOUR_CHARS_TO_INT('a', 'c', 'k', ' '), // 'ack ' required by QT 5 and earlier
             kAppPacketTypeOffset    = 8,
             kAckSeqNumOffset        = 16,
             kAckMaskOffset          = 20,
             kPacketLengthMask = 0x0000FFFFUL,
-        };
+        };                  
+ 
         
 
-        inline Bool16 IsAckType(UInt32 theAppType) {    return ( (theAppType == kOldAckPacketType) || (theAppType == kAckPacketType) );}
+        inline Bool16 IsAckType(UInt32 theAppType) {    return ( (theAppType == kAckPacketAlternateName) || (theAppType == kAckPacketName) );}
 };
 
 

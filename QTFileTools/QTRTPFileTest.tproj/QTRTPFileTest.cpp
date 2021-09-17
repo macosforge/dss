@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -266,7 +266,7 @@ int main(int argc, char *argv[]) {
         // General vars
         char    *Packet;
         int     PacketLength;
-        //long  Cookie;
+        //SInt32  Cookie;
         UInt32  RTPTimestamp;
         UInt16  RTPSequenceNumber;
         int     maxHintPackets = 100; // cheat assume this many packets is good enough to assume entire file is the same at these packets
@@ -299,7 +299,7 @@ int main(int argc, char *argv[]) {
         
         if (!hintOnly)
             if (!silent)
-                qtss_printf("TransmitTime = %.2f; SEQ = %u; TS = %lu\n", TransmitTime, RTPSequenceNumber, RTPTimestamp);
+                qtss_printf("TransmitTime = %.2f; SEQ = %u; TS = %"_U32BITARG_"\n", TransmitTime, RTPSequenceNumber, RTPTimestamp);
         
         if (trackCache)
         {
@@ -330,7 +330,7 @@ int main(int argc, char *argv[]) {
     // Compute and display the Inter-packet delay.
     if( (!hintOnly) && NumberOfPackets > 0 )
     {
-        qtss_printf("QTRTPFileTest: Total GetNextPacket durationTime = %lums packetCount= %lu\n",(UInt32)durationTime,(UInt32)packetCount);      
+        qtss_printf("QTRTPFileTest: Total GetNextPacket durationTime = %"_U32BITARG_"ms packetCount= %"_U32BITARG_"\n",(UInt32)durationTime,(UInt32)packetCount);      
         qtss_printf("QTRTPFileTest: Average Inter-packet delay: %"_64BITARG_"uus\n", (UInt64)((TotalInterpacketDelay / NumberOfPackets) * 1000 * 1000));
     }   
     

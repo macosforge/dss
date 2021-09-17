@@ -1,9 +1,9 @@
 /*
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
- * Copyright (c) 1999-2003 Apple Computer, Inc.  All Rights Reserved.
- * 
+ *
+ * Copyright (c) 1999-2008 Apple Inc.  All Rights Reserved.
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
@@ -191,7 +191,7 @@ void QTSSPrefs::RereadObjectPreferences(ContainerRef container)
                 {   char* theName = NULL;
                     UInt32 nameLen = 0;
                     theAttrInfoPtr->GetValuePtr(qtssAttrName,0, (void **) &theName, &nameLen);
-                    qtss_printf("QTSSPrefs::RereadPreferences about to delete modulePrefInServer=%s attr=%s id=%lu\n",modulePrefInServer[a], theName,theAttrID);
+                    qtss_printf("QTSSPrefs::RereadPreferences about to delete modulePrefInServer=%s attr=%s id=%"_U32BITARG_"\n",modulePrefInServer[a], theName,theAttrID);
                 }
             
             
